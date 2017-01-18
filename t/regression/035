@@ -1,0 +1,10 @@
+Add a Japanese Heisei fiscal year column 'FY', with entries like "H27" to a file with YYYYMMDD format column 'Date'.
+perltab --test -pe  'insaft qw(Date FY), sub{ ($y,$m)= unpack "a4a2", F(Date);  "H". (($m>3)+ $y-1989)}'  t/regression/input/YYYYMMDD.tsv
+MD5:t/regression/input/YYYYMMDD.tsv	nprEORspug79+uGAP6JaQA
+Amount	Date	FY
+40	20140229	H25
+35	20140512	H26
+41	20150331	H26
+34	20150723	H27
+37	20151231	H27
+12	20160401	H28

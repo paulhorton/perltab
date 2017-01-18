@@ -1,0 +1,7 @@
+Remove any data columns with non-numerical entries.
+perltab --test -gd 'allnum @F' t/regression/input/heightWeight.tsv
+MD5:t/regression/input/heightWeight.tsv	wqbXPt1Elw/A/OE7HHxj2Q
+ID	height	weight
+3	160	50
+2	175	78
+1	170	73

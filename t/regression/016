@@ -1,0 +1,21 @@
+Dump lable->value pairs.
+perltab --test -e 'say "$_->".F($_) for @H' t/regression/input/heightWeight.tsv
+MD5:t/regression/input/heightWeight.tsv	wqbXPt1Elw/A/OE7HHxj2Q
+ID->ID
+height->height
+weight->weight
+ID->3
+height->160
+weight->50
+ID->2
+height->175
+weight->78
+ID->5
+height->
+weight->55
+ID->6
+height->180
+weight->
+ID->1
+height->170
+weight->73

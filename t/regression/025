@@ -1,0 +1,11 @@
+Sort a ditto mode file of cities first by country, then by descending population.
+perltab -test -D -sab,10 'F(coun pop)' t/regression/input/NEAsiaMegacities_ditto.tsv
+MD5:t/regression/input/NEAsiaMegacities_ditto.tsv	kAHrQfHNjuMtFmmSpylZtQ
+Population	Country	City
+34000000	China	Shanghai
+25000000		Guangzhou
+24900000		Beijing
+23300000		Shenzhen
+36923000	Japan	Tokyo
+19342000		Osaka
+25514000	Korea	Seoul

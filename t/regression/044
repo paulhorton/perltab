@@ -1,0 +1,9 @@
+Prepend row number column to each row.
+perltab --test -e 'say NR,@F' t/regression/input/heightWeight.tsv
+MD5:t/regression/input/heightWeight.tsv	wqbXPt1Elw/A/OE7HHxj2Q
+0	ID	height	weight
+1	3	160	50
+2	2	175	78
+3	5		55
+4	6	180	
+5	1	170	73

@@ -1,0 +1,6 @@
+Try out label prefix abbreviation.
+perltab --test -e 'say F(FreddieM freddiem)' t/regression/input/performers.tsv
+MD5:t/regression/input/performers.tsv	aKIwJvdBz81jDjI1Vg+wmg
+FreddieMercury	FreddieMercury
+45	45
+Zanzibar	Zanzibar

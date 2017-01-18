@@ -1,0 +1,9 @@
+Add BMI (Body Mass Index) column to table in heightWeight.tsv, skipping missing (empty string) values.
+perltab --test -pe 'insAft "weight", "BMI"=>doNum{10000*$_[1]/$_**2} F(height weight)'  t/regression/input/heightWeight.tsv
+MD5:t/regression/input/heightWeight.tsv	wqbXPt1Elw/A/OE7HHxj2Q
+ID	height	weight	BMI
+3	160	50	19.53125
+2	175	78	25.469387755102
+5		55	
+6	180		
+1	170	73	25.2595155709343

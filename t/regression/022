@@ -1,0 +1,11 @@
+To convert a ditto format file to full format.
+perltab --test -De 'say @F' t/regression/input/NEAsiaMegacities_ditto.tsv
+MD5:t/regression/input/NEAsiaMegacities_ditto.tsv	kAHrQfHNjuMtFmmSpylZtQ
+Population	Country	City
+36923000	Japan	Tokyo
+19342000	Japan	Osaka
+34000000	China	Shanghai
+25000000	China	Guangzhou
+24900000	China	Beijing
+23300000	China	Shenzhen
+25514000	Korea	Seoul

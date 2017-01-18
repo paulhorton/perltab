@@ -1,0 +1,9 @@
+Manually move column 'ID' to directly after column 'weight', assuming column ID comes before colun weight in the input.
+perltab --test  -e '($x,$y)= N(ID weight); say @F[0..$x-1,$x+1..$y,$x,$y+1..$#F]' t/regression/input/heightWeight.tsv
+MD5:t/regression/input/heightWeight.tsv	wqbXPt1Elw/A/OE7HHxj2Q
+height	weight	ID
+160	50	3
+175	78	2
+	55	5
+180		6
+170	73	1

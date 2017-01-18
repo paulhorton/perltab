@@ -1,0 +1,9 @@
+Output a table with column 'weight' from weight.tsv appended onto table in height.tsv.
+perltab --test -e '$V{ F(ID) }= F(weight)'  -e2 'dit  @F,  $V{ F(ID) }'  t/regression/input/weight.tsv  -in2 t/regression/input/height.tsv
+MD5:t/regression/input/weight.tsv	odbScgqiKO0AgZtZ5hYHOQ
+MD5:t/regression/input/height.tsv	Ri9TzHOK+gxyRXZ2csE8hg
+ID	height	weight
+3	160	50
+2	175	78
+6	180	
+1	170	73

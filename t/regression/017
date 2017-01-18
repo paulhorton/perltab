@@ -1,0 +1,6 @@
+Dump label->columnNum pairs.
+perltab --test -H 'say $_,N($_)  for @H' t/regression/input/heightWeight.tsv
+MD5:t/regression/input/heightWeight.tsv	wqbXPt1Elw/A/OE7HHxj2Q
+ID	0
+height	1
+weight	2

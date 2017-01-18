@@ -1,0 +1,10 @@
+Move columns 'cat', 'lion' and 'tiger' (if necessary) to make them come just before column 'dog'
+perltab -test -pe 'movbef qw(dog cat lion tiger)' t/regression/input/animals.tsv
+MD5:t/regression/input/animals.tsv	Tegm8Vu3oYvmpMNwlkFuVA
+feature	cat	lion	tiger	dog	elephant
+Order	Carnivora	Carinvora	Carinvora	Carnivora	Elephantidae
+Family	Felidae	Felidae	Felidae	Canidae	Proboscidea
+Genus	Felis	Panthera	Panthera	Canis	Loxodonta
+height	24			56	380
+length	46	210	350		
+weight	5	200	300	27	5500

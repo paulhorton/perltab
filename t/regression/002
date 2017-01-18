@@ -1,0 +1,9 @@
+Swapping columns can also be done by directly accessing @F.
+perltab --test -pe '@I= N(height weight); @F[@I]= @F[reverse @I]' t/regression/input/heightWeight.tsv
+MD5:t/regression/input/heightWeight.tsv	wqbXPt1Elw/A/OE7HHxj2Q
+ID	weight	height
+3	50	160
+2	78	175
+5	55	
+6		180
+1	73	170

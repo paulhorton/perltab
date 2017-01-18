@@ -1,0 +1,10 @@
+Delete columns starting in 'c', 'd' or 'e'.
+perltab --test -pe 'del grep /^[cde]/, @H'  t/regression/input/animals.tsv
+MD5:t/regression/input/animals.tsv	Tegm8Vu3oYvmpMNwlkFuVA
+feature	tiger	lion
+Order	Carinvora	Carinvora
+Family	Felidae	Felidae
+Genus	Panthera	Panthera
+height		
+length	350	210
+weight	300	200

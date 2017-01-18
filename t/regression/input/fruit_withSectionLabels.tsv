@@ -1,0 +1,13 @@
+;I have put an opening comment followed by a blank line here just to show how perltab handles it.
+
+FEATURE	apple	mikan	pear	peach	banana
+
+; Numerical features
+weight	100	100	165	175	183
+cost	300	347	800	500	218
+height	5	3	5	4	7
+calorie	52	47	57	39	89
+
+; Translations
+French	pomme	mikan	poire	pêche	banane
+German	Apfel	Mikan	Birne	Pfirsich	Banane

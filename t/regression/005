@@ -1,0 +1,9 @@
+Move column 'ID' to directly after column 'weight'.
+perltab --test -pe 'movaft qw(weight ID)' t/regression/input/heightWeight.tsv
+MD5:t/regression/input/heightWeight.tsv	wqbXPt1Elw/A/OE7HHxj2Q
+height	weight	ID
+160	50	3
+175	78	2
+	55	5
+180		6
+170	73	1

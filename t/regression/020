@@ -1,0 +1,6 @@
+Sort rows in selected.tsv in the order of the ids in ids.txt (assumes all ids in selected.tsv are present in ids.txt)
+perltab --test -b 'SNset %S, "t/regression/input/ids.txt"' -s '$S{ F(ID) }' t/regression/input/selected.tsv
+MD5:t/regression/input/selected.tsv	zpcZaf3SmnEcfBIe51uuVg
+ID	height	weight
+6	180	
+2	175	78

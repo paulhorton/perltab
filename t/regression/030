@@ -1,0 +1,9 @@
+Output the rows with the maximum height value among rows in two files.  Assumes no missing values.
+perltab --test -d 'bemax $m, F(hei)' -gd2 '$m==F(hei)' t/regression/input/heightWeight_noMissing.tsv t/regression/input/more_heightWeight.tsv -in2 t/regression/input/heightWeight_noMissing.tsv t/regression/input/more_heightWeight.tsv
+MD5:t/regression/input/heightWeight_noMissing.tsv	wVUXvoXsFt1pToOfhxNnQw
+MD5:t/regression/input/more_heightWeight.tsv	ch8863vstlnzzEQrEdTacw
+MD5:t/regression/input/heightWeight_noMissing.tsv	wVUXvoXsFt1pToOfhxNnQw
+MD5:t/regression/input/more_heightWeight.tsv	ch8863vstlnzzEQrEdTacw
+ID	height	weight
+6	180	80
+9	180	78

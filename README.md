@@ -1,0 +1,131 @@
+# perltab -- Manipulate data in tabular form from the command line in a perl one-liner style.
+
+
+## Getting started
+`% perltab -h`
+
+## Running regression tests
+`% perl t/perltabCommandsOutputMatchExpected.t`
+
+
+### Caveats.
+Runs on a linux both with Perl v5.18.2.  Untested elsewhere.
+
+
+### Examples
+
+* Output columns 'height' and 'weight'.
+`% perltab -e 'say F(qw(height weight))'  heightWeight.tsv`
+
+* Or more succinctly by letting perltab add the qw for you (see -h qw).
+`% perltab -e 'say F(height weight)'  heightWeight.tsv`
+
+* Or even more succinctly,
+`% perltab -e 'say F(hei wei)'  heightWeight.tsv`
+
+* Any unique prefix of the desired column labels will work (see -h label).  Here we assume no other headers starts with 'h' or 'w'.
+`% perltab -e 'say F(h w)'`
+
+* Swap first and final field.
+`% perltab -pe 'swap 0, -1'  input.tsv`
+
+* Swapping columns can also be done (more efficiently) by directly accessing @F.
+`% perltab -e 'say  @F[-1, 1..$#F-1, 0]'  input.tsv`
+
+* Swap fields labeled 'height' and 'weight'.
+`% perltab -pe 'swap qw(height weight)'  heightWeight.tsv`
+
+* Swapping columns by label can also be done (more efficiently) by using N() to access @F directly.
+`% perltab -pe '@I= N(height weight); @F[@I]= @F[reverse @I]'  heightWeight.tsv`
+
+* Move column 'ID' to directly after column 'weight'.
+`% perltab -pe 'movaft qw(weight ID)'  heightWeight.tsv`
+
+* Manually move column 'ID' to directly after column 'weight', assuming column ID comes before colun weight in the input.
+`% perltab -e '($x,$y)= N(D weight);  say @F[0..$x-1,$x+1..$y,$x,$y+1..$#F]'   heightWeight.tsv`
+
+* Delete columns starting in 'c', 'd' or 'e'.
+`% perltab -pe 'del grep /^[cde]/, @H'  animals.tsv`
+
+* Echo input file, skipping data lines with any missing (empty string) values.
+`% perltab -e 'speak @F'  heightWeight.tsv`
+
+* Output BMI (Body Mass Index) from rows in which both height and weight have values.
+`% perltab -e '@V= nextNum F(height weight);  say 10000*$V[1]/$V[0]**2'   heightWeight.tsv`
+
+* Add BMI (Body Mass Index) column to table in heightWeight.tsv, skipping missing (empty string) values.
+`% perltab -pe 'insAft "weight", "BMI"=>doNum{10000*$_[1]/$_**2} F(height weight)'  heightWeight.tsv`
+
+* Reformat numbers in field 'BMI'.
+`% perltab -pe 'reform "%.2f", F(BMI)'  heightWeightBMI.tsv`
+
+* Extract data fields 1,2 for rows in which both have a numerical value.
+`% perltab -d 'donum {say @_} @F[1,2]'  heightWeight.tsv`
+
+* Display column labels with their numbers.
+`% perltab -H 'say $_,$H[$_] for 0..$#H' input.tsv`
+
+* Remove column named 'height'.
+`% perltab -pe 'del "height"' heightWeight.tsv`
+
+* or,
+`% perltab -e 'say F( grep {!/^height$/} @H )' heightWeight.tsv `
+
+* Select rows from heightWeight.tsv matching ids listed in file 'ids.txt' (holding one id per line).
+`% perltab -b 'SNset %S, "ids.txt"'  -ge '$S{ F(ID)}'  heightWeight.tsv   > selected.tsv`
+
+* After selecting those rows, sort them so that the ids are in the same order as in "/tmp/ids".
+`% perltab -b 'SNset %S, "ids.txt"' -s '$S{ F(ID) }' selected.tsv`
+
+* Print minimum value of column 'banana', quietly ignoring non-numerical values.
+`% perltab -e 'bemin $m, F(banana)' -z 'say $m'`
+
+* Linearly normalize numbers in column 'banana' to be in range [0,1].
+`% perltab -p -e 'beminmax $min, $max, F(banana)'   -e2 'donum  sub{ $_= ($_-$min) / ($max-$min)}, F(banana)'   fruit.tsv`
+
+* Print column labels containing 'eight'.
+`% perltab  -H 'say  grep /eight/, @H'`
+
+* Remove any data columns with non-numerical entries.
+`% perltab -gd 'allnum @F'`
+
+* Average all columns in a file (Non-numeric data treated as 0).
+`% perltab  -d '$s[$_]+= num0 $F[$_] for 0..$#F'  -z 'say map {$_/(NR-1)} @s'`
+
+* Sort heightWeight.tsv so that IDs found in file age.tsv come first, in the same order as they appear in age.tsv.
+`% perltab -e '$R{ F(ID)}= NR'  -s201U '$R{ F(ID)}'   age.tsv  -in2 heightWeight.tsv`
+
+* Same as above but with the block of common ids at the end.
+`% perltab -e '$R{ F(ID)}= NR'  -s2U01 '$R{ F(ID)}'   age.tsv  -in2 heightWeight.tsv`
+
+* Same as above but sorted in place, i.e. sort the common IDs to mirror their order in age.tsv, but do not move them as a block to the top or bottom.
+`% perltab -e '$R{ F(ID)}= NR' -s201 '$R{ F(ID)}'  age.tsv  -in2 heightWeight.tsv`
+
+* or one can use the default sort spec 'AB01NM'
+`% perltab -e '$R{ F(ID)}= NR'  -s2 '$R{ F(ID)}'  age.tsv -in2 heightWeight.tsv`
+
+* Add a Japanese Heisei fiscal year column 'FY', with entries like "H27" to a file with YYYYMMDD format column 'Date'.
+`% perltab -pe 'insaft qw(Date FY), sub{ ($y,$m)= unpack "a4a2", F(Date);  "H". (($m>3)+ $y-1989)}   YYYYMMDD.tsv`
+
+* Transpose rows and columns.  'chop' removes trailing tab characters.
+`% perltab -e '$T[$_] .= "$F[$_]\t" for 0..$#F'   -z 'chop, say  for @T'  input.tsv`
+
+* Prepend row number column to each row.
+`% perltab -e 'say NR,@F'  input.tsv`
+
+* Lexically sort rows by label, except for the first.  Comment lines are also output by -p.
+`% perltab -pe '@F= F($H[0], sort @H[1..$#H])'  fruit.tsv`
+
+* Similar to the above, but skipping comment lines.
+`% perltab -e 'say F($H[0], sort @H[1..$#H])'  fruit.tsv`
+
+* Output the rows with the maximum height value among rows in two files.
+`% perltab -d 'bemax $m, F(hei)' -gd2 'donum {$m==$_} F(hei)'  heightWeight.tsv more_heightWeight.tsv
+          -in2 heightWeight.tsv more_heightWeight.tsv`
+
+* or if there are no missing values, more simply:
+`% perltab -d 'bemax $m, F(hei)' -gd2 '$m==F(hei)'  heightWeight.tsv more_heightWeight.tsv  -in2 heightWeight.tsv more_heightWeight.tsv`
+
+### Author
+
+Paul Horton.  Copyright 2016,2017.

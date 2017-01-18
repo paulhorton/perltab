@@ -1,0 +1,10 @@
+Lexically sort rows by label, except for the first.  Comment lines skipped.
+perltab --test -e 'say F($H[0], sort @H[1..$#H])'  t/regression/input/fruit.tsv
+MD5:t/regression/input/fruit.tsv	2nGYsmtDLAriBfvS8/2Dng
+feature	apple	banana	mikan	peach	pear
+weight	100	183	100	175	165
+cost	300	218	347	500	800
+height	5	7	3	4	5
+calorie	52	89	47	39	57
+French	pomme	banane	mikan	pêche	poire
+German	Apfel	Banane	Mikan	Pfirsich	Birne

@@ -1,0 +1,7 @@
+feature	cat	dog	tiger	lion	elephant
+Order	Carnivora	Carnivora	Carinvora	Carinvora	Elephantidae
+Family	Felidae	Canidae	Felidae	Felidae	Proboscidea
+Genus	Felis	Canis	Panthera	Panthera	Loxodonta
+height	24	56			380
+length	46		350	210	
+weight	5	27	300	200	5500

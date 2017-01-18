@@ -1,0 +1,6 @@
+Output BMI (Body Mass Index) from rows in which both height and weight have values.
+perltab --test -e 'donum{say 10000*$_[1]/$_**2} F(height weight)' t/regression/input/heightWeight.tsv
+MD5:t/regression/input/heightWeight.tsv	wqbXPt1Elw/A/OE7HHxj2Q
+19.53125
+25.469387755102
+25.2595155709343

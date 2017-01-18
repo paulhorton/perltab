@@ -1,0 +1,9 @@
+Swap first and final field.
+perltab --test -pe 'swap 0, -1' t/regression/input/heightWeight.tsv
+MD5:t/regression/input/heightWeight.tsv	wqbXPt1Elw/A/OE7HHxj2Q
+weight	height	ID
+50	160	3
+78	175	2
+55		5
+	180	6
+73	170	1

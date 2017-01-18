@@ -1,0 +1,10 @@
+;I have put some opening comments here just to show how perltab handles them.
+;The empty line before the languages section should also be treated as a comment line.
+feature	apple	mikan	pear	peach	banana
+weight	100	100	165	175	183
+cost	300	347	800	500	218
+height	5	3	5	4	7
+calorie	52	47	57	39	89
+
+French	pomme	mikan	poire	pêche	banane
+German	Apfel	Mikan	Birne	Pfirsich	Banane

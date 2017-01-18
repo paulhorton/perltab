@@ -1,0 +1,9 @@
+Another way to dump all fields.
+perltab --test -H 'say "\@H: @H"' -d 'say "\@F: @F"' t/regression/input/heightWeight.tsv
+MD5:t/regression/input/heightWeight.tsv	wqbXPt1Elw/A/OE7HHxj2Q
+@H: ID height weight
+@F: 3 160 50
+@F: 2 175 78
+@F: 5  55
+@F: 6 180 
+@F: 1 170 73

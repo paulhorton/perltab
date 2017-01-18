@@ -1,0 +1,4 @@
+Print minimum value of column 'banana'.  By using 'nums' non-numerical (e.g. missing) values are quietly skipped.
+perltab --test -e 'bemin $m, F(banana)' -z 'say $m' t/regression/input/fruit.tsv
+MD5:t/regression/input/fruit.tsv	2nGYsmtDLAriBfvS8/2Dng
+7

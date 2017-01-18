@@ -1,0 +1,10 @@
+Print section matching pattern.
+perltab -test -ge 'section=~/Trans/'  t/regression/input/fruit_withSectionLabels.tsv
+MD5:t/regression/input/fruit_withSectionLabels.tsv	xSzK3mQ4+qE8EfClWhFq3w
+;I have put an opening comment followed by a blank line here just to show how perltab handles it.
+
+FEATURE	apple	mikan	pear	peach	banana
+
+; Translations
+French	pomme	mikan	poire	pêche	banane
+German	Apfel	Mikan	Birne	Pfirsich	Banane
