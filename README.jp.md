@@ -41,7 +41,7 @@ linux、Perlバージョンv5.18.2以外の環境での動作確認は行われ�
 `% perltab -pe 'movaft qw(weight ID)'  heightWeight.tsv`
 
 * 手動で列IDを列weightの後に移動する。入力におけるIDがweightの前に来る前提の場合。
-`% perltab -e '($x,$y)= N(D weight);  say @F[0..$x-1,$x+1..$y,$x,$y+1..$#F]'   heightWeight.tsv`
+`% perltab -e '($x,$y)= N(ID weight);  say @F[0..$x-1,$x+1..$y,$x,$y+1..$#F]'   heightWeight.tsv`
 
 * c,d,eのいづれかから始まるラベルを削除する。
 `% perltab -pe 'del grep /^[cde]/, @H'  animals.tsv`
