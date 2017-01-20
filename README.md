@@ -42,7 +42,7 @@ Runs on a linux both with Perl v5.18.2.  Untested elsewhere.
 `% perltab -pe 'movaft qw(weight ID)'  heightWeight.tsv`
 
 * Manually move column 'ID' to directly after column 'weight', assuming column ID comes before colun weight in the input.
-`% perltab -e '($x,$y)= N(D weight);  say @F[0..$x-1,$x+1..$y,$x,$y+1..$#F]'   heightWeight.tsv`
+`% perltab -e '($x,$y)= N(ID weight);  say @F[0..$x-1,$x+1..$y,$x,$y+1..$#F]'   heightWeight.tsv`
 
 * Delete columns starting in 'c', 'd' or 'e'.
 `% perltab -pe 'del grep /^[cde]/, @H'  animals.tsv`
