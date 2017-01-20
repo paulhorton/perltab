@@ -9,7 +9,7 @@
 
 
 ### Caveats.
-Runs on a linux both with Perl v5.18.2.  Untested elsewhere.
+Runs on a linux box under Perl v5.18.2.  Untested elsewhere.
 
 
 ### Examples
