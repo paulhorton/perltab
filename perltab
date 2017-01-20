@@ -2779,7 +2779,7 @@ Or to remove only the opening comment at top:
  Manually move column 'ID' to directly after column 'weight', assuming column ID comes before colun weight in the input.
  手動で列IDを列weightの後に移動する。入力におけるIDがweightの前に来る前提の場合。
 =settab    ==
- % perltab -e '($x,$y)= N(D weight);  say @F[0..$x-1,$x+1..$y,$x,$y+1..$#F]'   heightWeight.tsv
+ % perltab -e '($x,$y)= N(ID weight);  say @F[0..$x-1,$x+1..$y,$x,$y+1..$#F]'   heightWeight.tsv
 =unsettab
 
  Delete columns starting in 'c', 'd' or 'e'.
