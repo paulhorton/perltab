@@ -2808,6 +2808,12 @@ Or to remove only the opening comment at top:
  Reformat numbers in field 'BMI'.
  列BMI中の数字の表示形式を変える。
  % perltab -pe 'reform "%.2f", F(BMI)'  heightWeightBMI.tsv
+
+=kw -N|--no-head|-F|--field-sep
+ Given data from a LaTeX table, separated by ' & ', and with no head line; reformat the numbers in columns 2-4.
+ LaTeX表のデータ(ラベル行無しで、列は' & 'で区切られている形式)で２〜４番号の列中の数値の小数点以下の桁数を変更する。
+ % perltab -N -F=' & '  -pe 'reform "%5.3f", @F[2..4]'  tableBody.tex
+=wk -N|--no-head|-F|--field-sep
 =wk reform
 
  Extract data fields 1,2 for rows in which both have a numerical value.
