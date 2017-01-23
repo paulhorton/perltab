@@ -61,6 +61,7 @@ sub nums{   grep  {looks_like_number $_}  @_   }
   #Return @_ sprintf formated according to FORMAT.
   #When FORMAT expects a number, non-numbers are passed through as is.
   sub form{
+      @_ > 1   or   _diell(  'form() expected at least two arguments but got '.@_=>'form()はふたつ以上の引数が必要であるが、'.@_.'個しか受け取らなかった。'  );
       my $format=  shift;
       if(  $format=~  /$printfWantsNumRx/  ){
           map  {looks_like_number $_?  sprintf $format, $_  :  $_}    @_;}
@@ -71,6 +72,7 @@ sub nums{   grep  {looks_like_number $_}  @_   }
   #Modify @_ sprintf formated according to FORMAT.
   #When FORMAT expects a number, non-numbers left unchanged.
   sub reform{
+      @_ > 1   or   _diell(  'reform() expected at least two arguments but got '.@_=>'reform()はふたつ以上の引数が必要であるが、'.@_.'個しか受け取らなかった。'  );
       my $format=  shift;
       if(  $format=~  /$printfWantsNumRx/  ){
           $_=  looks_like_number $_?  sprintf $format, $_  :  $_   for @_;}
