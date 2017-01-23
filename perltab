@@ -2306,10 +2306,10 @@ perltabは列に関する以下の変数を提供する。
  -H|--head-script SCRIPT   SCRIPT to run after reading head row, but before any row script is run.
 |                          先頭行を読み込んだ直後に実行するスクリプト。
 =wk -H|--head-script
-=kw -N|--no-head
+=kw -N|--no-head|no-head
  -N|--no-head              Do not treat the first (non-comment) line of input files as a head line.
 |                          入力ファイルの先頭を(列ラベルの行として)特別扱いしない。
-=wk -N|--no-head
+=wk -N|--no-head|no-head
 =kw -n|--print-script
  -n|--print-script         Output script suitable for use with -f|--script-file.  See -h script-file
 |                          -f|--script-fileで使えるスクリプトを出力うる. -h script-fileを参照。
