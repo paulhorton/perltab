@@ -47,3 +47,7 @@ The perltab program and this documentation was written by Paul Horton.
 =head1  LICENSE
 
 Copyright 2016,2017 Paul B. Horton <paulh@iscb.org>.  perltab may be used, modified or redistributed under the GNU Public License GPLv3.  For possible use under others licenses, please contact the author.
+
+=cut
+
+1;
