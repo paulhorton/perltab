@@ -8,6 +8,36 @@
 `% perl t/perltabCommandsOutputMatchExpected.t`
 
 
+## Summary
+perltab could be thought of as an extension to perl autosplit mode for handling tabular data.  I developed perltab while working with a bioinformatics dataset that had quite a few features (columns), many of them had missing values, which made the data inconvenient to directly handle with something like perl autosplit mode.  With perl autosplit mode it is easy to output the nth column.
+
+`% perl -F'\t' -anE 'say $F[1]'   heightWeight.tsv`
+
+perltab makes this slightly easier:
+
+`% perltab -e 'say $F[1]'  heightWeight.tsv`
+
+But it also allows for using named columns (and allows for abbreviation)
+
+`% perltab -e 'say F(hei)'  heightWeight.tsv`
+
+This is convenient, but when numerical computation and missing values come to play perltab is particularly helpful.
+
+For example the minimum value of a column can be output in this way:
+
+`% perltab -d 'bemin $m, F(hei)' -z 'say $m'`
+
+or, as long as the column labels do not look like numbers, this will also work:
+
+`% perltab -e 'bemin $m, F(hei)' -z 'say $m'`
+
+
+To do that on the command line without perltab is quite difficult without a *LOT* of typing, mostly because non-numerical values must be silently skipped but also because $m needed to be initialized properly (for example zero won't work if negative values are present in the data).  perltab defines several reasonably mnenmonic functions to handle issues like that transparently.
+
+
+The perltab documention `% perltab -h` has close to 50 examples of using perltab and all of these are represented in the regression test suite.
+
+
 ### Caveats.
 Runs on a linux box under Perl v5.18.2.  Untested elsewhere.
 
