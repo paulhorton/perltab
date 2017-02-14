@@ -2292,10 +2292,10 @@ perltabは列に関する以下の変数を提供する。
  -f|--script-file FILE     Read scripts to execute in from FILE
 |                          実行すべきスクリプトをファイルFILEから読み込む。
 =wk -f|--script-file
-=kw -F|--field-sep
+=kw -F|--field-sep|field-separator
  -F|--field-sep SEP        Field separator SEP for I/O.  Default is tab.
 |                          列の区切り文字SEP。デフォルト値はタブ。
-=wk -F|--field-sep
+=wk -F|--field-sep|field-separator
 =kw -g|--grep
  -g|--grep                 grepMode: Print rows for which row script returns true (on final pass).
 |                          grepMode: (最終の入力passで)行スクリプトが真を返した行を出力する。
@@ -2809,11 +2809,11 @@ Or to remove only the opening comment at top:
  列BMI中の数字の表示形式を変える。
  % perltab -pe 'reform "%.2f", F(BMI)'  heightWeightBMI.tsv
 
-=kw -N|--no-head|-F|--field-sep
+=kw -N|--no-head|-F|--field-sep|field-separator
  Given data from a LaTeX table, separated by ' & ', and with no head line; reformat the numbers in columns 2-4.
  LaTeX表のデータ(ラベル行無しで、列は' & 'で区切られている形式)で２〜４番号の列中の数値の小数点以下の桁数を変更する。
  % perltab -N -F=' & '  -pe 'reform "%5.3f", @F[2..4]'  tableBody.tex
-=wk -N|--no-head|-F|--field-sep
+=wk -N|--no-head|-F|--field-sep|field-separator
 =wk reform
 
  Extract data fields 1,2 for rows in which both have a numerical value.
