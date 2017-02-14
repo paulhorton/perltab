@@ -668,7 +668,7 @@ sub dieProg{   say STDERR 'perltab internal programming error: ', @_;  exit 1   
 
 
 #To hold information passed in from user via command line or script file.
-my %opt_=  (fieldSeparator=> "\t");
+my %opt_=  (inFieldSep=> "\t");
 
 { my %optSpecs=  qw(
 BEGIN             b|begin=*
@@ -681,7 +681,7 @@ dittoMark           ditto-mark=
 ROWS              e|rows-script=*
 ROWS2            e2|rows-script2=*
 scriptFile        f|script-file=
-fieldSeparator    F|field-sep=
+inFieldSep        F|field-sep=
 grepP             g|grep
 help             h!|help:HELP
 HEAD              H|head-script=*
@@ -691,6 +691,7 @@ modules           M|module=
 printScriptP      n|print-script
 noHeadP           N|no-head
 outputFile        o|output-file=
+outFieldSep      OF|output-field-sep=
 printEachRowP     p|print-each-row
 SORT_KEY          s|sort=*
 SORT_KEY2        s2|sort2=*
@@ -712,7 +713,6 @@ END2             z2|end2=*
   #Extract option specification from $optSpecs and set %opt;
   while(   my($optName, $spec)=  each %optSpecs   ){
 
-      
       $opt_{$optName} //= undef;   #Ensure that %opt_ has an entry for all options.
 
       if(     $spec =~ s/=[*]/=/   ){     $scriptOptS{$optName}= undef   }
@@ -721,7 +721,7 @@ END2             z2|end2=*
       elsif(  $spec =~ s/:(\S*)//  ){        $default{$optName}=  $1     }
 
       for my $alias(  split '\|', $spec  ){
-          if(   $alias !~ s/!$//   and  length $alias == 1   ){   #spec 'h!|help:HELP', 'h' is an opt, but not a flag.
+          if(   $alias !~ s/!$//  and  length $alias == 1   ){   #spec 'h!|help:HELP', is not bundle-able
               $bundleOpt  .= $alias;
               $bundleFlag .= $alias    unless exists $needVal_optS{$optName}
           }
@@ -730,6 +730,7 @@ END2             z2|end2=*
       }
   }#WHILE  ($optName, $spec)=  each %optSpec
   dlock $bundleFlag;  dlock $bundleOpt;  lock_hash %default;  lock_hash %needVal_optS;  lock_hash %toOptName;  lock_hash %scriptOptS;
+
 
   my sub parseScriptFile{
       my $optKey=  shift;
@@ -773,7 +774,8 @@ END2             z2|end2=*
           }
       }
       return @ARGVfromFile;
-  }
+  }#my sub parseScriptFile
+
 
   my $ARGVforPrintScript= '';
   my $OPT_VALseparator= ' ';
@@ -827,18 +829,23 @@ END2             z2|end2=*
       }
       my $optName=   $toOptName{$optStem};
       if(   exists $needVal_optS{$optName}   ){
-          next   if $opt_{scriptFile} && $opt_{$optName};   #Script already read in from script file.
-
           my $val=   shift @ARGV //  _dieUsage(  "No value given for option '$arg'"=>
                                                  "オプション'${arg}'の値が指定されていない。");
-          doctorScript( $val, $arg,
-                        _ll("option '$arg' expects a script as its argument, "=>
-                            "オプション'${arg}'の引数はスクリプトのはずであるが、"))
-              if  exists $scriptOptS{$optName};
+          if(  exists $scriptOptS{$optName}  ){
+              if(  $opt_{scriptFile}  ){
+                  _dieUsage(  "Tried to stipulate script with '$arg', but a script file has already been stipulated via -f"=>
+                              "'{$arg}'でスクリプトを指定しようとしているが、スクリプトは既に-f|--script-fileのスクリプト・ファイルで指定している。");
+              }
+
+              doctorScript( $val, $arg,
+                            _ll("option '$arg' expects a script as its argument, "=>
+                                "オプション'${arg}'の引数はスクリプトのはずであるが、"))
+          }
 
           _dieUsage(  "'$val' looks like an option, but is positioned like a value for option '$arg'.  If '$val' really is the value for option $arg, use '$arg=$val'."=>
                       "'${val}'は自分自身がオプションに見えるが、コマンド行での位置を考慮すると'${arg}'の値にも見える。もし'${val}'は本当に'${arg}'の値なら、'$arg=${val}'で指定できる。")
               if  $val=~ /^-/  and  !exists $seenValS{$val};
+
           $opt_{$optName}=  $val;
           $ARGVforPrintScript.=  " $arg$OPT_VALseparator$val"   if !exists $scriptOptS{$optName};
       }elsif(   exists $default{$optName}   ){
@@ -853,6 +860,7 @@ END2             z2|end2=*
       }
       $OPT_VALseparator=  ' ';
   }#WHILE  @ARGV
+  $opt_{outFieldSep}  //=  $opt_{inFieldSep};
   lock_hash %opt_;
 
 
@@ -1030,7 +1038,7 @@ state sub curPass(){  $curPass  }
                                        '-in2オプションを指定したが、２回目読み込み時のスクリプト(例えば、-e2又は-d2のオプション)は指定していない');
   }
 
-  $, =  $opt_{fieldSeparator};
+  $, =  $opt_{outFieldSep};
   if(  $script_{SORT_KEY}   ){   openAndProcessInputFiles_forSorting  @inFilename1   }
   else                       {   openAndProcessInputFiles             @inFilename1   }
   _runScript 'END';
@@ -1211,7 +1219,7 @@ state sub printSection_ifNotYetPrinted(){
           $head= $curRow;  $ih= 1;
 
           dunlock \@Hin;
-          @H= @Hin= @F= @Fin=  split $opt_{fieldSeparator}, $curRow, -1;
+          @H= @Hin= @F= @Fin=  split $opt_{inFieldSep}, $curRow, -1;
           dlock \@Hin;
 
           $maxNumColsToExpect=  @Hin;
@@ -1243,7 +1251,7 @@ state sub printSection_ifNotYetPrinted(){
 
           chomp(  $curRow= $_  );
 
-          @Fin=   split  $opt_{fieldSeparator},  $curRow,  -1;
+          @Fin=   split  $opt_{inFieldSep},  $curRow,  -1;
 
           $maxNumColsToExpect //=  @Fin;
           if(  @Fin > $maxNumColsToExpect   ){
@@ -1703,7 +1711,7 @@ sub sortData_andPrint{
     #Print results of sort.
     if(  defined dittoMark  ){
         for  my $i  (0..$#sortPerm){
-            my @F= my @Fverb=   split  $opt_{fieldSeparator},  $sort_row[ $sortPerm[$i]],  -1;
+            my @F= my @Fverb=   split  $opt_{inFieldSep},  $sort_row[ $sortPerm[$i]],  -1;
             $i  and  $F[$_] eq $FprevIn[$_]   and   $F[$_]= dittoMark    for 0..$#F;
             print  $section__newBeg_comment{$i}   if exists $section__newBeg_comment{$i};
             say @F;    @FprevIn= @Fverb;
@@ -1753,7 +1761,7 @@ sub processInputFile_forSorting{
         $prevSectionRN= undef;
         undef %N;
         $head=  $curRow;
-        @H =  split $opt_{fieldSeparator}, $curRow, -1;
+        @H =  split $opt_{inFieldSep}, $curRow, -1;
         for  my $i  (0..$#H){
             my $label=  $H[$i];
             _diell(  "Input error; Duplicate label '$label'", "入力エラー、ラベル${label}が重複している。"  )    if exists $N{$label};
@@ -1777,12 +1785,12 @@ sub processInputFile_forSorting{
         
         chomp(  $curRow= $_  );
 
-        @F= @Fin=  split $opt_{fieldSeparator}, $curRow, -1;
+        @F= @Fin=  split $opt_{inFieldSep}, $curRow, -1;
 
         #Store row in sort_row
         if(  defined dittoMark  and  @FprevIn  ){
             $F[$_] eq dittoMark   and   $F[$_]= $FprevIn[$_]    for 0..$#F;
-            push  @sort_row,  join $opt_{fieldSeparator}, @F;}
+            push  @sort_row,  join $opt_{outFieldSep}, @F;}
         else{
             push  @sort_row,  $curRow;
         }
