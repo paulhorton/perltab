@@ -739,8 +739,14 @@ END2             z2|end2=*
 
       $opt_{scriptFile}=~ /[.][ct]sv$/
           and   _dieUsage("filename '$opt_{scriptFile}' looks like a filename of input data file, but is positioned as a script filename."=>
-                          "ファイル名'$opt_{scriptFile}'はスクリプトファイル名の位置にあるが、入力データファイルのファイル名に見える。");
+                          "ファイル名'$opt_{scriptFile}'はスクリプト・ファイル名の位置にあるが、入力データファイルのファイル名に見える。");
 
+      -e $opt_{scriptFile}   or   _dieUsage(  "Script file '$opt_{scriptFile}' does not exist."=>
+                                              "スクリプト・ファイル'$opt_{scriptFile}'は存在しない。"  );
+      -f $opt_{scriptFile}   or   _dieUsage(  "Script file '$opt_{scriptFile}' is not a plain file."=>
+                                              "スクリプト・ファイル'$opt_{scriptFile}'は普通のファイルではない。"  );
+      -r $opt_{scriptFile}   or   _dieUsage(  "Script file '$opt_{scriptFile}' is not readable."=>
+                                              "スクリプト・ファイル'$opt_{scriptFile}'の読込み権限がない。"  );
       open  my $scriptFile, '<', $opt_{scriptFile};
       my $scripts=  do{ local $/; <$scriptFile> };
       my( $ARGVfromFile )=  $scripts=~ /\A#perltab(.*)/g;
