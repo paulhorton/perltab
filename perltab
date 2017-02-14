@@ -968,12 +968,12 @@ looks_like_number missingMark    and
               if -t *STDIN;
       }
       else{
-          -e $pathname   or   _dieUsage(  "Input file '${pathname}' does not exist."=>
-                                          "入力ファイル'${pathname}'は存在しない。"  );
-          -f $pathname   or   _dieUsage(  "Input file '${pathname}' is not a plain file."=>
-                                          "入力ファイル'${pathname}'は普通のファイルではない。"  );
-          -r $pathname   or   _dieUsage(  "Input file '${pathname}' is not readable."=>
-                                          "入力ファイル'${pathname}'の読込み権限がない。"  );
+          -e $pathname   or   _dieUsage(  "Data input file '${pathname}' does not exist."=>
+                                          "データ入力ファイル'${pathname}'は存在しない。"  );
+          -f $pathname   or   _dieUsage(  "Data input file '${pathname}' is not a plain file."=>
+                                          "データ入力ファイル'${pathname}'は普通のファイルではない。"  );
+          -r $pathname   or   _dieUsage(  "Data input file '${pathname}' is not readable."=>
+                                          "データ入力ファイル'${pathname}'の読込み権限がない。"  );
           if(  $opt_{testP}  ){
               open my $inputFile, '<', $pathname   or   _diell("could not open input data file '$pathname', $!"=>
                                                                "入力データファイル'${pathname}が開けなかった。" . decode_utf8 $!);
