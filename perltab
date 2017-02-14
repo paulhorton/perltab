@@ -382,7 +382,7 @@ sub dieProg{   say STDERR 'perltab internal programming error: ', @_;  exit 1   
   #Return language of line $_[0].
   state sub lineLang{
       return 'JPN'    if  $_[0]  =~  /(\p{Hiragana}|\p{Katakana})/;
-      return '---'    if  $_[0]  =~  /^  /;                     #Lines starting with two spaces.
+      return '---'    if  $_[0]  =~  /^  [^-]/ ;                #Lines starting with two spaces (followed by anything but -, for options table).
       return 'ENG'    if  $_[0]  =~  /   [a-zA-Z]+.*[.,:]$/x;   #Lines ending in {.,:} considered English.
       return 'ENG'    if  $_[0]  =~  /^\S[a-zA-Z]+.*    ;$/x;   #Or ending in ';', if flush with the left margin.
       return '---';  #verbatim line.
@@ -452,8 +452,8 @@ sub dieProg{   say STDERR 'perltab internal programming error: ', @_;  exit 1   
               my $breakPos=  textPosAtWidth $termWidth;
               --$breakPos  while
                   $breakPos > 0
-                  and substr( $text, $breakPos, 1   )=~ qr/[])、。]/                     #Bad start
-                  ||  substr( $text, $breakPos-1, 1 )=~ qr/[-[(（「一\#=_a-zA-Z0-9\$@]/  #Bad end
+                  and substr( $text, $breakPos, 1   )=~ qr/[])、。]/                       #Bad line start
+                  ||  substr( $text, $breakPos-1, 1 )=~ qr/[-[(（「参一\#=_a-zA-Z0-9\$@]/  #Bad line end
                   ;
               return $breakPos;
           }
@@ -2268,107 +2268,107 @@ perltabは列に関する以下の変数を提供する。
 =head1  OPTIONS|オプション
 =kw opts
 =kw -b|--begin
-=settab                    ==
- -b|--begin SCRIPT         SCRIPT to execute before reading input.
-|                          入力を読み込む前に実行するスクリプト。
+=settab                      ==
+  -b|--begin SCRIPT          SCRIPT to execute before reading input.
+|                            入力を読み込む前に実行するスクリプト。
 =wk -b|--begin
 =kw -b2|--begin2
- -b2|--begin2 SCRIPT       SCRIPT to execute before reading input for second pass.
-|                          ２回目に入力を読み込む前に実行するスクリプト。
+ -b2|--begin2 SCRIPT         SCRIPT to execute before reading input for second pass.
+|                            ２回目に入力を読み込む前に実行するスクリプト。
 =wk -b2|--begin2
 =kw -c|--count               
- -c|--count                Print number of rows for which the row script returned true (on final pass).
-|                          (最終の入力passで)行スクリプトが真を返した行数を出力する。
+  -c|--count                 Print number of rows for which the row script returned true (on final pass).
+|                            (最終の入力passで)行スクリプトが真を返した行数を出力する。
 =wk -c|--count               
 =kw -d|--data-script         
- -d|--data-script          SCRIPT to run on all but the header row.
-|                          ラベル行(入力の先頭行)以外の行に対して実行するスクリプト。
+  -d|--data-script           SCRIPT to run on all but the header row.
+|                            ラベル行(入力の先頭行)以外の行に対して実行するスクリプト。
 =wk -d|--data-script         
 =kw -d2|--data-script2
- -d2|--data-script2        SCRIPT to run on all but the header row on the second pass.
-|                          ２回目の入力走査で最初の行(ラベル行)以外の行に対して実行するスクリプト。
+ -d2|--data-script2          SCRIPT to run on all but the header row on the second pass.
+|                            ２回目の入力走査で最初の行(ラベル行)以外の行に対して実行するスクリプト。
 =wk -d2|--data-script2
 =kw ditto|-D|--ditto|ditto-mark
- -D|--ditto                When an empty string column value is encountered, substitute value from previous row.
-|                          入力ファイルに空文字列となっている列の値は上の行から取る。つまり空文字列を「同上」と見なす。
- --ditto-mark MARK         Like -D|ditto, but use MARK instead of empty string as ditto marker.
-|                          -D|dittoと似ているか、入力ファイルにあるMARKに一致する値をその上の行から取る。
+  -D|--ditto                 When an empty string column value is encountered, substitute value from previous row.
+|                            入力ファイルに空文字列となっている列の値は上の行から取る。つまり空文字列を「同上」と見なす。
+ --ditto-mark MARK           Like -D|ditto, but use MARK instead of empty string as ditto marker.
+|                            -D|dittoと似ているか、入力ファイルにあるMARKに一致する値をその上の行から取る。
 =wk ditto|-D|--ditto|ditto-mark
 =kw -e|--row-script
- -e|--row-script SCRIPT    SCRIPT to run on each row
-|                          各行に対して実行するスクリプト。
+  -e|--row-script SCRIPT     SCRIPT to run on each row.
+|                            各行に対して実行するスクリプト。
 =wk -e|--row-script
 =kw -e2|--row-script2
- -e2|--row-script2 SCRIPT  SCRIPT to run on each row on the second pass
-|                          ２回目の入力走査で各行に対して実行するスクリプト。
+ -e2|--row-script2 SCRIPT    SCRIPT to run on each row on the second pass.
+|                           ２回目の入力走査で各行に対して実行するスクリプト。
 =wk -e2|--row-script2
 =kw -f|--script-file
- -f|--script-file FILE     Read scripts to execute in from FILE
-|                          実行すべきスクリプトをファイルFILEから読み込む。
+  -f|--script-file FILE      Read scripts to execute in from FILE.
+|                            実行すべきスクリプトをファイルFILEから読み込む。
 =wk -f|--script-file
 =kw -F|--field-sep|field-separator
- -F|--field-sep SEP        Input field separator SEP.  Default to tab.
-|                          入力ファイルの列の区切り文字列SEP。デフォルト値はタブ。
+  -F|--field-sep SEP         Input field separator SEP.  Default to tab.
+|                            入力ファイルの列の区切り文字列SEP。デフォルト値はタブ。
 =wk -F|--field-sep|field-separator
 =kw -g|--grep
- -g|--grep                 grepMode: Print rows for which row script returns true (on final pass).
-|                          grepMode: (最終の入力passで)行スクリプトが真を返した行を出力する。
+  -g|--grep                  grepMode: Print rows for which row script returns true (on final pass).
+|                            grepMode: (最終の入力passで)行スクリプトが真を返した行を出力する。
 =wk -g|--grep
 =kw -h|--help
- -h|--help [TOPIC]         Print help on TOPIC.  e.g. -h 'OPTIONS'. Default TOPIC is HELP.
-|                          TOPICに関する説明を出力する。例えば、-h 'OPTIONS'。省略するとTOPICは'HELP'となる。
+  -h|--help [TOPIC]          Print help on TOPIC.  e.g. -h 'OPTIONS'. Default TOPIC is HELP.
+|                            TOPICに関する説明を出力する。例えば、-h 'OPTIONS'。省略するとTOPICは'HELP'となる。
 =wk -h|--help
 =kw -H|--head-script
- -H|--head-script SCRIPT   SCRIPT to run after reading head row, but before any row script is run.
-|                          先頭行を読み込んだ直後に実行するスクリプト。
+  -H|--head-script SCRIPT    SCRIPT to run after reading head row, but before any row script is run.
+|                            先頭行を読み込んだ直後に実行するスクリプト。
 =wk -H|--head-script
 =kw -N|--no-head|no-head
- -N|--no-head              Do not treat the first (non-comment) line of input files as a head line.
-|                          入力ファイルの先頭を(列ラベルの行として)特別扱いしない。
+  -N|--no-head               Do not treat the first (non-comment) line of input files as a head line.
+|                            入力ファイルの先頭を(列ラベルの行として)特別扱いしない。
 =wk -N|--no-head|no-head
 =kw -n|--print-script
- -n|--print-script         Output script suitable for use with -f|--script-file.  See -h script-file
-|                          -f|--script-fileで使えるスクリプトを出力うる. -h script-fileを参照。
+  -n|--print-script          Output script suitable for use with -f|--script-file.  See -h script-file.
+|                            -f|--script-fileで使えるスクリプトを出力うる. -h script-fileを参照。
 =wk -n|--print-script
 =kw -m|--missing-mark|missing|欠損値
- -m|--missing-mark         String used to mark used to mark missing, default to the empty string.
-|                          欠損値の印となる文字列、デフォルト値は空文字列。
+  -m|--missing-mark          String used to mark used to mark missing, default to the empty string.
+|                            欠損値の印となる文字列、デフォルト値は空文字列。
 =wk -m|--missing-mark|missing|欠損値
 =kw -M|--module
- -M|--module MODULES       MODULES to load before executing any scripts.
-|                          スクリプトを実行する前にをロードしておくべきモジュール名。
+  -M|--module MODULES        MODULES to load before executing any scripts.
+|                            スクリプトを実行する前にをロードしておくべきモジュール名。
 =wk -M|--module
 =kw -o|--output-file
- -o|--output-file FILE     Send output to file named FILE instead of STDOUT.
-|                          標準出力に代わりにファイルFILEに出力する。
+  -o|--output-file FILE      Send output to file named FILE instead of STDOUT.
+|                            標準出力に代わりにファイルFILEに出力する。
 =wk -o|--output-file
 =kw -OF|--OF|--output-field-sep
  -OF|--output-field-sep SEP  Output field separator SEP.  Defaulst to the input field separator.
                              出力時の列の区切文字列SEP.  省略すると入力時の区切文字列は出力にも使われる。
 =wk -OF|--OF|--output-field-sep
 =kw -p|--print-each-row
- -p|--print-each-row       Print @F after executing (the final) row script on each row.
-|                          (最終入力passで)各行に対し行スクリプト実行後に@Fを出力する。
+  -p|--print-each-row        Print @F after executing (the final) row script on each row.
+|                            (最終入力passで)各行に対し行スクリプト実行後に@Fを出力する。
 =wk -p|--print-each-row
 =kw -q|--grep-quiet
- -q|--grep-quiet           perltab process returns 0 if -g option would have found any match rows.
-|                          -gオプションの安静版。行スクリプトが真を返す入力行があれば、perltabプロセスはゼロを返す。
+  -q|--grep-quiet            perltab process returns 0 if -g option would have found any match rows.
+|                            -gオプションの安静版。行スクリプトが真を返す入力行があれば、perltabプロセスはゼロを返す。
 =wk -q|--grep-quiet
 =kw -s|--sort|ソート|整列|並べ替え
- -s|--sort[CMP] SCRIPT     Sort rows by key(s) returned by SCRIPT for each row, according to CMP specification.  See -h sort for more.
-|                          SCRIPTが行ごとに返すキーをCMPで指定した仕様で比較し、行を並べ替える。CMPの仕様について-h sortを参照。
+  -s|--sort[CMP] SCRIPT      Sort rows by key(s) returned by SCRIPT for each row, according to CMP specification.  See -h sort for more.
+|                            SCRIPTが行ごとに返すキーをCMPで指定した仕様で比較し、行を並べ替える。CMPの仕様について-h sortを参照。
 =wk -s|--sort|ソート|整列|並べ替え
 =kw -s2|--sort2|ソート|整列|並べ替え
- -s2|--sort2[CMP] SCRIPT   On second pass, sort rows by key(s) returned by SCRIPT for each row, according to CMP specification.  See -h sort for more.
-|                          ２回目の入力passでSCRIPTが行ごとに返すキーをCMPで指定した仕様で比較し、行を並べ替える。CMPの仕様について-h sortを参照。
+ -s2|--sort2[CMP] SCRIPT     On second pass, sort rows by key(s) returned by SCRIPT for each row, according to CMP specification.  See -h sort for more.
+|                            ２回目の入力passでSCRIPTが行ごとに返すキーをCMPで指定した仕様で比較し、行を並べ替える。CMPの仕様について-h sortを参照。
 =wk -s2|--sort2|ソート|整列|並べ替え
 =kw -V|--version
- -V|--version              Print version number of perltab.
-|                          perltabのバージョン番号を出力する。
+  -V|--version               Print version number of perltab.
+|                            perltabのバージョン番号を出力する。
 =wk -V|--version
 =kw -z|--end
- -z|--end= SCRIPT          SCRIPT to execute after processing all of the input.
-|                          入力全体を処理した後に実行するスクリプト。
+  -z|--end= SCRIPT           SCRIPT to execute after processing all of the input.
+|                            入力全体を処理した後に実行するスクリプト。
 =unsettab
 =wk -z|--end
 =wk opts
