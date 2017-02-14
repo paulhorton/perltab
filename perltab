@@ -2307,8 +2307,8 @@ perltabは列に関する以下の変数を提供する。
 |                          実行すべきスクリプトをファイルFILEから読み込む。
 =wk -f|--script-file
 =kw -F|--field-sep|field-separator
- -F|--field-sep SEP        Field separator SEP for I/O.  Default is tab.
-|                          列の区切り文字SEP。デフォルト値はタブ。
+ -F|--field-sep SEP        Input field separator SEP.  Default to tab.
+|                          入力ファイルの列の区切り文字列SEP。デフォルト値はタブ。
 =wk -F|--field-sep|field-separator
 =kw -g|--grep
  -g|--grep                 grepMode: Print rows for which row script returns true (on final pass).
@@ -2342,6 +2342,10 @@ perltabは列に関する以下の変数を提供する。
  -o|--output-file FILE     Send output to file named FILE instead of STDOUT.
 |                          標準出力に代わりにファイルFILEに出力する。
 =wk -o|--output-file
+=kw -OF|--OF|--output-field-sep
+ -OF|--output-field-sep SEP  Output field separator SEP.  Defaulst to the input field separator.
+                             出力時の列の区切文字列SEP.  省略すると入力時の区切文字列は出力にも使われる。
+=wk -OF|--OF|--output-field-sep
 =kw -p|--print-each-row
  -p|--print-each-row       Print @F after executing (the final) row script on each row.
 |                          (最終入力passで)各行に対し行スクリプト実行後に@Fを出力する。
@@ -2763,6 +2767,12 @@ Or to remove only the opening comment at top:
 =settab    ==
  % perltab -pe '@I= N(height weight); @F[@I]= @F[reverse @I]'  heightWeight.tsv
 =unsettab
+
+=kw -F|-OF|--OF|--field-sep|--output-field-separator|convert|csv|カンマ区切り
+ Convert comma separated fields file into tab separated fields format.
+ カンマ区切り形式ファイルをタブ区切り形式に変換する。
+ % perltab -pF=',' -OF=$'\t'  input.csv
+=wk -F|-OF|--OF|--field-sep|--output-field-separator|convert|csv|カンマ区切り
 
  Given two tsv files:  height.tsv, weight.tsv  with some common IDs but possibly in a different order and only partially overlapping, output a table with column 'weight' from weight.tsv appended onto the table in height.tsv.  The new column will hold the missing value mark for any IDs in height.tsv but absent in weight.tsv.
  IDが一部共通するが行の順番が異なるweight.tsvとheight.tsvという２つのタブ区切りファイルを与えられたら、weight.tsvのweight列を(height.tsv中のID順に従って)最後の列としてweight.tsvに加えた表を出力する。height.tsvのIDの内weight.tsvにないIDがある場合そのIDのweightの値は欠損値として扱う。
