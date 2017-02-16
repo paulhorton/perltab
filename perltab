@@ -2325,10 +2325,10 @@ perltabは列に関する以下の変数を提供する。
   -H|--head-script SCRIPT    SCRIPT to run after reading head row, but before any row script is run.
 |                            先頭行を読み込んだ直後に実行するスクリプト。
 =wk -H|--head-script
-=kw -N|--no-head|no-head
+=kw -N|--no-head|no-head|nohead
   -N|--no-head               Do not treat the first (non-comment) line of input files as a head line.
 |                            入力ファイルの先頭を(列ラベルの行として)特別扱いしない。
-=wk -N|--no-head|no-head
+=wk -N|--no-head|no-head|nohead
 =kw -n|--print-script
   -n|--print-script          Output script suitable for use with -f|--script-file.  See -h script-file.
 |                            -f|--script-fileで使えるスクリプトを出力うる. -h script-fileを参照。
@@ -2840,11 +2840,11 @@ Or to remove only the opening comment at top:
  列BMI中の数字の表示形式を変える。
  % perltab -pe 'reform "%.2f", F(BMI)'  heightWeightBMI.tsv
 
-=kw -N|--no-head|-F|--field-sep|field-separator
+=kw -N|--no-head|nohead|-F|--field-sep|field-separator
  Given data from a LaTeX table, separated by ' & ', and with no head line; reformat the numbers in columns 2-4.
  LaTeX表のデータ(ラベル行無しで、列は' & 'で区切られている形式)で２〜４番号の列中の数値の小数点以下の桁数を変更する。
  % perltab -N -F=' & '  -pe 'reform "%5.3f", @F[2..4]'  tableBody.tex
-=wk -N|--no-head|-F|--field-sep|field-separator
+=wk -N|--no-head|nohead|-F|--field-sep|field-separator
 =wk reform
 
 =kw number|numeric|isnum|数値
