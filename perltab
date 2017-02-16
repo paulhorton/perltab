@@ -2648,7 +2648,7 @@ Or to remove only the opening comment at top:
  @STRINGに空の文字列が含まれていなければ真を返す。
 =wk nomt|noempty|no empty|empty
 
-=kw number|numeric|数値
+=kw number|numeric|isnum|数値
 =kw num
  sub num( ARG )
  Returns true if ARG looks like a number.  $_ used when ARG is omitted.
@@ -2703,7 +2703,7 @@ Or to remove only the opening comment at top:
  @VALの先頭要素をbemin( @VAL )のように最小値にし、@VALの２番目の要素をbemax( @VAL )にする。
 =wk bemax|bemin|beminmax
 
-=wk number|numeric|数値
+=wk number|numeric|isnum|数値
 
 =head2  Other Functions|その他の関数
 
@@ -2839,9 +2839,23 @@ Or to remove only the opening comment at top:
 =wk -N|--no-head|-F|--field-sep|field-separator
 =wk reform
 
- Extract data fields 1,2 for rows in which both have a numerical value.
+=kw number|numeric|isnum|数値
+=kw speak|nums
+ One way to print data in column 1 for rows in which it has a numerical value.
+ 列１のデータの内、数値となっている行を表示する方法のひとつ。
+ % perltab -d 'speak nums @F[1]'  heightWeight.tsv
+=wk speak|nums
+
+=kw donum
+ One way to print data in column 1 for rows in which it has a numerical value.
+ 列１のデータの内、数値となっている行を表示する方法のひとつ。
+ % perltab -d 'donum {say} @F[1]'  heightWeight.tsv
+
+ Print data in colums 1,2 for rows in which both have a numerical value.
  列1,2のデータの内、両方が数値となっている行を表示する。
  % perltab -d 'donum {say @_} @F[1,2]'  heightWeight.tsv
+=wk donum
+=wk number|numeric|isnum|数値
 
  Display column labels with their numbers.
  タブ区切りファイルのラベルとその番号を表示する。
