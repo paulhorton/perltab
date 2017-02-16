@@ -2849,7 +2849,7 @@ Or to remove only the opening comment at top:
 =kw donum
  One way to print data in column 1 for rows in which it has a numerical value.
  列１のデータの内、数値となっている行を表示する方法のひとつ。
- % perltab -d 'donum {say} @F[1]'  heightWeight.tsv
+ % perltab -d 'donum {say} $F[1]'  heightWeight.tsv
 
  Print data in colums 1,2 for rows in which both have a numerical value.
  列1,2のデータの内、両方が数値となっている行を表示する。
