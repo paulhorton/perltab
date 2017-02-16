@@ -2827,11 +2827,13 @@ Or to remove only the opening comment at top:
  % perltab -e '@V= nextNum F(height weight);  say 10000*$V[1]/$V[0]**2'   heightWeight.tsv
 =unsettab
 
- Add BMI (Body Mass Index) column to table in heightWeight.tsv, skipping missing (empty string) values.
- 欠損値(空文字列)を飛ばしながら、体格指数"BMI"の列をheightWeight.tsvの表に加える。
+=kw insaft
+ Add BMI (Body Mass Index) column to table in heightWeight.tsv, skipping missing (empty string) values.  New column is placed after "weight" column.
+ 欠損値(空文字列)を飛ばしながら、体格指数"BMI"の列をheightWeight.tsvの表に加える。新しい列はweight列の後に入る。
 =settab    ==
- % perltab -pe 'insAft "weight", "BMI"=>doNum{10000*$_[1]/$_**2} F(height weight)'  heightWeight.tsv
+ % perltab -pe 'insAft  qw(weight BMI)=> doNum{10000*$_[1]/$_**2} F(height weight)'  heightWeight.tsv
 =unsettab
+=wk insaft
 
 =kw reform
  Reformat numbers in field 'BMI'.
