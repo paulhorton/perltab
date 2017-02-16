@@ -2811,9 +2811,11 @@ Or to remove only the opening comment at top:
  c,d,eのいづれかから始まるラベルを削除する。
  % perltab -pe 'del grep /^[cde]/, @H'  animals.tsv
 
+=kw speak|missing
  Echo input file, skipping data lines with any missing (empty string) values.
  欠損値(空文字列)を含むデータ行を飛ばしながら入力ファイルを表示する。
  % perltab -e 'speak @F'  heightWeight.tsv
+=wk speak|missing
 
  Output BMI (Body Mass Index) from rows in which both height and weight have values.
  身長と体重の値がふたつとも記録してある行の体格指数"BMI"を表示する。
