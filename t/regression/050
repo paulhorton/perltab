@@ -1,0 +1,7 @@
+One way to print data in column 1 for rows in which it has a numerical value.
+perltab --test -d 'speak nums $F[1]'  t/regression/input/heightWeight.tsv
+MD5:t/regression/input/heightWeight.tsv	wqbXPt1Elw/A/OE7HHxj2Q
+160
+175
+180
+170
