@@ -1121,13 +1121,17 @@ sub N{
         length $qry   or   _diell('Empty string given as column label.'=>
                                   '列ラベルとして空文字列を受け渡された。');
 
-        exists $N{$qry}   and       push( @retVal,  $N{$qry}  )                          ,next ARG;
+        exists $N{$qry}   and       push( @retVal,  $N{$qry}  ),  next ARG;
 
         for  my $prefRx  (qr/^$qry$/, qr/(?i:^$qry$)/, qr/^$qry/, qr/(?i:^$qry)/){
             my @match=  grep /$prefRx/, @H   or   next;
-            @match == 1   and       push  @retVal,  $N{$qry}= $N{ $match[0]}             ;next ARG;
-            _diell("String '$qry' matches prefices of column labels: '$match[0]', '$match[1]'..."=>
-                   "文字列'${qry}'は複数の列ラベル'$match[0]', '$match[1]'...の前置詞である。");
+            if(  @match == 1  ){
+                push  @retVal,  $N{$qry}= $N{ $match[0]};         next ARG;
+            }
+            else{
+                _diell("String '$qry' matches prefices of column labels: '$match[0]', '$match[1]'..."=>
+                       "文字列'${qry}'は複数の列ラベル'$match[0]', '$match[1]'...の前置詞である。");
+            }
         }
 
         my @cand=  candMistypedLabel $qry;
