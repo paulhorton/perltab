@@ -181,6 +181,19 @@ my @H;           #To hold head fields unless $opt_{noHeadP}.
 }
 
 
+#  Print $msg and usage info to STDERR and STDOUT.
+#  Or just to STDERR, if both STDOUT and STDERR are directed to the same inode.
+sub _dieUsage{
+    my $msg=  _ll(@_);
+    $msg =  _ll('perltab command line parsing error; ', 'perltabコマンド行処理エラー、') . $msg . "\n";
+    $msg.=      "Usage: perltab [opts...] tabSeparatedFieldsInputFile...\n       perltab -h";
+
+    say STDERR $msg;
+    say STDOUT $msg    if  (stat STDERR)[0] != (stat STDOUT)[0]  or  (stat STDERR)[1] != (stat STDOUT)[1];
+
+    exit 64;
+}
+
 
 { my $compilingScript_;
   my $scriptDesc_;
@@ -356,20 +369,6 @@ my %script_;
 
 
 sub _diell{   die  _ll(@_) . "\n"   }
-
-
-#  Print $msg and usage info to STDERR and STDOUT.
-#  Or just to STDERR, if both STDOUT and STDERR are directed to the same inode.
-sub _dieUsage{
-    my $msg=  _ll(@_);
-    $msg =  _ll('perltab command line parsing error; ', 'perltabコマンド行処理エラー、') . $msg . "\n";
-    $msg.=      "Usage: perltab [opts...] tabSeparatedFieldsInputFile...\n       perltab -h";
-
-    say STDERR $msg;
-    say STDOUT $msg    if  (stat STDERR)[0] != (stat STDOUT)[0]  or  (stat STDERR)[1] != (stat STDOUT)[1];
-
-    exit 64;
-}
 
 
 #Intentionally named dieProg instead of _dieProg, because I Would like to declare
