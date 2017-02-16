@@ -2843,7 +2843,7 @@ Or to remove only the opening comment at top:
 =kw speak|nums
  One way to print data in column 1 for rows in which it has a numerical value.
  列１のデータの内、数値となっている行を表示する方法のひとつ。
- % perltab -d 'speak nums @F[1]'  heightWeight.tsv
+ % perltab -d 'speak nums $F[1]'  heightWeight.tsv
 =wk speak|nums
 
 =kw donum
