@@ -37,25 +37,6 @@ use feature qw(lexical_subs say state);
 #Return true if @_ contains no empty strings
 sub nomt{  all {length} @_  }
 
-#Return true iff argument looks like a number.  $_ used if argument omitted.
-sub num(_){   looks_like_number $_[0]   }
-
-#Return true iff argument looks like a number (NaN excluded)  $_ used if argument omitted.
-sub Num(_){   $_[0] !~ /^-?nan$/i  and  looks_like_number $_[0]  }
-
-#Return $_[0] if it looks like a number, otherwise return 0.  $_ used if argument omitted.
-sub num0(_){  looks_like_number $_[0] ? $_[0] : 0  }
-
-#Return $_[0] if it looks like a number, otherwise return 1.  $_ used if argument omitted.
-sub num1(_){  looks_like_number $_[0] ? $_[0] : 1  }
-
-#Return true if all elements of @_ look like numbers.
-sub allNum{   all  {looks_like_number $_}  @_   }
-sub allnum{   all  {looks_like_number $_}  @_   }
-
-#Filter non-number elements out of list
-sub nums{   grep  {looks_like_number $_}  @_   }
-
 { state $printfWantsNumRx=  qr{ % [-+.#0-9]* l? [defgoux] }x;
 
   #Return @_ sprintf formated according to FORMAT.
@@ -89,6 +70,8 @@ sub speak{    say @_   if  @_  and  all {length} @_    }
 sub dit{    say   map  {$_ // missingMark()}  @_    }
 
 
+sub numP(_);  #Declared here, but defined later after defining %opt_.
+
 #doNum( SUB, val... ).
 #If all vals look numerical, run SUB(val...) and forward its return value,
 #otherwise return the missing value mark.
@@ -99,9 +82,9 @@ sub doNum(&@){
     @_   or   _diell(  "doNum expected 2 or more arguments, but got only one.  Should look like 'donum( sub{CODE}, VAL )'.",
                        "doNumはふたつ以上の引数が必要であるが、ひとつしか受け取らなかった。donumは'donum( sub{CODE}, VAL )'のように使う。");
     
-    return missingMark()    if  any {!looks_like_number $_} @_;
+    return missingMark()    if  any {!numP} @_;
 
-    return &$sub( @_ )   for @_;   #for aliases $_ to $_[0] in sub.
+    return &$sub( @_ )   for @_;   #To alias $_ to $_[0] in SUB.
 }
 sub donum(&@){  goto &doNum  }    
 
@@ -667,7 +650,7 @@ sub dieProg{   say STDERR 'perltab internal programming error: ', @_;  exit 1   
 
 
 #To hold information passed in from user via command line or script file.
-my %opt_=  (inFieldSep=> "\t");
+my %opt_=  (inputFieldSep=> "\t");
 
 { my %optSpecs=  qw(
 BEGIN             b|begin=*
@@ -680,18 +663,20 @@ dittoMark           ditto-mark=
 ROWS              e|rows-script=*
 ROWS2            e2|rows-script2=*
 scriptFile        f|script-file=
-inFieldSep        F|field-sep=
+inputFieldSep     F|field-sep=
 grepP             g|grep
 help             h!|help:HELP
 HEAD              H|head-script=*
 HEAD2            H2|head-script2=*
+infP              inf
 missingMark       m|missing-mark=
 modules           M|module=
-printScriptP      n|print-script
+nanP              nan
 noHeadP           N|no-head
 outputFile        o|output-file=
-outFieldSep      OF|output-field-sep=
+outputFieldSep   OF|output-field-sep=
 printEachRowP     p|print-each-row
+printScriptP      n|print-script
 SORT_KEY          s|sort=*
 SORT_KEY2        s2|sort2=*
 grepQuietP        q|grep-quiet
@@ -859,7 +844,7 @@ END2             z2|end2=*
       }
       $OPT_VALseparator=  ' ';
   }#WHILE  @ARGV
-  $opt_{outFieldSep}  //=  $opt_{inFieldSep};
+  $opt_{outputFieldSep}  //=  $opt_{inputFieldSep};
   lock_hash %opt_;
 
 
@@ -1006,6 +991,55 @@ if(  $opt_{outputFile}  ){
 }
 
 
+sub _warn{
+    select(   (select(STDERR), $|=1)[0]    );
+    $|= 1;  print'';
+    say STDERR  'perltab' . _ll(' warning: '=>'警告：') . _ll(@_);
+    $|= 0;
+}
+
+
+# ────────────────────  Numish Related Utilities  ────────────────────
+#Return true iff $_[0] is numish.  $_ used if argument omitted.
+#Sends warning to stderr the first time a special value is skipped.
+sub numP(_){
+    state %warnedSpecialNumericalValS;
+    looks_like_number $_[0]   or   return undef;
+    if(  $_[0]=~ /^-?inf$/i  ){
+        $opt_{infP}   and   return 't';
+        if(  !exists $warnedSpecialNumericalValS{ $_[0] }  ){
+            _warn("Skipping special numerical value '$_[0]'.  Use --inf option to treat inf values as numbers."=>
+                  "特殊数値'$_[0]'を飛ばしている。オプション--infを指定するとinf値は数値として扱われる。");
+            $warnedSpecialNumericalValS{ $_[0] }=  undef;
+        }
+        return undef;
+    }
+    if(  $_[0]=~ /^-?nan$/i  ){
+        $opt_{nanP}   and   return 't';
+        if(  !exists $warnedSpecialNumericalValS{ $_[0] }  ){
+            _warn("Skipping special numerical value '$_[0]'.  Use --nan option to treat nan values as numbers."=>
+                  "特殊数値'$_[0]'を飛ばしている。オプション--nanを指定するとnan値は数値として扱われる。");
+            $warnedSpecialNumericalValS{ $_[0] }=  undef;
+        }
+        return undef;
+    }
+    return 't';  #Non-special number.
+}
+
+
+#Return $_[0] if it looks like a number, otherwise return 0.  $_ used if argument omitted.
+sub num0(_){  numP $_[0] ? $_[0] : 0  }
+
+#Return $_[0] if it looks like a number, otherwise return 1.  $_ used if argument omitted.
+sub num1(_){  numP $_[0] ? $_[0] : 1  }
+
+#Return true if all elements of @_ look like numbers.
+sub allNum{   all  {numP $_}  @_   }
+sub allnum{   all  {numP $_}  @_   }
+
+#Filter non-number elements out of list
+sub nums{   grep  {numP $_}  @_   }
+
 
 
 
@@ -1037,7 +1071,7 @@ state sub curPass(){  $curPass  }
                                        '-in2オプションを指定したが、２回目読み込み時のスクリプト(例えば、-e2又は-d2のオプション)は指定していない');
   }
 
-  $, =  $opt_{outFieldSep};
+  $, =  $opt_{outputFieldSep};
   if(  $script_{SORT_KEY}   ){   openAndProcessInputFiles_forSorting  @inFilename1   }
   else                       {   openAndProcessInputFiles             @inFilename1   }
   _runScript 'END';
@@ -1222,7 +1256,7 @@ state sub printSection_ifNotYetPrinted(){
           $head= $curRow;  $ih= 1;
 
           dunlock \@Hin;
-          @H= @Hin= @F= @Fin=  split $opt_{inFieldSep}, $curRow, -1;
+          @H= @Hin= @F= @Fin=  split $opt_{inputFieldSep}, $curRow, -1;
           dlock \@Hin;
 
           $maxNumColsToExpect=  @Hin;
@@ -1254,7 +1288,7 @@ state sub printSection_ifNotYetPrinted(){
 
           chomp(  $curRow= $_  );
 
-          @Fin=   split  $opt_{inFieldSep},  $curRow,  -1;
+          @Fin=   split  $opt_{inputFieldSep},  $curRow,  -1;
 
           $maxNumColsToExpect //=  @Fin;
           if(  @Fin > $maxNumColsToExpect   ){
@@ -1714,7 +1748,7 @@ sub sortData_andPrint{
     #Print results of sort.
     if(  defined dittoMark  ){
         for  my $i  (0..$#sortPerm){
-            my @F= my @Fverb=   split  $opt_{inFieldSep},  $sort_row[ $sortPerm[$i]],  -1;
+            my @F= my @Fverb=   split  $opt_{inputFieldSep},  $sort_row[ $sortPerm[$i]],  -1;
             $i  and  $F[$_] eq $FprevIn[$_]   and   $F[$_]= dittoMark    for 0..$#F;
             print  $section__newBeg_comment{$i}   if exists $section__newBeg_comment{$i};
             say @F;    @FprevIn= @Fverb;
@@ -1764,7 +1798,7 @@ sub processInputFile_forSorting{
         $prevSectionRN= undef;
         undef %N;
         $head=  $curRow;
-        @H =  split $opt_{inFieldSep}, $curRow, -1;
+        @H =  split $opt_{inputFieldSep}, $curRow, -1;
         for  my $i  (0..$#H){
             my $label=  $H[$i];
             _diell(  "Input error; Duplicate label '$label'", "入力エラー、ラベル${label}が重複している。"  )    if exists $N{$label};
@@ -1788,12 +1822,12 @@ sub processInputFile_forSorting{
         
         chomp(  $curRow= $_  );
 
-        @F= @Fin=  split $opt_{inFieldSep}, $curRow, -1;
+        @F= @Fin=  split $opt_{inputFieldSep}, $curRow, -1;
 
         #Store row in sort_row
         if(  defined dittoMark  and  @FprevIn  ){
             $F[$_] eq dittoMark   and   $F[$_]= $FprevIn[$_]    for 0..$#F;
-            push  @sort_row,  join $opt_{outFieldSep}, @F;}
+            push  @sort_row,  join $opt_{outputFieldSep}, @F;}
         else{
             push  @sort_row,  $curRow;
         }
@@ -2303,7 +2337,7 @@ perltabは列に関する以下の変数を提供する。
 =wk -e|--row-script
 =kw -e2|--row-script2
  -e2|--row-script2 SCRIPT    SCRIPT to run on each row on the second pass.
-|                           ２回目の入力走査で各行に対して実行するスクリプト。
+|                            ２回目の入力走査で各行に対して実行するスクリプト。
 =wk -e2|--row-script2
 =kw -f|--script-file
   -f|--script-file FILE      Read scripts to execute in from FILE.
@@ -2329,10 +2363,10 @@ perltabは列に関する以下の変数を提供する。
   -N|--no-head               Do not treat the first (non-comment) line of input files as a head line.
 |                            入力ファイルの先頭を(列ラベルの行として)特別扱いしない。
 =wk -N|--no-head|no-head|nohead
-=kw -n|--print-script
-  -n|--print-script          Output script suitable for use with -f|--script-file.  See -h script-file.
-|                            -f|--script-fileで使えるスクリプトを出力うる. -h script-fileを参照。
-=wk -n|--print-script
+=kw --inf|inf|num|number|numeric|isnum|数値
+ --inf                       Treat inf values as numbers.  Affects behavior of numP() functions using numP() such as donum() and nums().
+|                            inf値を数値と見なす。関数numP()及びdonum()やnums()のようなnumP()を使う関数に影響する。
+=wk --inf|inf|num|number|numeric|isnum|数値
 =kw -m|--missing-mark|missing|欠損値
   -m|--missing-mark          String used to mark used to mark missing, default to the empty string.
 |                            欠損値の印となる文字列、デフォルト値は空文字列。
@@ -2341,18 +2375,26 @@ perltabは列に関する以下の変数を提供する。
   -M|--module MODULES        MODULES to load before executing any scripts.
 |                            スクリプトを実行する前にをロードしておくべきモジュール名。
 =wk -M|--module
+=kw --nan|nan|num|number|numeric|isnum|数値
+ --nan                       Treat nan values as numbers.  Affects behavior of numP() functions using numP() such as donum() and nums().
+|                            nan値を数値と見なす。関数numP()及びdonum()やnums()のようなnumP()を使う関数に影響する。
+=wk --nan|nan|num|number|numeric|isnum|数値
 =kw -o|--output-file
   -o|--output-file FILE      Send output to file named FILE instead of STDOUT.
 |                            標準出力に代わりにファイルFILEに出力する。
 =wk -o|--output-file
 =kw -OF|--OF|--output-field-sep
- -OF|--output-field-sep SEP  Output field separator SEP.  Defaulst to the input field separator.
+ -OF|--output-field-sep SEP  Output field separator SEP.  Defaults to the input field separator.
                              出力時の列の区切文字列SEP.  省略すると入力時の区切文字列は出力にも使われる。
 =wk -OF|--OF|--output-field-sep
 =kw -p|--print-each-row
   -p|--print-each-row        Print @F after executing (the final) row script on each row.
 |                            (最終入力passで)各行に対し行スクリプト実行後に@Fを出力する。
 =wk -p|--print-each-row
+=kw -n|--print-script
+  -n|--print-script          Output script suitable for use with -f|--script-file.  See -h script-file.
+|                            -f|--script-fileで使えるスクリプトを出力うる. -h script-fileを参照。
+=wk -n|--print-script
 =kw -q|--grep-quiet
   -q|--grep-quiet            perltab process returns 0 if -g option would have found any match rows.
 |                            -gオプションの安静版。行スクリプトが真を返す入力行があれば、perltabプロセスはゼロを返す。
@@ -2652,24 +2694,23 @@ Or to remove only the opening comment at top:
  @STRINGに空の文字列が含まれていなければ真を返す。
 =wk nomt|noempty|no empty|empty
 
-=kw number|numeric|isnum|数値
-=kw num
- sub num( ARG )
+=kw numeric|数値
+=kw --inf|inf|--nan|nan|num|number|isnum
+=kw nump
+ sub numP( ARG )
  Returns true if ARG looks like a number.  $_ used when ARG is omitted.
+ inf and nan values are treated as numbers when the respective --inf and --nan options are given.
  ARGが数値に見える場合、真を返す。ARGを省略すると$_が使われる。
-
- sub Num( ARG )
- Like num( ARG ), except 'NaN' is not accepted as a number.
- num( ARG )と同様であるが、'NaN'は数値と見なされない。
+ --infと--nanのオプションを指定するとinf値とnan値はそれぞれ数値として扱われる。
+=wk nump
 
  sub num0( ARG )
- Returns ARG if it loos like a number, otherwise 0.  $_ used when ARG is omitted.
+ Returns ARG if , otherwise 0.  $_ used when ARG is omitted.
  ARGが数値に見えればARGを返し、そうでなければ０を返す。ARGを省略すると$_が使われる。
 
  sub num1( ARG )
  Returns ARG if it loos like a number, otherwise 1.  $_ used when ARG is omitted.
  ARGが数値に見えればARGを返し、そうでなければ１を返す。ARGを省略すると$_が使われる。
-=wk num
 
 =kw allnum
  sub allNum( @ARG )
@@ -2692,6 +2733,7 @@ Or to remove only the opening comment at top:
  @ARGに含まれている数値を返す。
 =wk nums
 =wk valuefilters|value filters|値フィルター
+=wk --inf|inf|--nan|nan|num|number|isnum
 
 =kw bemax|bemin|beminmax
  sub bemax( @VAL )
@@ -2706,8 +2748,7 @@ Or to remove only the opening comment at top:
  Set first  element of @VAL minimum as in bemin( @VAL ), and second element of @VAL maximum as in bemax( @VAL ).
  @VALの先頭要素をbemin( @VAL )のように最小値にし、@VALの２番目の要素をbemax( @VAL )にする。
 =wk bemax|bemin|beminmax
-
-=wk number|numeric|isnum|数値
+=wk numeric|数値
 
 =head2  Other Functions|その他の関数
 

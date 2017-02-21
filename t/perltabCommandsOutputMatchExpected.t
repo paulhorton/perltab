@@ -15,6 +15,8 @@ use Time::HiRes;
 
 sub max{   $_[0] > $_[1]?  $_[0]  :  $_[1]   }
 
+$ENV{LANG}= 'C';  #Some test output may contain locale dependent warnings.
+
 my $usage=  "Usage: $0 [-atq] [num [num]]\n";
 
 
@@ -121,8 +123,7 @@ for my $num(  $begTestNum..$endTestNum  ){
     my $testFailureMsg=  '';
     my @expectedOutput=  @{ $expectedOutput{$numString} };
 
-    my @actualOutput=  `./$command`;   chomp  for @actualOutput;
-
+    chomp(   my @actualOutput= `./$command 2>&1`   );
 
     #Check if actual output matches expected output and if not tell user where the first difference is.
     my $maxFin=  max $#expectedOutput, $#actualOutput;

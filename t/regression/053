@@ -1,0 +1,16 @@
+Print numerical values in field secsToStart.  Special numerical values inf and nan are included.
+perltab --test --inf --nan -d 'donum {say} F(secsToStart)'  t/regression/input/numsWithInfAndNan.tsv
+MD5:t/regression/input/numsWithInfAndNan.tsv	9biqRu8ws0hnFQH6DGS7Ng
+158.4
+14.9
+13.2
+147.5
+95.5
+nan
+50.0
+inf
+-nan
+35.7
+125.6
+nan
+57.1
