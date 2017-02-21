@@ -2306,24 +2306,24 @@ perltabは列に関する以下の変数を提供する。
 =kw opts
 =kw -b|--begin
 =settab                      ==
-  -b|--begin SCRIPT          SCRIPT to execute before reading input.
+  -b|--begin  SCRIPT         SCRIPT to execute before reading input.
 |                            入力を読み込む前に実行するスクリプト。
 =wk -b|--begin
 =kw -b2|--begin2
- -b2|--begin2 SCRIPT         SCRIPT to execute before reading input for second pass.
-|                            ２回目に入力を読み込む前に実行するスクリプト。
+ -b2|--begin2 SCRIPT         On second pass, SCRIPT to execute before reading input.
+|                            ２回目の入力走査で、入力を読み込む前に実行するスクリプト。
 =wk -b2|--begin2
 =kw -c|--count               
   -c|--count                 Print number of rows for which the row script returned true (on final pass).
-|                            (最終の入力passで)行スクリプトが真を返した行数を出力する。
+|                            (最終の入力走査で)行スクリプトが真を返した行数を出力する。
 =wk -c|--count               
 =kw -d|--data-script         
   -d|--data-script           SCRIPT to run on all but the header row.
 |                            ラベル行(入力の先頭行)以外の行に対して実行するスクリプト。
 =wk -d|--data-script         
 =kw -d2|--data-script2
- -d2|--data-script2          SCRIPT to run on all but the header row on the second pass.
-|                            ２回目の入力走査で最初の行(ラベル行)以外の行に対して実行するスクリプト。
+ -d2|--data-script2          On second pass, SCRIPT to run on all but the header row.
+|                            ２回目の入力走査で、ラベル行(入力の先頭行)以外の行に対して実行するスクリプト。
 =wk -d2|--data-script2
 =kw ditto|-D|--ditto|ditto-mark
   -D|--ditto                 When an empty string column value is encountered, substitute value from previous row.
@@ -2332,12 +2332,12 @@ perltabは列に関する以下の変数を提供する。
 |                            -D|dittoと似ているか、入力ファイルにあるMARKに一致する値をその上の行から取る。
 =wk ditto|-D|--ditto|ditto-mark
 =kw -e|--row-script
-  -e|--row-script SCRIPT     SCRIPT to run on each row.
+  -e|--row-script  SCRIPT    SCRIPT to run on each row.
 |                            各行に対して実行するスクリプト。
 =wk -e|--row-script
 =kw -e2|--row-script2
- -e2|--row-script2 SCRIPT    SCRIPT to run on each row on the second pass.
-|                            ２回目の入力走査で各行に対して実行するスクリプト。
+ -e2|--row-script2 SCRIPT    On second pass, SCRIPT to run on each row.
+|                            ２回目の入力走査で、各行に対して実行するスクリプト。
 =wk -e2|--row-script2
 =kw -f|--script-file
   -f|--script-file FILE      Read scripts to execute in from FILE.
@@ -2349,16 +2349,20 @@ perltabは列に関する以下の変数を提供する。
 =wk -F|--field-sep|field-separator
 =kw -g|--grep
   -g|--grep                  grepMode: Print rows for which row script returns true (on final pass).
-|                            grepMode: (最終の入力passで)行スクリプトが真を返した行を出力する。
+|                            grepMode: (最終の入力走査で)行スクリプトが真を返した行を出力する。
 =wk -g|--grep
 =kw -h|--help
   -h|--help [TOPIC]          Print help on TOPIC.  e.g. -h 'OPTIONS'. Default TOPIC is HELP.
 |                            TOPICに関する説明を出力する。例えば、-h 'OPTIONS'。省略するとTOPICは'HELP'となる。
 =wk -h|--help
 =kw -H|--head-script
-  -H|--head-script SCRIPT    SCRIPT to run after reading head row, but before any row script is run.
+  -H|--head-script  SCRIPT   SCRIPT to run after reading head row, but before any data rows are read.
 |                            先頭行を読み込んだ直後に実行するスクリプト。
 =wk -H|--head-script
+=kw -H2|--head-script2
+ -H2|--head-script2 SCRIPT   On second pass, SCRIPT to run after reading head row, but before any data rows are read.
+|                            ２回目の入力走査で、先頭行を読み込んだ直後に実行するスクリプト。
+=wk -H2|--head-script2
 =kw -N|--no-head|no-head|nohead
   -N|--no-head               Do not treat the first (non-comment) line of input files as a head line.
 |                            入力ファイルの先頭を(列ラベルの行として)特別扱いしない。
@@ -2389,7 +2393,7 @@ perltabは列に関する以下の変数を提供する。
 =wk -OF|--OF|--output-field-sep
 =kw -p|--print-each-row
   -p|--print-each-row        Print @F after executing (the final) row script on each row.
-|                            (最終入力passで)各行に対し行スクリプト実行後に@Fを出力する。
+|                            (最終入力走査で)各行に対し行スクリプト実行後に@Fを出力する。
 =wk -p|--print-each-row
 =kw -n|--print-script
   -n|--print-script          Output script suitable for use with -f|--script-file.  See -h script-file.
@@ -2400,12 +2404,12 @@ perltabは列に関する以下の変数を提供する。
 |                            -gオプションの安静版。行スクリプトが真を返す入力行があれば、perltabプロセスはゼロを返す。
 =wk -q|--grep-quiet
 =kw -s|--sort|ソート|整列|並べ替え
-  -s|--sort[CMP] SCRIPT      Sort rows by key(s) returned by SCRIPT for each row, according to CMP specification.  See -h sort for more.
+  -s|--sort[CMP]  SCRIPT     Sort rows by key(s) returned by SCRIPT for each row, according to CMP specification.  See -h sort for more.
 |                            SCRIPTが行ごとに返すキーをCMPで指定した仕様で比較し、行を並べ替える。CMPの仕様について-h sortを参照。
 =wk -s|--sort|ソート|整列|並べ替え
 =kw -s2|--sort2|ソート|整列|並べ替え
  -s2|--sort2[CMP] SCRIPT     On second pass, sort rows by key(s) returned by SCRIPT for each row, according to CMP specification.  See -h sort for more.
-|                            ２回目の入力passでSCRIPTが行ごとに返すキーをCMPで指定した仕様で比較し、行を並べ替える。CMPの仕様について-h sortを参照。
+|                            ２回目の入力走査で、スクリプトSCRIPTが行ごとに返すキーをCMPで指定した仕様で比較し、行を並べ替える。CMPの仕様について-h sortを参照。
 =wk -s2|--sort2|ソート|整列|並べ替え
 =kw -V|--version
   -V|--version               Print version number of perltab.
