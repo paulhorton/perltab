@@ -1,0 +1,4 @@
+Print minimum and maximum values in secsToStart column.
+perltab -test -d 'beminmax $x, $y, F(secsToStart)' -z 'say "($x ... $y)"'  t/regression/input/numsWithInfAndNan.tsv
+MD5:t/regression/input/numsWithInfAndNan.tsv	9biqRu8ws0hnFQH6DGS7Ng
+(13.2 ... inf)
