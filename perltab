@@ -2904,9 +2904,15 @@ Or to remove only the opening comment at top:
  列１のデータの内、数値となっている行を表示する方法のひとつ。
  % perltab -d 'donum {say} $F[1]'  heightWeight.tsv
 
+=kw --inf|--nan
  Print data in colums 1,2 for rows in which both have a numerical value.
  列1,2のデータの内、両方が数値となっている行を表示する。
  % perltab -d 'donum {say @_} @F[1,2]'  heightWeight.tsv
+
+ As above, print data in colums 1,2 for rows in which both have a numerical value; but treat 'inf', '-inf', 'nan', '-NaN' etc as numerical values.
+ 上記のコマンドと同様、列1,2のデータの内、両方が数値となっている行を表示するが、'inf', '-inf', 'nan', '-NaN'のような特殊な値を数値と見なす。
+ % perltab --inf --nan -d 'donum {say @_} @F[1,2]'  heightWeight.tsv
+=wk --inf|--nan
 =wk donum
 =wk number|numeric|isnum|数値
 
