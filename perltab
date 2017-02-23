@@ -2849,6 +2849,12 @@ Or to remove only the opening comment at top:
  Any unique prefix of the desired column labels will work (see -h label).  Here we assume no other headers starts with 'h' or 'w'.
  列ラベルは一意的に決まる限り、ラベルの前置詞で略しても良い(-h labelを参照)。ここでは'h'と'w'から始まる列ラベルはそれぞれ'height'と'weight'のみと仮定した。
 
+=kw search
+ Print row ID and column label of NaN data entries.
+ NaN値の行IDと列ラベルを表示する。
+ % perltab -e '$F[$_]=~ /^nan/i  and  say F(ID), $H[$_]  for 0..$#F'
+=wk search
+
 =kw swap
  Swap first and final field.
  最初と最後の列を交換する。

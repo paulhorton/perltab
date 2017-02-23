@@ -1,0 +1,5 @@
+Print row ID and column label of NaN data entries.
+perltab -test -e '$F[$_]=~ /^nan/i  and  say F(ID), $H[$_]  for 0..$#F'  t/regression/input/numsWithInfAndNan.tsv
+MD5:t/regression/input/numsWithInfAndNan.tsv	9biqRu8ws0hnFQH6DGS7Ng
+6	secsToStart
+12	secsToStart
