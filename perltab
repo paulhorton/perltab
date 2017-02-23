@@ -63,7 +63,7 @@ sub nomt{  all {length} @_  }
 }
 
 
-#Like say, but does nothing if @STRING is empty or contains any empty strings.
+#Like say, but does nothing if @STRING is empty or contains any empty strings or undef values.
 sub speak{    say @_   if  @_  and  all {length} @_    }
 
 #Like say, but replaces undef arguments with the missing value mark.
@@ -89,6 +89,58 @@ sub doNum(&@){
 sub donum(&@){  goto &doNum  }    
 
 
+#Return true iff NUM1 is greater than NUM2,
+#where NUM1 and NUM2 are assumed to be normal or special {inf, -inf, nan, -nan} numbers.
+# _biggerP( NUM1, NUM2 )
+#Return true iff NUM1 would be a preferable value to NUM2 when looking for big values.
+#For special numbers the preference being  1. inf, 2. normal numbers, 3. nan, 4. -nan 5. -inf
+#Used by bemin.  Could be made public by renaming to lesserP if I find a direct use case.
+sub _biggerP{
+    if(  $_[0]=~ /\d/  ){
+        if(  $_[1]=~ /\d/      ){   return  $_[0] > $_[1]      }
+        if(  $_[1]=~ /^inf$/i  ){   return  undef              }
+        return  't';   # $_[1] ∈ {-inf, nan, -nan}
+    }
+
+    # $_[0] ∈ {inf, -inf, nan, -nan}
+    if(  $_[1]=~ /\d/  ){
+        if(  $_[0]=~ /^inf$/i  ){   return  't'                }
+        return  undef;  # $_[0] ∈ {-inf, nan, -nan}
+    }
+
+    # Both $_[0] and $_[1] are ∈ {inf, -inf, nan, -nan}.
+    if(  $_[0]=~ /^inf$/i  )     {   return   $_[1]!~ /^inf$/i   }
+    if(  $_[0]=~ /^nan$/i  )     {   return(  $_[1]=~ /^-inf$/i  or  $_[1]=~ /^-nan$/i  )}
+    if(  $_[0]=~ /^-nan$/i )     {   return   $_[1]=~ /^-inf$/i  }
+    return  undef;   # $_[0] is -inf
+}#_biggerP
+
+
+# _lesserP( NUM1, NUM2 )
+#Return true iff NUM1 would be a preferable value to NUM2 when looking for small values.
+#For special numbers the preference being  1. -inf, 2. normal numbers, 3. -nan, 4. nan 5. inf
+#Used by bemin.  Could be made public by renaming to lesserP if I find a direct use case.
+sub _lesserP{
+    if(  $_[0]=~ /\d/  ){
+        if(  $_[1]=~ /\d/      ){   return  $_[0] < $_[1]     }
+        if(  $_[1]=~ /^-inf/   ){   return  undef             }
+        return  't';   # $_[1] ∈ {-inf, nan, -nan}
+    }
+
+    # $_[0] ∈ {inf, -inf, nan, -nan}
+    if(  $_[1]=~ /\d/  ){
+        if(  $_[0]=~ /^-inf$/i ){   return  't'               }
+        return  undef;  # $_[0] ∈ {inf, nan, -nan}
+    }
+
+    # Both $_[0] and $_[1] are ∈ {inf, -inf, nan, -nan}.
+    if(  $_[0]=~ /^-inf$/i )    {   return  $_[1]!~ /^-inf$/i  }
+    if(  $_[0]=~ /^-nan$/i )    {   return( $_[1]=~ /^inf$/i  or  $_[1]=~ /^nan$/i  )}
+    if(  $_[0]=~ /^nan$/i  )    {   return  $_[1]=~ /^inf$/i   }
+    return  undef;   # $_[0] is inf
+}#_lesserP
+
+
 #Set first argument to maximum value of all arguments, including itself.
 #undef values are treated as less than any defined value.
 #defined values which do not look like numbers are skipped.
@@ -96,7 +148,7 @@ sub bemax{
     for (@_[1..$#_]){
         if(  defined $_  ){
             looks_like_number $_  or  next;
-            $_[0] = $_    if  !defined $_[0] or $_ > $_[0];
+            $_[0]= $_    if  !defined $_[0]  or  _biggerP( $_, $_[0] );
         }
     }
 }
@@ -106,7 +158,7 @@ sub bemin{
     for (@_[1..$#_]){
         if(  defined $_  ){
             looks_like_number $_  or  next;
-            $_[0] = $_    if  !defined $_[0] or $_ < $_[0];
+            $_[0]= $_    if  !defined $_[0]  or  _lesserP( $_, $_[0] );
         }
     }
 }
@@ -117,14 +169,15 @@ sub beminmax{
     for (@_[2..$#_]){
         if(  defined $_  ){
             looks_like_number $_  or  next;
-            $_[0] = $_    if  !defined $_[0] or $_ < $_[0];
-            $_[1] = $_    if  !defined $_[1] or $_ > $_[1];
+            $_[0]= $_    if  !defined $_[0]  or  _lesserP( $_, $_[0] );
+            $_[1]= $_    if  !defined $_[1]  or  _biggerP( $_, $_[1] );
         }
     }
 }
 
 
-#Construct hash set containing lines of PATH mapped to serial numbers as its elements.
+#SNset( %S, PATHNAME )
+#Construct hash set %S to contain lines of PATH mapped to serial numbers as its elements.
 #Values of elements are set to 1.. in their order in PATH, repeats overwriting.
 sub SNset(  \% $  ){
     my $path=  $_[1];
@@ -2822,10 +2875,16 @@ Or to remove only the opening comment at top:
  % perltab -pF=',' -OF=$'\t'  input.csv
 =wk -F|-OF|--OF|--field-sep|--output-field-separator|convert|csv|カンマ区切り
 
+=kw merge|dit|-in2
  Given two tsv files:  height.tsv, weight.tsv  with some common IDs but possibly in a different order and only partially overlapping, output a table with column 'weight' from weight.tsv appended onto the table in height.tsv.  The new column will hold the missing value mark for any IDs in height.tsv but absent in weight.tsv.
  IDが一部共通するが行の順番が異なるweight.tsvとheight.tsvという２つのタブ区切りファイルを与えられたら、weight.tsvのweight列を(height.tsv中のID順に従って)最後の列としてweight.tsvに加えた表を出力する。height.tsvのIDの内weight.tsvにないIDがある場合そのIDのweightの値は欠損値として扱う。
 =settab     ==
- % perltab  -e '$V{ F(ID) }= $F{weight}'  -e2 'dit @F, $V{ F(ID)}' weight.tsv  -in2 height.tsv
+ % perltab  -e '$V{ F(ID)}= F(weight)'  -e2 'dit @F, $V{ F(ID)}' weight.tsv  -in2 height.tsv
+=unsettab
+An alternative way to do this,
+もうひとつの方法、
+=settab     ==
+ % perltab  -e '$V{ F(ID)}= F(weight)'  -pe2 'insaft -1, "weight", $V{ F(id)} //""'  weight.tsv  -in2 height.tsv
 =unsettab
 
   weight.tsv:         height.tsv:
@@ -2845,6 +2904,7 @@ Or to remove only the opening comment at top:
    6   180     
    1   170     73
   =========================
+=wk merge|dit|-in2
 
  Move column 'ID' to directly after column 'weight'.
  列IDを列weightの後に移動する。

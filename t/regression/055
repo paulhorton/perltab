@@ -1,0 +1,10 @@
+Assuming files heightWeight.tsv and shoeSize.tsv had a field ID and share some IDs, append a column shoeSize from file shoeSize.tsv onto the end of the table in heightWeight.tsv
+perltab --test -e '$S{F(ID)}= F(shoeSize)' -pe2 'insaft -1, "shoeSize", $S{ F(ID)} //""' t/regression/input/shoeSize.tsv -in2 t/regression/input/heightWeight.tsv
+MD5:t/regression/input/shoeSize.tsv	eDSwMVqMmmIPjuDfVsk/ug
+MD5:t/regression/input/heightWeight.tsv	wqbXPt1Elw/A/OE7HHxj2Q
+ID	height	weight	shoeSize
+3	160	50	10
+2	175	78	9
+5		55	11
+6	180		9
+1	170	73	
