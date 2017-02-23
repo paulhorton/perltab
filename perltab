@@ -2852,7 +2852,7 @@ Or to remove only the opening comment at top:
 =kw search
  Print row ID and column label of NaN data entries.
  NaN値の行IDと列ラベルを表示する。
- % perltab -e '$F[$_]=~ /^nan/i  and  say F(ID), $H[$_]  for 0..$#F'
+ % perltab -e '$F[$_]=~ /^nan/i  and  say F(ID), $H[$_]  for 0..$#F'  input.tsv
 =wk search
 
 =kw swap
