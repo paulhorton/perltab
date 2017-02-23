@@ -2881,8 +2881,8 @@ Or to remove only the opening comment at top:
 =settab     ==
  % perltab  -e '$V{ F(ID)}= F(weight)'  -e2 'dit @F, $V{ F(ID)}' weight.tsv  -in2 height.tsv
 =unsettab
-An alternative way to do this,
-もうひとつの方法、
+ An alternative way to do this is:
+ もうひとつの方法、
 =settab     ==
  % perltab  -e '$V{ F(ID)}= F(weight)'  -pe2 'insaft -1, "weight", $V{ F(id)} //""'  weight.tsv  -in2 height.tsv
 =unsettab
