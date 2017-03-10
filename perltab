@@ -15,7 +15,7 @@
 use utf8::all;
 use Encode;
 use Carp;
-use List::Util qw(first max maxstr min minstr reduce shuffle sum);
+use List::Util qw(first max maxstr min minstr reduce shuffle);
 use List::MoreUtils qw(:all);
 use POSIX qw(ceil floor);
 use Scalar::Util qw(looks_like_number dualvar);
@@ -28,6 +28,38 @@ use strict;
 use warnings;
 no warnings  'experimental::lexical_subs';
 use feature qw(lexical_subs say state);
+
+
+
+# Numerical stuff temporarily placed here
+my %numRE_=  (
+    plain   =>   qr/^(?: (?i)   (?:[-+]?)
+             (?: (?=[.]?[0123456789])(?:[0123456789]*) (?:(?:[.])(?:[0123456789]{0,}))? )  (?:(?:[E]) (?:(?:[-+]?)(?:[0123456789]+)) | )
+                     )$/x,
+
+    InfOK   =>   qr/^(?: (?i)   (?:[-+]?)
+      (?:
+        (?:inf)  |
+        (?:  (?: (?=[.]?[0123456789])(?:[0123456789]*) (?:(?:[.])(?:[0123456789]{0,}))? )  (?:(?:[E]) (?:(?:[-+]?)(?:[0123456789]+)) | )  )
+      )              )$/x,
+
+    NanOK   =>   qr/^(?: (?i)   (?:[-+]?)
+      (?:
+        (?:nan)  |
+        (?:  (?: (?=[.]?[0123456789])(?:[0123456789]*) (?:(?:[.])(?:[0123456789]{0,}))? )  (?:(?:[E]) (?:(?:[-+]?)(?:[0123456789]+)) | )  )
+      )              )$/x,
+
+    InfNanOK=>   qr/^(?: (?i)   (?:[-+]?)
+      (?:
+        (?:inf)  |
+        (?:nan)  |
+        (?:  (?: (?=[.]?[0123456789])(?:[0123456789]*) (?:(?:[.])(?:[0123456789]{0,}))? )  (?:(?:[E]) (?:(?:[-+]?)(?:[0123456789]+)) | )  )
+      )              )$/x,
+    );
+
+lock_hash %numRE_;
+
+my $numRE_;
 
 
 #────────────────────   Some subs which do not depend on global vars  ────────────────────
@@ -147,7 +179,7 @@ sub _lesserP{
 sub bemax{
     for (@_[1..$#_]){
         if(  defined $_  ){
-            looks_like_number $_  or  next;
+            /$numRE_/   or   next;
             $_[0]= $_    if  !defined $_[0]  or  _biggerP( $_, $_[0] );
         }
     }
@@ -157,7 +189,7 @@ sub bemax{
 sub bemin{
     for (@_[1..$#_]){
         if(  defined $_  ){
-            looks_like_number $_  or  next;
+            /$numRE_/   or   next;
             $_[0]= $_    if  !defined $_[0]  or  _lesserP( $_, $_[0] );
         }
     }
@@ -168,7 +200,7 @@ sub bemin{
 sub beminmax{
     for (@_[2..$#_]){
         if(  defined $_  ){
-            looks_like_number $_  or  next;
+            /$numRE_/   or   next;
             $_[0]= $_    if  !defined $_[0]  or  _lesserP( $_, $_[0] );
             $_[1]= $_    if  !defined $_[1]  or  _biggerP( $_, $_[1] );
         }
@@ -721,10 +753,10 @@ grepP             g|grep
 help             h!|help:HELP
 HEAD              H|head-script=*
 HEAD2            H2|head-script2=*
-infP              inf
+skipInfP            skipinf
 missingMark       m|missing-mark=
 modules           M|module=
-nanP              nan
+skipNanP            skipnan
 noHeadP           N|no-head
 outputFile        o|output-file=
 outputFieldSep   OF|output-field-sep=
@@ -916,6 +948,9 @@ END2             z2|end2=*
       exit 0;
   }
 
+  $numRE_= $numRE_{$opt_{skipInfP}?  ($opt_{skipNanP}? 'plain' : 'NanOK'   )
+                       :             ($opt_{skipNanP}? 'InfOK' : 'InfNanOK')  };
+
 
   pop @ARGV   if  @ARGV  and  $ARGV[0] eq '--';
   
@@ -1054,31 +1089,7 @@ sub _warn{
 
 # ────────────────────  Numish Related Utilities  ────────────────────
 #Return true iff $_[0] is numish.  $_ used if argument omitted.
-#Sends warning to stderr the first time a special value is skipped.
-sub numP(_){
-    state %warnedSpecialNumericalValS;
-    looks_like_number $_[0]   or   return undef;
-    if(  $_[0]=~ /^-?inf$/i  ){
-        $opt_{infP}   and   return 't';
-        if(  !exists $warnedSpecialNumericalValS{ $_[0] }  ){
-            _warn("Skipping special numerical value '$_[0]'.  Use --inf option to treat inf values as numbers."=>
-                  "特殊数値'$_[0]'を飛ばしている。オプション--infを指定するとinf値は数値として扱われる。");
-            $warnedSpecialNumericalValS{ $_[0] }=  undef;
-        }
-        return undef;
-    }
-    if(  $_[0]=~ /^-?nan$/i  ){
-        $opt_{nanP}   and   return 't';
-        if(  !exists $warnedSpecialNumericalValS{ $_[0] }  ){
-            _warn("Skipping special numerical value '$_[0]'.  Use --nan option to treat nan values as numbers."=>
-                  "特殊数値'$_[0]'を飛ばしている。オプション--nanを指定するとnan値は数値として扱われる。");
-            $warnedSpecialNumericalValS{ $_[0] }=  undef;
-        }
-        return undef;
-    }
-    return 't';  #Non-special number.
-}
-
+sub numP(_){   $_[0]=~ /$numRE_/? 't' : undef   }
 
 #Return $_[0] if it looks like a number, otherwise return 0.  $_ used if argument omitted.
 sub num0(_){  numP $_[0] ? $_[0] : 0  }
@@ -2190,6 +2201,7 @@ sub sortKeylev_recurseOnTies{
 
 
 
+
 __DATA__
 =head1  NAME
  perltab -- perl tab
@@ -2420,10 +2432,10 @@ perltabは列に関する以下の変数を提供する。
   -N|--no-head               Do not treat the first (non-comment) line of input files as a head line.
 |                            入力ファイルの先頭を(列ラベルの行として)特別扱いしない。
 =wk -N|--no-head|no-head|nohead
-=kw --inf|inf|num|number|numeric|isnum|数値
- --inf                       Treat inf values as numbers.  Affects behavior of numP() functions using numP() such as donum() and nums().
-|                            inf値を数値と見なす。関数numP()及びdonum()やnums()のようなnumP()を使う関数に影響する。
-=wk --inf|inf|num|number|numeric|isnum|数値
+=kw --skipinf|inf|num|number|numeric|isnum|数値
+ --skipinf                   Do not treat Inf values as numbers.  Affects behavior of numP() functions using numP() such as donum() and nums().
+|                            Inf値を数値と見なさない。関数numP()及びdonum()やnums()のようなnumP()を使う関数に影響する。
+=wk --skipinf|inf|num|number|numeric|isnum|数値
 =kw -m|--missing-mark|missing|欠損値
   -m|--missing-mark          String used to mark used to mark missing, default to the empty string.
 |                            欠損値の印となる文字列、デフォルト値は空文字列。
@@ -2432,10 +2444,10 @@ perltabは列に関する以下の変数を提供する。
   -M|--module MODULES        MODULES to load before executing any scripts.
 |                            スクリプトを実行する前にをロードしておくべきモジュール名。
 =wk -M|--module
-=kw --nan|nan|num|number|numeric|isnum|数値
- --nan                       Treat nan values as numbers.  Affects behavior of numP() functions using numP() such as donum() and nums().
-|                            nan値を数値と見なす。関数numP()及びdonum()やnums()のようなnumP()を使う関数に影響する。
-=wk --nan|nan|num|number|numeric|isnum|数値
+=kw --skipnan|nan|num|number|numeric|isnum|数値
+ --skipnan                   Do not treat NaN values as numbers.  Affects behavior of numP() functions using numP() such as donum() and nums().
+|                            NaN値を数値と見なさない。関数numP()及びdonum()やnums()のようなnumP()を使う関数に影響する。
+=wk --skipnan|nan|num|number|numeric|isnum|数値
 =kw -o|--output-file
   -o|--output-file FILE      Send output to file named FILE instead of STDOUT.
 |                            標準出力に代わりにファイルFILEに出力する。
@@ -2756,9 +2768,9 @@ Or to remove only the opening comment at top:
 =kw nump
  sub numP( ARG )
  Returns true if ARG looks like a number.  $_ used when ARG is omitted.
- inf and nan values are treated as numbers when the respective --inf and --nan options are given.
+ Inf and NaN values are not treated as numbers when the respective --skipinf or --skipnan options are given.
  ARGが数値に見える場合、真を返す。ARGを省略すると$_が使われる。
- --infと--nanのオプションを指定するとinf値とnan値はそれぞれ数値として扱われる。
+ --skipinfと--skipnanのオプションを指定するとInf値とNaN値はそれぞれ数値として扱われない。
 =wk nump
 
  sub num0( ARG )
@@ -2970,15 +2982,15 @@ Or to remove only the opening comment at top:
  列１のデータの内、数値となっている行を表示する方法のひとつ。
  % perltab -d 'donum {say} $F[1]'  heightWeight.tsv
 
-=kw --inf|--nan
- Print data in colums 1,2 for rows in which both have a numerical value.
- 列1,2のデータの内、両方が数値となっている行を表示する。
+=kw --skipinf|--skipnan|inf|nan
+ Print data in colums 1,2 for rows in which both have a numerical value.  Special values {'inf', '-inf', 'nan', '-NaN'}, etc. are treated as numbers.
+ 列1,2のデータの内、両方が数値となっている行を表示する。{'inf', '-inf', 'nan', '-NaN'}のような特殊な値を数値と見なす。
  % perltab -d 'donum {say @_} @F[1,2]'  heightWeight.tsv
 
- As above, print data in colums 1,2 for rows in which both have a numerical value; but treat 'inf', '-inf', 'nan', '-NaN' etc as numerical values.
- 上記のコマンドと同様、列1,2のデータの内、両方が数値となっている行を表示するが、'inf', '-inf', 'nan', '-NaN'のような特殊な値を数値と見なす。
- % perltab --inf --nan -d 'donum {say @_} @F[1,2]'  heightWeight.tsv
-=wk --inf|--nan
+ As above, print data in colums 1,2 for rows in which both have a numerical value; but do not treat {'inf', '-inf', 'nan', '-NaN'} etc. as numbers.
+ 上記のコマンドと同様、列1,2のデータの内、両方が数値となっている行を表示するが、{'inf', '-inf', 'nan', '-NaN'}のような特殊な値を数値と見なさない。
+ % perltab --skipinf --skipnan -d 'donum {say @_} @F[1,2]'  heightWeight.tsv
+=wk --skipinf|--skipnan|inf|nan
 =wk donum
 =wk number|numeric|isnum|数値
 
