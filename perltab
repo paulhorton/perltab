@@ -23,7 +23,7 @@ use Hash::Util qw(lock_keys lock_keys_plus unlock_keys lock_hash);
 use Unicode::Collate;
 use Data::Lock qw(dlock dunlock);
 
-$VERSION= '0.001_002';  eval $VERSION;
+$VERSION= '0.002_001';  eval $VERSION;
 use strict;
 use warnings;
 no warnings  'experimental::lexical_subs';
@@ -31,32 +31,26 @@ use feature qw(lexical_subs say state);
 
 
 
-# Numerical stuff temporarily placed here
 my %numRE_=  (
-    plain   =>   qr/^(?: (?i)   (?:[-+]?)
-             (?: (?=[.]?[0123456789])(?:[0123456789]*) (?:(?:[.])(?:[0123456789]{0,}))? )  (?:(?:[E]) (?:(?:[-+]?)(?:[0123456789]+)) | )
-                     )$/x,
+    plain   =>   qr/^[+-]?   (?:  [0-9]+ (?:[.][0-9]*)?  |  [.][0-9]+  )   (?:[eE][+-]?[0-9]+)?  $/x,
 
-    InfOK   =>   qr/^(?: (?i)   (?:[-+]?)
+    InfOK   =>   qr/^[+-]?
       (?:
         (?:inf)  |
-        (?:  (?: (?=[.]?[0123456789])(?:[0123456789]*) (?:(?:[.])(?:[0123456789]{0,}))? )  (?:(?:[E]) (?:(?:[-+]?)(?:[0123456789]+)) | )  )
-      )              )$/x,
-
-    NanOK   =>   qr/^(?: (?i)   (?:[-+]?)
+        (?:  [0-9]+ (?:[.][0-9]*)?  |  [.][0-9]+  )   (?:E[+-]?[0-9]+)?
+      )$/ix,
+    NanOK   =>   qr/^[+-]?
       (?:
         (?:nan)  |
-        (?:  (?: (?=[.]?[0123456789])(?:[0123456789]*) (?:(?:[.])(?:[0123456789]{0,}))? )  (?:(?:[E]) (?:(?:[-+]?)(?:[0123456789]+)) | )  )
-      )              )$/x,
-
-    InfNanOK=>   qr/^(?: (?i)   (?:[-+]?)
-      (?:
+        (?:  [0-9]+ (?:[.][0-9]*)?  |  [.][0-9]+  )   (?:E[+-]?[0-9]+)?
+      )$/ix,
+    InfNanOK=>   qr/^[+-]?
+      (?: 
         (?:inf)  |
         (?:nan)  |
-        (?:  (?: (?=[.]?[0123456789])(?:[0123456789]*) (?:(?:[.])(?:[0123456789]{0,}))? )  (?:(?:[E]) (?:(?:[-+]?)(?:[0123456789]+)) | )  )
-      )              )$/x,
+        (?:  [0-9]+ (?:[.][0-9]*)?  |  [.][0-9]+  )   (?:E[+-]?[0-9]+)?
+      )$/ix
     );
-
 lock_hash %numRE_;
 
 my $numRE_;
@@ -118,7 +112,11 @@ sub doNum(&@){
 
     return &$sub( @_ )   for @_;   #To alias $_ to $_[0] in SUB.
 }
-sub donum(&@){  goto &doNum  }    
+sub donum(&@){  goto &doNum  }
+
+
+
+
 
 
 #Return true iff NUM1 is greater than NUM2,
@@ -1727,6 +1725,86 @@ sub moveAft{  goto &movAft  }   sub moveBef{  goto &movBef  }
 
 
 #────────────────────  Sorting Routines  ────────────────────
+#────────────────────  Statistics Routines  ────────────────────
+
+my $stats_n=  'undef';
+#  Return number of numerical values passed into more recent stats routine.
+sub n(){
+    defined $stats_n   or   _diell(  "n() called before calling any statistical functions such as sum(), mean(), etc."=>
+                                     "n()を呼び出す前にsum()やmean()のような統計関数を呼ぶ必要がある。"  );
+    return $stats_n;
+}
+
+my @stats_data;
+my $stats_caller;   #For error messages.
+
+my(  $stats_seenInfPlus, $stats_seenInfMnus, $stats_seenNaN  );
+
+sub _stats_set_data{
+    @stats_data=  grep /$numRE_/, @_;
+
+    $stats_n=  @stats_data;
+    $stats_seenNaN= $stats_seenInfPlus= $stats_seenNaN= '';
+    for (@stats_data){
+        if   (     /^[+-]? nan$/ix  ){   $stats_seenNaN=     $_   }
+        elsif(     /^[+] ? inf$/ix  ){   $stats_seenInfPlus= $_   }
+        elsif(     /^  - ? inf$/ix  ){   $stats_seenInfMnus= $_   }
+    }
+}
+    
+#  Return sum of numbers in @stats_data
+sub _sum(){
+    return  $stats_seenNaN      if  $stats_seenNaN;
+    return  'NaN'               if  !n  ||  $stats_seenInfPlus && $stats_seenInfMnus;
+    return  $stats_seenInfPlus  if  $stats_seenInfPlus;
+    return  $stats_seenInfMnus  if  $stats_seenInfMnus;
+
+    List::Util::sum @stats_data;
+}
+
+
+#  Return sum of numbers in @_
+sub sum{   _stats_set_data @_;
+           return _sum;
+}
+
+
+sub _mean{   _sum  / n   }
+
+#  Arithmetic mean of numerical values in @_
+sub mean{  _stats_set_data @_;
+           return _mean;
+}
+
+
+sub _stdev{
+    return  $stats_seenNaN      if $stats_seenNaN;
+    return  'NaN'               if n < 2;
+    return  $stats_seenInfPlus  if $stats_seenInfPlus;
+    return  'Inf'               if $stats_seenInfMnus;
+
+    my $mean=  _mean;
+
+    my $ssDev= 0.0;
+    for (@stats_data){
+        my $dev=  $_ - $mean;
+        $ssDev+=  $dev * $dev;
+    }
+
+    return  sqrt( $ssDev ) /  (n - 1);
+}
+
+
+#  Sample standard deviation of numerical values in @_
+sub stdev{  _stats_set_data @_;
+            return _stdev;
+}
+
+
+sub stats{
+    mean( @_ ) . ' ±' . stdev( @_ );
+}
+
 
 
 state sub processInputFile_forSorting;
@@ -2198,7 +2276,6 @@ sub sortKeylev_recurseOnTies{
     }
 
 }#sortKeylev_recurseOnTies
-
 
 
 
