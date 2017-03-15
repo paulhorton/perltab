@@ -116,9 +116,6 @@ sub donum(&@){  goto &doNum  }
 
 
 
-
-
-
 #Return true iff NUM1 is greater than NUM2,
 #where NUM1 and NUM2 are assumed to be normal or special {inf, -inf, nan, -nan} numbers.
 # _biggerP( NUM1, NUM2 )
@@ -3082,7 +3079,7 @@ Or to remove only the opening comment at top:
  又は、
  % perltab -e 'say F( grep {!/^height$/} @H )' heightWeight.tsv 
 
-=kw SNset
+=kw SNset|-g|--grep|grep
  Select rows from heightWeight.tsv matching ids listed in file 'ids.txt' (holding one id per line).
  heightWeight.tsvの内、IDリストにある行を抽出する。IDリストは、各行にひとつのIDという形式のファイルids.txtから読み込む。
 =settab    ==
@@ -3092,7 +3089,7 @@ Or to remove only the opening comment at top:
  After selecting those rows, sort them so that the ids are in the same order as in "/tmp/ids".
  ids.txtにあるIDの行を抽出した後、ids.txtと同じ順番に並べ替える。
  % perltab -b 'SNset %S, "ids.txt"' -s '$S{ F(ID) }' selected.tsv
-=wk SNset
+=wk SNset|-g|--grep|grep
 
 =kw bemin
  Print minimum value of column 'banana', quietly ignoring non-numerical values.
@@ -3108,17 +3105,17 @@ Or to remove only the opening comment at top:
 =unsettab
 =wk beminmax|-p|-e2
 
-=kw -H
+=kw -H|header|label|grep
  Print column labels containing 'eight'.
  'eight'を含む列ラベルを出力する。
  % perltab  -H 'say  grep /eight/, @H'
-=wk -H
+=wk -H|header|label|grep
 
-=kw allnum
+=kw allnum|-g|--grep|grep
  Remove any data columns with non-numerical entries.
  数値でない値を持つ行を取り除く。
  % perltab -gd 'allnum @F'
-=wk allnum
+=wk allnum|-g|--grep|grep
 
 =kw num0
  Average all columns in a file (Non-numeric data treated as 0).
@@ -3187,19 +3184,19 @@ Or to remove only the opening comment at top:
  同上にラベルを並べ替えるが、コメント行は表示されない。
  % perltab -e 'say F($H[0], sort @H[1..$#H])'  fruit.tsv
 
-=kw donum|-g2
+=kw donum|-g2|--grep2|grep
  Output the rows with the maximum height value among rows in two files.
  ふたつの入力ファイルにあるデータから身長(height値)が最大の行を表示する。
 =settab    ==
  % perltab -d 'bemax $m, F(hei)' -gd2 'donum {$m==$_} F(hei)'  heightWeight.tsv more_heightWeight.tsv  -in2 heightWeight.tsv more_heightWeight.tsv
 =unsettab
-=wk donum|-g2
 
  or if there are no missing values, more simply:
  もし欠損値がなければ、このコマンドでも良い、
 =settab    ==
  % perltab -d 'bemax $m, F(hei)' -gd2 '$m==F(hei)'  heightWeight.tsv more_heightWeight.tsv  -in2 heightWeight.tsv more_heightWeight.tsv
 =unsettab
+=wk donum|-g2|--grep2|grep
 
 
 =head1  SORTING ROWS|行の並べ替え
@@ -3273,7 +3270,7 @@ Or to remove only the opening comment at top:
 =kw -f|--script-file|script-file
 The script to be run by perltab may be given with option -f|--script-file PATHNAME, instead of inline script options such as -e|row-script.  For convenience, the -n|--print-script option can be used to convert inline commands into script file format.  For example, after:
 オプション-f|script-fileでファイル名を指定すると、perltabの実行スクリプトはそのファイルから読み込まれる。-nでコマンド行に書き込まれたスクリプトをスクリプトファイル形式に変換できる。例えば、以下のコマンドを実行した後、
-=kw donum
+=kw donum|-g|--grep|grep
  % perltab -nge 'donum {$_>70} F(Weight)' > listHeavy.perltab
 
   listHeavy.perltab
@@ -3294,7 +3291,7 @@ Should produce the same output as:
 
 のようにスクリプトを全部コマンド行に書き込んだコマンドと同じ出力をするはず。両方ともWeight列の値が数値データで70を越える行だけを出力する。donumの役割は数値データ以外の行を静かに飛ばすであり、Weight列のすべての値が数値であれば、-ge 'F(Weight) > 70'でも良い。
 Both output the rows for which column 'Weight' has a numerical value over 70.  The donum{} construct serving to silently skip non-numerical values; if all values in column Weight are numerical, -ge 'F(Weight) > 70' would work as well.
-=wk donum
+=wk donum|-g|--grep|grep
 
 The correspondence between inline script command line options and blocks is as follows:
 コマンド行に書き込む各種スクリプトとスクリプト・ファイルに於けるブロック名の対応は以下の通り、
