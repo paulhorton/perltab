@@ -1,0 +1,9 @@
+ID	height	weight	shoe size
+3	160	50	9
+2	175	78	11
+5		55	8
+6	180		
+; No info for ID 7
+7                       
+1	170	73	10
+
