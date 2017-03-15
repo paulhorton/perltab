@@ -31,6 +31,7 @@ use feature qw(lexical_subs say state);
 
 
 
+
 my %numRE_=  (
     plain   =>   qr/^[+-]?   (?:  [0-9]+ (?:[.][0-9]*)?  |  [.][0-9]+  )   (?:[eE][+-]?[0-9]+)?  $/x,
 
@@ -62,6 +63,11 @@ my $numRE_;
 # ────────────────────  Utilities  ────────────────────
 #Return true if @_ contains no empty strings
 sub nomt{  all {length} @_  }
+
+#Return non-empty strings in @_.
+#named for the construct:   say @x  if an @x;
+sub an{  grep {defined && length} @_  }
+
 
 { state $printfWantsNumRx=  qr{ % [-+.#0-9]* l? [defgoux] }x;
 
@@ -125,21 +131,21 @@ sub donum(&@){  goto &doNum  }
 sub _biggerP{
     if(  $_[0]=~ /\d/  ){
         if(  $_[1]=~ /\d/      ){   return  $_[0] > $_[1]      }
-        if(  $_[1]=~ /^inf$/i  ){   return  undef              }
+        if(  $_[1]=~ /^inf$/i  ){   return                     }
         return  't';   # $_[1] ∈ {-inf, nan, -nan}
     }
 
     # $_[0] ∈ {inf, -inf, nan, -nan}
     if(  $_[1]=~ /\d/  ){
         if(  $_[0]=~ /^inf$/i  ){   return  't'                }
-        return  undef;  # $_[0] ∈ {-inf, nan, -nan}
+        return;  # $_[0] ∈ {-inf, nan, -nan}
     }
 
     # Both $_[0] and $_[1] are ∈ {inf, -inf, nan, -nan}.
     if(  $_[0]=~ /^inf$/i  )     {   return   $_[1]!~ /^inf$/i   }
     if(  $_[0]=~ /^nan$/i  )     {   return(  $_[1]=~ /^-inf$/i  or  $_[1]=~ /^-nan$/i  )}
     if(  $_[0]=~ /^-nan$/i )     {   return   $_[1]=~ /^-inf$/i  }
-    return  undef;   # $_[0] is -inf
+    return;   # $_[0] is -inf
 }#_biggerP
 
 
@@ -150,21 +156,21 @@ sub _biggerP{
 sub _lesserP{
     if(  $_[0]=~ /\d/  ){
         if(  $_[1]=~ /\d/      ){   return  $_[0] < $_[1]     }
-        if(  $_[1]=~ /^-inf/   ){   return  undef             }
+        if(  $_[1]=~ /^-inf/   ){   return                    }
         return  't';   # $_[1] ∈ {-inf, nan, -nan}
     }
 
     # $_[0] ∈ {inf, -inf, nan, -nan}
     if(  $_[1]=~ /\d/  ){
         if(  $_[0]=~ /^-inf$/i ){   return  't'               }
-        return  undef;  # $_[0] ∈ {inf, nan, -nan}
+        return;  # $_[0] ∈ {inf, nan, -nan}
     }
 
     # Both $_[0] and $_[1] are ∈ {inf, -inf, nan, -nan}.
     if(  $_[0]=~ /^-inf$/i )    {   return  $_[1]!~ /^-inf$/i  }
     if(  $_[0]=~ /^-nan$/i )    {   return( $_[1]=~ /^inf$/i  or  $_[1]=~ /^nan$/i  )}
     if(  $_[0]=~ /^nan$/i  )    {   return  $_[1]=~ /^inf$/i   }
-    return  undef;   # $_[0] is inf
+    return;   # $_[0] is inf
 }#_lesserP
 
 
@@ -1724,28 +1730,136 @@ sub moveAft{  goto &movAft  }   sub moveBef{  goto &movBef  }
 #────────────────────  Sorting Routines  ────────────────────
 #────────────────────  Statistics Routines  ────────────────────
 
-my $stats_n=  'undef';
-#  Return number of numerical values passed into more recent stats routine.
-sub n(){
-    defined $stats_n   or   _diell(  "n() called before calling any statistical functions such as sum(), mean(), etc."=>
-                                     "n()を呼び出す前にsum()やmean()のような統計関数を呼ぶ必要がある。"  );
-    return $stats_n;
+my @stats_data= (undef);
+
+sub _all_undefP{
+    return  't'   if grep {!defined} @_;
+    return;
 }
 
-my @stats_data;
-my $stats_caller;   #For error messages.
+#  Return number of numerical values passed into more recent stats routine.
+sub n(){
+    _all_undefP @stats_data   and
+        _diell(  "n() called before calling any statistical functions such as sum(), mean(), etc."=>
+                 "n()を呼び出す前にsum()やmean()のような統計関数を呼ぶ必要がある。"  );
+
+    return  0 + @stats_data;
+}
+
+my $stats_numSigDig;  #Max number of significant digits in @stats_data, for prettier output.
 
 my(  $stats_seenInfPlus, $stats_seenInfMnus, $stats_seenNaN  );
 
-sub _stats_set_data{
-    @stats_data=  grep /$numRE_/, @_;
+my $specialNumRE=  qr/^  (?: inf|nan )  \z/i;
 
-    $stats_n=  @stats_data;
-    $stats_seenNaN= $stats_seenInfPlus= $stats_seenNaN= '';
-    for (@stats_data){
+
+#───────────  Related to number of digits to display  ──────────
+
+#  Return integer and fractional parts of (well-formed) number string.
+sub _int_frac_parts{
+    my $intPart;  my $frcPart=  '';
+    if(  $_[0]=~ /[.]/  ){
+        ($intPart)=  $_[0]=~ /^[+-]?   ( [0-9]* ) [.]/x;
+        ($frcPart)=  $_[0]=~ /     [.] ( [0-9]* )    /x;
+    }
+    else{
+        ($intPart)=  $_[0]=~ /^[+-]?([0-9]*)/;
+    }
+    return(  $intPart, $frcPart  );
+}
+
+#Return number of digits in $_[0] which are not simply place holders.
+#Always returns at least one.
+sub _numSigDigits(_){
+    my $val=  shift;
+
+    my( $intPart, $frcPart)=  _int_frac_parts $val;
+
+    if(  $frcPart  ){
+        if(  !$intPart  ){
+            my $sigPart=  $frcPart=~/^0*([1-9][0-9]*)/?  $1  :  '';
+            return   max  1,  length $sigPart;
+        }
+        return  length( $intPart )  +  length( $frcPart );
+    }
+    else{
+        my $intPartRevd=   reverse(  $intPart=~ s/[+-]?E[0-9]+\z//ir  );
+        ( my $sigPart )=(  $intPartRevd=~ /^0*([1-9][0-9]*)\z/  );
+        return  max  1,  length $sigPart;
+    }
+}
+
+#  Auxillary function of _reformatNum_minSig.
+#  Returns string of number $val trimmed in length, under the constraint of maintaining at least $stats_numSigDig significant digits.
+#  Does not convert to or from scientific notation.
+sub _reformatNum_aux{
+    my $val=     shift;
+
+    $val=~  s/(   E[+-]? [0-9]+  )\z//xi;   my $expPart=  $1 // '';
+
+    #Trim trailing 0's after decimal point.  (sprintf adds these)
+    $val=~ s/0*\z//    if  $val=~ /[.]/;
+    $val=~ s/[.]\z//;
+
+    my( $intPart, $frcPart)=  _int_frac_parts $val;
+    my $frcPartLen=  length $frcPart;
+
+    #Only consider trimming if there are at least two fractional digits.
+    return  $val.$expPart                                 if  2 >  $frcPartLen;
+
+
+    my $numSig =  (  $intPart eq '0'  )
+        ?  do{  $frcPart=~ /^0*([1-9][0-9]*)/;  length $1}
+        :  length( $intPart )  +  length $frcPart;
+        
+    my $numDigitsToTrim=  $numSig - $stats_numSigDig;
+    my $numFrcDigitsToKeep=   max  1,  $frcPartLen - $numDigitsToTrim;
+
+    return  $val.$expPart               if  $numFrcDigitsToKeep >= $frcPartLen;
+
+    my $fieldWidth=  length( $intPart )  +  1  +  $numFrcDigitsToKeep;
+
+    $val=   sprintf(  "%${fieldWidth}.${numFrcDigitsToKeep}f",  $val  );
+    return  $val.$expPart;
+}
+
+
+
+#  Return string of number $val trimmed in length, under the constraint of maintaining at least $stats_numSigDig significant digits.
+#  May convert to or from scientific notation to achieve this.
+sub _reformatNum{
+    my $val=     shift;
+
+    my $unconvertedResult=   _reformatNum_aux                        $val  ,  $stats_numSigDig;
+
+    my $conversion=   $val=~ /e/i?  '%f'  :  '%g';
+    my $convertedResult=     _reformatNum_aux  sprintf( $conversion, $val ),  $stats_numSigDig;
+
+    #  3.14e+01 -->  3.14e1
+    s/e[+]?0*([1-9])\z/e$1/i   for( $convertedResult, $unconvertedResult );
+
+    return(
+        (length $convertedResult  <  length $unconvertedResult)
+        ?       $convertedResult      :     $unconvertedResult   );
+}
+
+
+
+#  (Re)set stats variables to reflect content of @_.
+sub _stats_set_data{
+    @stats_data=  ();
+    $stats_seenNaN= $stats_seenInfPlus= $stats_seenNaN=  '';
+    $stats_numSigDig=  1;
+    for(  @_  ){
+        /$numRE_/   or  next;
         if   (     /^[+-]? nan$/ix  ){   $stats_seenNaN=     $_   }
         elsif(     /^[+] ? inf$/ix  ){   $stats_seenInfPlus= $_   }
         elsif(     /^  - ? inf$/ix  ){   $stats_seenInfMnus= $_   }
+        else{
+            my $numSigDig=  _numSigDigits;
+            $stats_numSigDig=  $numSigDig    if $numSigDig > $stats_numSigDig;
+        }
+        push @stats_data, $_;
     }
 }
     
@@ -1775,6 +1889,10 @@ sub mean{  _stats_set_data @_;
 
 
 sub _stdev{
+    n > 1   or   _warn
+        'stdev() called with only '.n.' arguments, but standard deviation is undefind for n < 2 elements.'=>
+        'stdev()を'.n.'個の引数で呼び出したが、標準偏差は２個以上の要素がないと値が定義されない。';
+        
     return  $stats_seenNaN      if $stats_seenNaN;
     return  'NaN'               if n < 2;
     return  $stats_seenInfPlus  if $stats_seenInfPlus;
@@ -1799,7 +1917,7 @@ sub stdev{  _stats_set_data @_;
 
 
 sub stats{
-    mean( @_ ) . ' ±' . stdev( @_ );
+    _reformatNum( mean @_ ) . '±' . _reformatNum( stdev @_ );
 }
 
 
@@ -2274,6 +2392,15 @@ sub sortKeylev_recurseOnTies{
 
 }#sortKeylev_recurseOnTies
 
+
+BEGIN{
+    *CORE::GLOBAL::stat=  sub{ 
+        _warn
+            "stat command disabled.  Assuming you meant 'stats'."=>
+            "statコマンドは使用不可になっている。'stats'のつもりだと仮定して進む。";
+        goto &stats;
+    }
+}
 
 
 __DATA__
@@ -2837,6 +2964,14 @@ Or to remove only the opening comment at top:
  @STRINGに空の文字列が含まれていなければ真を返す。
 =wk nomt|noempty|no empty|empty
 
+=kw an|non-empty
+ sub an( @LIST )
+ Returns non-empty strings in @LIST.
+ Named for the construct:{  say @x  if an @x  }.
+ @LIST中の非空文字列を返す。
+ 「an」という名称は、{  say @x  if an @x  }の使い方に由来する。
+=wk an|non-empty
+
 =kw numeric|数値
 =kw --inf|inf|--nan|nan|num|number|isnum
 =kw nump
@@ -2934,6 +3069,12 @@ Or to remove only the opening comment at top:
  % perltab -e 'say F(h w)'
  Any unique prefix of the desired column labels will work (see -h label).  Here we assume no other headers starts with 'h' or 'w'.
  列ラベルは一意的に決まる限り、ラベルの前置詞で略しても良い(-h labelを参照)。ここでは'h'と'w'から始まる列ラベルはそれぞれ'height'と'weight'のみと仮定した。
+
+=kw an|non-empty
+ Print height, weight and shoe size columns of rows for which at least one of those has a value.
+ 列height、weight及びshoe sizeのいづれかが非空の値を持つ行に対し、その３つの列を表示する。
+ % perltab -e '@x= F(hei wei shoe); say @x if an @x'  heightWeightShoesize.tsv
+=wk an|non-empty
 
 =kw search
  Print row ID and column label of NaN data entries.
