@@ -1727,7 +1727,15 @@ sub moveAft{  goto &movAft  }   sub moveBef{  goto &movBef  }
 
 
 
-#────────────────────  Sorting Routines  ────────────────────
+#If in xterm, return $_[0] converted to bold
+#Otherwise    return $_[0] as is.
+sub _toBold{
+    state $xtermP=  $ENV{TERM} eq 'xterm';
+    return  $xtermP? "\e[1m$_[0]\e[0m"  : $_[0];
+}
+
+
+
 #────────────────────  Statistics Routines  ────────────────────
 
 my @stats_data= (undef);
@@ -1755,25 +1763,19 @@ my $specialNumRE=  qr/^  (?: inf|nan )  \z/i;
 
 #───────────  Related to number of digits to display  ──────────
 
-#  Return integer and fractional parts of (well-formed) number string.
-sub _int_frac_parts{
-    my $intPart;  my $frcPart=  '';
-    if(  $_[0]=~ /[.]/  ){
-        ($intPart)=  $_[0]=~ /^[+-]?   ( [0-9]* ) [.]/x;
-        ($frcPart)=  $_[0]=~ /     [.] ( [0-9]* )    /x;
-    }
-    else{
-        ($intPart)=  $_[0]=~ /^[+-]?([0-9]*)/;
-    }
-    return(  $intPart, $frcPart  );
-}
-
 #Return number of digits in $_[0] which are not simply place holders.
 #Always returns at least one.
 sub _numSigDigits(_){
     my $val=  shift;
 
-    my( $intPart, $frcPart)=  _int_frac_parts $val;
+    my $intPart;  my $frcPart=  '';
+    if(  $val=~ /[.]/  ){
+        ($intPart)=  $val=~ /^[+-]?   ( [0-9]* ) [.]/x;
+        ($frcPart)=  $val=~ /     [.] ( [0-9]* )    /x;
+    }
+    else{
+        ($intPart)=  $val=~ /^[+-]?([0-9]*)/;
+    }
 
     if(  $frcPart  ){
         if(  !$intPart  ){
@@ -1787,60 +1789,6 @@ sub _numSigDigits(_){
         ( my $sigPart )=(  $intPartRevd=~ /^0*([1-9][0-9]*)\z/  );
         return  max  1,  length $sigPart;
     }
-}
-
-#  Auxillary function of _reformatNum_minSig.
-#  Returns string of number $val trimmed in length, under the constraint of maintaining at least $stats_numSigDig significant digits.
-#  Does not convert to or from scientific notation.
-sub _reformatNum_aux{
-    my $val=     shift;
-
-    $val=~  s/(   E[+-]? [0-9]+  )\z//xi;   my $expPart=  $1 // '';
-
-    #Trim trailing 0's after decimal point.  (sprintf adds these)
-    $val=~ s/0*\z//    if  $val=~ /[.]/;
-    $val=~ s/[.]\z//;
-
-    my( $intPart, $frcPart)=  _int_frac_parts $val;
-    my $frcPartLen=  length $frcPart;
-
-    #Only consider trimming if there are at least two fractional digits.
-    return  $val.$expPart                                 if  2 >  $frcPartLen;
-
-
-    my $numSig =  (  $intPart eq '0'  )
-        ?  do{  $frcPart=~ /^0*([1-9][0-9]*)/;  length $1}
-        :  length( $intPart )  +  length $frcPart;
-        
-    my $numDigitsToTrim=  $numSig - $stats_numSigDig;
-    my $numFrcDigitsToKeep=   max  1,  $frcPartLen - $numDigitsToTrim;
-
-    return  $val.$expPart               if  $numFrcDigitsToKeep >= $frcPartLen;
-
-    my $fieldWidth=  length( $intPart )  +  1  +  $numFrcDigitsToKeep;
-
-    $val=   sprintf(  "%${fieldWidth}.${numFrcDigitsToKeep}f",  $val  );
-    return  $val.$expPart;
-}
-
-
-
-#  Return string of number $val trimmed in length, under the constraint of maintaining at least $stats_numSigDig significant digits.
-#  May convert to or from scientific notation to achieve this.
-sub _reformatNum{
-    my $val=     shift;
-
-    my $unconvertedResult=   _reformatNum_aux                        $val  ,  $stats_numSigDig;
-
-    my $conversion=   $val=~ /e/i?  '%f'  :  '%g';
-    my $convertedResult=     _reformatNum_aux  sprintf( $conversion, $val ),  $stats_numSigDig;
-
-    #  3.14e+01 -->  3.14e1
-    s/e[+]?0*([1-9])\z/e$1/i   for( $convertedResult, $unconvertedResult );
-
-    return(
-        (length $convertedResult  <  length $unconvertedResult)
-        ?       $convertedResult      :     $unconvertedResult   );
 }
 
 
@@ -1862,6 +1810,11 @@ sub _stats_set_data{
         push @stats_data, $_;
     }
 }
+
+
+sub _reformatNum(_){  sprintf  '%.*g', $stats_numSigDig, $_[0]  }
+sub _reformatNums{  map {_reformatNum} @_  }
+
     
 #  Return sum of numbers in @stats_data
 sub _sum(){
@@ -1883,15 +1836,19 @@ sub sum{   _stats_set_data @_;
 sub _mean{   _sum  / n   }
 
 #  Arithmetic mean of numerical values in @_
-sub mean{  _stats_set_data @_;
-           return _mean;
+sub mean{
+    if(  @_  ){
+        _stats_set_data @_;
+    }else{
+        _all_undefP @stats_data   and
+            _diell(  "mean() called without arguments and before calling any statistical functions such as sum(), stdev(), etc. to set the default data"=>
+                     "mean()を引数無しで呼び出したが、その前にsum()やstdev()のように統計のデフォルトデータを設定する関数は呼んでいない。"  );
+    }
+    return _mean;
 }
 
 
 sub _stdev{
-    n > 1   or   _warn
-        'stdev() called with only '.n.' arguments, but standard deviation is undefind for n < 2 elements.'=>
-        'stdev()を'.n.'個の引数で呼び出したが、標準偏差は２個以上の要素がないと値が定義されない。';
         
     return  $stats_seenNaN      if $stats_seenNaN;
     return  'NaN'               if n < 2;
@@ -1911,17 +1868,94 @@ sub _stdev{
 
 
 #  Sample standard deviation of numerical values in @_
-sub stdev{  _stats_set_data @_;
-            return _stdev;
+sub stdev{
+    if(  @_  ){
+        _stats_set_data @_;
+    }else{
+        _all_undefP @stats_data   and
+            _diell(  "stdev() called without arguments and before calling any statistical functions such as sum(), mean(), etc. to set the default data"=>
+                     "stdev()を引数無しで呼び出したが、その前にsum()やmean()のように統計のデフォルトデータを設定する関数は呼んでいない。"  );
+    }
+
+    @stats_data > 1   or   _warn
+        'stdev() called with only '.n.' arguments, but standard deviation is undefined for n < 2 elements.'=>
+        'stdev()を'.n.'個の引数で呼び出したが、標準偏差は２個以上の要素がないと値が定義されない。';
+
+    return _stdev;
 }
+
+
+
+sub qtiles{
+    @_   or   _diell
+        'qtiles() called with no arguments.'=>
+        'qtiles()が数値引数無しで呼び出された。';
+
+    my $q=  shift;
+    $q=~ /^[1-9]+[0-9]*/   or  _diell
+        "qtiles() expected positive integer as its first argument but got '$q'"=>
+        "qtiles()は最初の引数として整数値を期待したが、'${q}'を受け取った。";
+
+    $q > 1   or   _diell
+        "qtiles() first argument should be at least 2 but got '$q'"=>
+        "qtiles() 第一引数は２≧でないといけないが、'${q}'を受け取った。";
+
+    if(  @_  ){
+        _stats_set_data @_;
+    }else{
+        _all_undefP @stats_data   and
+            _diell(  "qtiles() called without arguments and before calling any statistical functions such as sum(), mean(), etc. to set the default data"=>
+                     "qtiles()を引数無しで呼び出したが、その前にsum()やmean()のように統計のデフォルトデータを設定する関数は呼んでいない。"  );
+    }
+
+    @stats_data   or   _diell
+        "qtiles(${q},...) called with an empty data list"=>
+        "qtiles(${q},...))が空のデータリストで呼び出された。";
+
+    $q < @stats_data   or   _warn
+        "qtiles(${q},...) called with only ".@stats_data.' numbers.'=>
+        "qtiles(${q},...)は".@stats_data.'個の数値引数しか受け取れなかった。';
+
+    @stats_data=  sort {$a<=>$b} @stats_data;
+
+    push  my @qtile,  $stats_data[0];
+
+    my $fin=  @stats_data -1;
+    for(  my $t= 1;  $t < $q-0.5;  ++$t  ){
+        my $quotient=  $t*$fin / $q;
+        my $dw=  floor $quotient;
+        my $up=  ceil  $quotient;
+        my $r=   $quotient - $dw;
+        push  @qtile,  (1-$r) * $stats_data[$dw]  +  $r * $stats_data[$up];
+    }
+    push  @qtile,  $stats_data[-1];
+
+    return @qtile;
+}# qtiles.
+
 
 
 sub stats{
-    _reformatNum( mean @_ ) . '±' . _reformatNum( stdev @_ );
+    @_    or   return  '';
+
+    my $stats.=  _reformatNum(  mean @_  );
+    $stats=  'n:'.n."  μ$stats";
+    @_ < 3   and   return  $stats;
+
+    $stats.= '±' . _reformatNum stdev;
+
+    n > 4   or   return $stats;
+
+    my @tile4=  _reformatNums qtiles( 4 );
+
+    $stats .= "  Qs:$tile4[0] $tile4[1] " . _toBold( $tile4[2] ) . " $tile4[3] $tile4[4]";
+    return $stats;
 }
 
 
 
+
+#────────────────────  Sorting Routines  ────────────────────
 state sub processInputFile_forSorting;
 state sub sortData_andPrint;
 
