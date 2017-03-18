@@ -2998,13 +2998,13 @@ Or to remove only the opening comment at top:
  @STRINGに空の文字列が含まれていなければ真を返す。
 =wk nomt|noempty|no empty|empty
 
-=kw an|non-empty
+=kw an|any|non-empty
  sub an( @LIST )
  Returns non-empty strings in @LIST.
  Named for the construct:{  say @x  if an @x  }.
  @LIST中の非空文字列を返す。
  「an」という名称は、{  say @x  if an @x  }の使い方に由来する。
-=wk an|non-empty
+=wk an|any|non-empty
 
 =kw numeric|数値
 =kw --inf|inf|--nan|nan|num|number|isnum
@@ -3090,25 +3090,31 @@ Or to remove only the opening comment at top:
 
  Output columns 'height' and 'weight'.
  身長と体重の列を表示する。
- % perltab -e 'say F(qw(height weight))'
+ % perltab -e 'say F(qw(height weight))' heightWeight.tsv
  or more succinctly by letting perltab add the qw for you (see -h qw).
  又は、qw()の省略し、perltabにそれを自動的に付け加えてもらう(-h qw を参照)。
 
- % perltab -e 'say F(height weight)'
+ % perltab -e 'say F(height weight)' heightWeight.tsv
  or even more succinctly,
  又は、更に短く、
- % perltab -e 'say F(hei wei)'
+ % perltab -e 'say F(hei wei)' heightWeight.tsv
  or
  又は、
- % perltab -e 'say F(h w)'
+ % perltab -e 'say F(h w)' heightWeight.tsv
  Any unique prefix of the desired column labels will work (see -h label).  Here we assume no other headers starts with 'h' or 'w'.
  列ラベルは一意的に決まる限り、ラベルの前置詞で略しても良い(-h labelを参照)。ここでは'h'と'w'から始まる列ラベルはそれぞれ'height'と'weight'のみと仮定した。
 
-=kw an|non-empty
+=kw grep|@H
+ This command uses grep and the @H array to print columns whose labels match a regular expression.
+ このコマンドは、grepと列ラベルを格納している@H配列を利用し、ある正規表現に合うラベルの列を表示する。
+ % perltab -e 'say F(grep /eigh/, @H)' heightWeight.tsv
+=wk grep|@H
+
+=kw an|any|non-empty
  Print height, weight and shoe size columns of rows for which at least one of those has a value.
  列height、weight及びshoe sizeのいづれかが非空の値を持つ行に対し、その３つの列を表示する。
  % perltab -e '@x= F(hei wei shoe); say @x if an @x'  heightWeightShoesize.tsv
-=wk an|non-empty
+=wk an|any|non-empty
 
 =kw search
  Print row ID and column label of NaN data entries.
@@ -3183,9 +3189,11 @@ Or to remove only the opening comment at top:
  % perltab -e '($x,$y)= N(ID weight);  say @F[0..$x-1,$x+1..$y,$x,$y+1..$#F]'   heightWeight.tsv
 =unsettab
 
+=kw del|grep|@H
  Delete columns starting in 'c', 'd' or 'e'.
  c,d,eのいづれかから始まるラベルを削除する。
  % perltab -pe 'del grep /^[cde]/, @H'  animals.tsv
+=wk del|grep|@H
 
 =kw speak|missing
  Echo input file, skipping data lines with any missing (empty string) values.

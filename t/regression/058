@@ -1,0 +1,9 @@
+This command uses grep and the @H array to print columns whose labels match a regular expression.
+perltab --test -e 'say F(grep /eIg/i, @H)' t/regression/input/heightWeight.tsv
+MD5:t/regression/input/heightWeight.tsv	wqbXPt1Elw/A/OE7HHxj2Q
+height	weight
+160	50
+175	78
+	55
+180	
+170	73
