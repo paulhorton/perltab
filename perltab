@@ -1905,22 +1905,32 @@ sub _binBoundIdxs{
 
     @stats_data=  sort {$a<=>$b} @stats_data;
 
-    #Assign indices with propotional intervals over range [0,$#stats_data] to @iProp.
-    #Since @stats_data is sorted, this gives approximate uniform occupancy boundary indices.
-    my @iProp=   map  {$#stats_data*$_/$q}  1..$q-1;
 
     my @retVal;
 
-    #Adjust boundary indices to be integral and not fall within runs of the same number in the sorted data.
+
+    #Assign indices with propotional intervals over range [0,$#stats_data], since @stats_data is sorted, this gives approximate uniform occupancy boundary indices.
+    #The rest of the code below is to make the bins more uniformly occupied in the case of ties (runs of the same value in the sorted data).
     my $prevBound=  -1;  #Uninitialized.
-    for  my $iProp  (@iProp){
-        my $iLw=  floor $iProp;
-        $iLw--   while  $iLw > 0             and   $stats_data[$iLw-1] == $stats_data[$iLw];
-        my $iUp=   ceil $iProp;
-        $iUp++   while  $iUp < @stats_data   and   $stats_data[$iUp+1] == $stats_data[$iUp];
+    for  my $iProp  (map  {$#stats_data*$_/$q}  1..$q-1){
+        my $iLw=  my $iUp=  ceil $iProp;
+        my $valProp=  $stats_data[$iProp];
 
-        my $newBound=  (abs $iProp-$iUp  <  abs $iProp-$iLw)?  $stats_data[$iUp]  :  $stats_data[$iLw];
+        $iUp++   while  $iUp < $#stats_data   and   $stats_data[$iUp+1] == $stats_data[$iUp];
+        $iUp++      if  $iUp < $#stats_data;
 
+        $iLw--   while  $iLw > 0              and   $stats_data[$iLw-1] == $stats_data[$iLw];
+        $iLw--      if  $iLw > 0;
+
+        #At this point $iLw is either the minimum index possible or is the greatest index with a value smaller than $valProp.
+        #Symmetrically $iUp is either the maximum index possible or is the smallest index with a value greater than $valProp.
+
+
+        my $newBound=   ($iUp-$iProp < $iProp-$iLw)
+            ?  ( $stats_data[$iUp] + $valProp ) / 2
+            :  ( $stats_data[$iLw] + $valProp ) / 2;
+        
+        #Push new boundary value if unique.
         push  @retVal,  $prevBound= $newBound    if $newBound != $prevBound;
     }
 
@@ -1988,7 +1998,7 @@ sub qtiles{
     push  my @qtile,  $stats_data[0];
 
     my $fin=  @stats_data -1;
-    for(  my $t= 1;  $t < $q-0.5;  ++$t  ){
+    for  my $t  (1..$q-1){
         my $quotient=  $t*$fin / $q;
         my $dw=  floor $quotient;
         my $up=  ceil  $quotient;
