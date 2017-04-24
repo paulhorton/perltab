@@ -3093,13 +3093,17 @@ Or to remove only the opening comment at top:
  --skipinfと--skipnanのオプションを指定するとInf値とNaN値はそれぞれ数値として扱われない。
 =wk nump
 
+=kw num0
  sub num0( ARG )
- Returns ARG if , otherwise 0.  $_ used when ARG is omitted.
+ Returns ARG if it looks like a number, otherwise 0.  $_ used when ARG is omitted.
  ARGが数値に見えればARGを返し、そうでなければ０を返す。ARGを省略すると$_が使われる。
+=wk num0
 
+=kw num1
  sub num1( ARG )
- Returns ARG if it loos like a number, otherwise 1.  $_ used when ARG is omitted.
+ Returns ARG if it looks like a number, otherwise 1.  $_ used when ARG is omitted.
  ARGが数値に見えればARGを返し、そうでなければ１を返す。ARGを省略すると$_が使われる。
+=wk num1
 
 =kw allnum
  sub allNum( @ARG )
