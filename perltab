@@ -1893,19 +1893,6 @@ sub stdev{
 sub _binBoundIdxs{
     my $q=  shift;
 
-    # $q=~ /^[1-9]+[0-9]*/   or  _diell
-    #     "bin() expected positive integer as its first argument but got '$q'"=>
-    #     "bin()は最初の引数として整数値を期待したが、'${q}'を受け取った。";
-    # if(  @_  ){
-    #     _stats_set_data @_;
-    # }else{
-    #     _all_undefP @stats_data   and
-    #         _diell(  "bin() called without arguments and before calling any statistical functions such as sum(), mean(), etc. to set the default data"=>
-    #                  "bin()を引数無しで呼び出したが、その前にsum()やmean()のように統計のデフォルトデータを設定する関数は呼んでいない。"  );
-    # }
-
-    # $q > 1   or   re
-
     @stats_data=  sort {$a<=>$b} @stats_data;
 
 
