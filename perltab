@@ -1818,8 +1818,9 @@ sub _reformatNums{  map {_reformatNum} @_  }
     
 #  Return sum of numbers in @stats_data
 sub _sum(){
+    return  undef               if  !n;
     return  $stats_seenNaN      if  $stats_seenNaN;
-    return  'NaN'               if  !n  ||  $stats_seenInfPlus && $stats_seenInfMnus;
+    return  'NaN'               if  $stats_seenInfPlus && $stats_seenInfMnus;
     return  $stats_seenInfPlus  if  $stats_seenInfPlus;
     return  $stats_seenInfMnus  if  $stats_seenInfMnus;
 
@@ -1833,7 +1834,9 @@ sub sum{   _stats_set_data @_;
 }
 
 
+#  Callers responsible for ensuring n > 0.
 sub _mean{   _sum  / n   }
+
 
 #  Arithmetic mean of numerical values in @_
 sub mean{
@@ -3128,6 +3131,9 @@ Or to remove only the opening comment at top:
 =wk valuefilters|value filters|値フィルター
 =wk --inf|inf|--nan|nan|num|number|isnum
 
+=kw numerical functions
+=head2  Numerical Functions|数値演算関数
+
 =kw bemax|bemin|beminmax
  sub bemax( @VAL )
  Set first element of @VAL to maximum value of @VAL.  undef values are treated as smaller than any number, other non-numerical elements are quietly skipped.
@@ -3142,6 +3148,14 @@ Or to remove only the opening comment at top:
  @VALの先頭要素をbemin( @VAL )のように最小値にし、@VALの２番目の要素をbemax( @VAL )にする。
 =wk bemax|bemin|beminmax
 =wk numeric|数値
+
+=kw sum
+ sub sum( @VAL )
+ Return sum of numerical values in @VAL, ignoring non-numerical values.  Returns undef if @VAL contains no numerical values.  Tries to handle special numerical values such as {inf, -inf, nan, -NaN} reasonably.
+ @VALに含まれている数値の和を返す。@VALにある数値でない値は無視される。@VALに数値がなければ、undefを返す。{inf, -inf, nan, -NaN}のような特殊な数値は適切に扱われる。
+=wk sum
+=wk numerical functions
+
 
 =head2  Other Functions|その他の関数
 
