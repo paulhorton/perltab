@@ -1626,7 +1626,8 @@ state sub printSection_ifNotYetPrinted(){
           @colsToMov=   map  {idx_of $_}  @_;
           my %seen;
           for(  @colsToMov  ){
-              _diell("In $callerName; column to move '$_' given twice",  "${callerName}で、移動すべき列'${_}'は重複している。")
+              _diell("In $callerName; column to move '$_' given twice"=>
+                     "${callerName}で、移動すべき列'${_}'は重複している。"  )
                   if $seen{$_}++;
           }
       }
@@ -1738,21 +1739,8 @@ sub _toBold{
 
 #────────────────────  Statistics Routines  ────────────────────
 
-my @stats_data= (undef);
+my @stats_data;
 
-sub _all_undefP{
-    return  't'   if grep {!defined} @_;
-    return;
-}
-
-#  Return number of numerical values passed into more recent stats routine.
-sub n(){
-    _all_undefP @stats_data   and
-        _diell(  "n() called before calling any statistical functions such as sum(), mean(), etc."=>
-                 "n()を呼び出す前にsum()やmean()のような統計関数を呼ぶ必要がある。"  );
-
-    return  0 + @stats_data;
-}
 
 my $stats_numSigDig;  #Max number of significant digits in @stats_data, for prettier output.
 
@@ -1818,7 +1806,7 @@ sub _reformatNums{  map {_reformatNum} @_  }
     
 #  Return sum of numbers in @stats_data
 sub _sum(){
-    return  undef               if  !n;
+    return  undef               if  !@stats_data;
     return  $stats_seenNaN      if  $stats_seenNaN;
     return  'NaN'               if  $stats_seenInfPlus && $stats_seenInfMnus;
     return  $stats_seenInfPlus  if  $stats_seenInfPlus;
@@ -1829,32 +1817,37 @@ sub _sum(){
 
 
 #  Return sum of numbers in @_
-sub sum{   _stats_set_data @_;
-           return _sum;
+sub sum{   
+    _stats_set_data @_   if @_;
+
+    @stats_data   or   _diell
+        'tried to compute sum of list with no numbers.'=>
+        '数値を含んでないリストの和を求めようとした。';
+
+    return _sum;
 }
 
 
-#  Callers responsible for ensuring n > 0.
-sub _mean{   _sum  / n   }
+
+sub _mean(){   @stats_data?   _sum  / @stats_data   :  undef   }
 
 
 #  Arithmetic mean of numerical values in @_
 sub mean{
-    if(  @_  ){
-        _stats_set_data @_;
-    }else{
-        _all_undefP @stats_data   and
-            _diell(  "mean() called without arguments and before calling any statistical functions such as sum(), stdev(), etc. to set the default data"=>
-                     "mean()を引数無しで呼び出したが、その前にsum()やstdev()のように統計のデフォルトデータを設定する関数は呼んでいない。"  );
-    }
+    _stats_set_data @_   if @_;
+
+    @stats_data   or   _diell
+        'tried to compute mean of list with no numbers.'=>
+        '数値を含んでないリストの平均値を求めようとした。';
+
     return _mean;
 }
 
 
-sub _stdev{
-        
+sub _stdev(){
+    return  undef               if !@stats_data;
     return  $stats_seenNaN      if $stats_seenNaN;
-    return  'NaN'               if n < 2;
+    return  'NaN'               if @stats_data < 2;
     return  $stats_seenInfPlus  if $stats_seenInfPlus;
     return  'Inf'               if $stats_seenInfMnus;
 
@@ -1866,23 +1859,17 @@ sub _stdev{
         $ssDev+=  $dev * $dev;
     }
 
-    return  sqrt( $ssDev ) /  (n - 1);
+    return   sqrt( $ssDev )  /  (@stats_data - 1);
 }
 
 
 #  Sample standard deviation of numerical values in @_
 sub stdev{
-    if(  @_  ){
-        _stats_set_data @_;
-    }else{
-        _all_undefP @stats_data   and
-            _diell(  "stdev() called without arguments and before calling any statistical functions such as sum(), mean(), etc. to set the default data"=>
-                     "stdev()を引数無しで呼び出したが、その前にsum()やmean()のように統計のデフォルトデータを設定する関数は呼んでいない。"  );
-    }
-
-    @stats_data > 1   or   _warn
-        'stdev() called with only '.n.' arguments, but standard deviation is undefined for n < 2 elements.'=>
-        'stdev()を'.n.'個の引数で呼び出したが、標準偏差は２個以上の要素がないと値が定義されない。';
+    _stats_set_data @_   if @_;
+        
+    @stats_data   or   _diell
+        'tried to compute stdev of list with no numbers.'=>
+        '数値を含んでないリストの標準偏差を求めようとした。';
 
     return _stdev;
 }
@@ -1933,13 +1920,10 @@ sub _binBoundIdxs{
 sub binner{
     my $q=  shift;
 
-    if(  @_  ){
-        _stats_set_data @_;
-    }else{
-        _all_undefP @stats_data   and
-            _diell(  "binner() called without arguments and before calling any statistical functions such as sum(), mean(), etc. to set the default data"=>
-                     "binner()を引数無しで呼び出したが、その前にsum()やmean()のように統計のデフォルトデータを設定する関数は呼んでいない。"  );
-    }
+    _stats_set_data @_   if @_;
+
+    _diell(  'binner() called without numerical values to work with.'=>
+             'binner()が呼び出されたが、扱うべき数値は与えられていない。'  );
 
     my @bound= _binBoundIdxs $q;
 
@@ -1956,7 +1940,7 @@ sub binner{
 sub qtiles{
     @_   or   _diell
         'qtiles() called with no arguments.'=>
-        'qtiles()が数値引数無しで呼び出された。';
+        'qtiles()が引数無しで呼び出された。';
 
     my $q=  shift;
     $q=~ /^[1-9]+[0-9]*/   or  _diell
@@ -1967,17 +1951,11 @@ sub qtiles{
         "qtiles() first argument should be at least 2 but got '$q'"=>
         "qtiles() 第一引数は２≧でないといけないが、'${q}'を受け取った。";
 
-    if(  @_  ){
-        _stats_set_data @_;
-    }else{
-        _all_undefP @stats_data   and
-            _diell(  "qtiles() called without arguments and before calling any statistical functions such as sum(), mean(), etc. to set the default data"=>
-                     "qtiles()を引数無しで呼び出したが、その前にsum()やmean()のように統計のデフォルトデータを設定する関数は呼んでいない。"  );
-    }
-
+    _stats_set_data @_   if @_;
+        
     @stats_data   or   _diell
-        "qtiles(${q},...) called with an empty data list"=>
-        "qtiles(${q},...))が空のデータリストで呼び出された。";
+        'qtiles() called with no numerical arguments to work with.'=>
+        'qtiles()が呼び出されたが、扱うべき数値は与えられていない。';
 
     $q < @stats_data   or   _warn
         "qtiles(${q},...) called with only ".@stats_data.' numbers.'=>
@@ -2003,15 +1981,17 @@ sub qtiles{
 
 
 sub stats{
-    @_    or   return  '';
+    @_    or      _diell
+        'stats() called with no numerical arguments to work with.'=>
+        'stats()が呼び出されたが、扱うべき数値は与えられていない。';
 
     my $stats.=  _reformatNum(  mean @_  );
-    $stats=  'n:'.n."  μ$stats";
+    $stats=  'n:'.@stats_data."  μ$stats";
     @_ < 3   and   return  $stats;
 
     $stats.= '±' . _reformatNum stdev;
 
-    n > 4   or   return $stats;
+    @stats_data > 4   or   return $stats;
 
     my @tile4=  _reformatNums qtiles( 4 );
 
@@ -2033,7 +2013,7 @@ sub openAndProcessInputFiles_forSorting{
         if(  $filename eq '-'  ){
             processInputFile_forSorting  *STDIN, '*STDIN'}
         else{
-            open my $inputFile, '<', $filename   or   _diell("could not open input data file '$filename', $!",
+            open my $inputFile, '<', $filename   or   _diell("could not open input data file '$filename', $!"=>
                                                              "入力データファイル'${filename}が開けなかった。" . decode_utf8 $!);
             processInputFile_forSorting  $inputFile, $filename;
         }
@@ -2588,7 +2568,7 @@ perltab defines functions, such as dit() and speak(), to facilitate files with m
 perltabは(空文字列で表した)欠損値を含むデータを扱いやすくするため、dit()やspeak()のような関数を提供している。
 =wk missing|Missing values|欠損値
 
-=head2  Mixed numerical and non-numerical values|数値と数値でない値の混合
+=head2  Mixed numerical and non-numerical values|数値と数値以外の値の混合
 
 perltab defines functions, such as doNum, to facilitate handling columns with numberical entries mixed with non-numerical strings.
 perltabはdoNumのような関数を提供することにより、数値と数値以外の値が混在する列を扱いやすくしている。
@@ -3135,14 +3115,42 @@ Or to remove only the opening comment at top:
  @VALの先頭要素をbemin( @VAL )のように最小値にし、@VALの２番目の要素をbemax( @VAL )にする。
 =wk bemax|bemin|beminmax
 =wk numeric|数値
+=wk numerical functions
+
+=head2  Statistical Functions|統計関数
+=kw statistical functions
+=kw sum|mean|stdev
+The statistical functions: sum( @VAL ), mean( @VAL ), and stdev( @VAL ) share common behaviors.
+ *  They ignore non-numerical values in @VAL.
+ *  Calling them with non-empty @VAL has the side effect of setting an internal array to the numerical values in @VAL.
+ *  When called with an empty @VAL, if the internal array has been set, they use those values, otherwise the return undef.
+ *  They die with error message if no numerical values are available to perform their operations.
+ *  They try to handle special numerical values such as {inf, -inf, nan, -NaN} reasonably.
+統計関数、sum( @VAL )、mean( @VAL )、及びstdev( @VAL )は以下の共通点を持つ。
+ •  @VALに含まれる数値以外の値は無視される。
+ •  @VALが空でない場合、副作用として@VALに含まれている数値を保存する。
+ •  @VALが空の場合、保存された数値があれば、それを使う。保存された数値がなければundefを返す。
+ •  {inf, -inf, nan, -NaN}のような特殊の数値を適切に処理するように努力する。
+=wk sum|mean|stdev
 
 =kw sum
  sub sum( @VAL )
- Return sum of numerical values in @VAL, ignoring non-numerical values.  Returns undef if @VAL contains no numerical values.  Tries to handle special numerical values such as {inf, -inf, nan, -NaN} reasonably.
- @VALに含まれている数値の和を返す。@VALにある数値でない値は無視される。@VALに数値がなければ、undefを返す。{inf, -inf, nan, -NaN}のような特殊な数値は適切に扱われる。
+ Returns the sum of the numerical values in @VAL.
+ @VALに含まれている数値の和を返す。
 =wk sum
-=wk numerical functions
 
+=kw mean
+ sub mean( @VAL )
+ Returns the mean of the numerical values in @VAL.
+ @VALに含まれている数値の平均値を返す。
+=wk mean
+
+=kw stdev
+ sub stdev( @VAL )
+ Returns the mean of the numerical values in @VAL.
+ @VALに含まれている数値の標準偏差を返す。
+=wk stdev
+=wk statistical functions
 
 =head2  Other Functions|その他の関数
 
