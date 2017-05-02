@@ -2235,7 +2235,7 @@ sub _parseSortSpecsStr{
         $badC   and   dieSpec( "character '$badC' appears more than once, which is not allowed in a sort comparison spec"=>
                                "文字'${badC}'が２回以上に現れたが、並べ替え方の指定に文字の繰り返しは許されない");
 
-        push $sortCmpSpecs{$forPass}, $spec;
+        push  @{ $sortCmpSpecs{$forPass}},  $spec;
     }
 }#_parseSortSpec
 

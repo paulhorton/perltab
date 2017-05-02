@@ -1,11 +1,10 @@
 #!/usr/bin/perl -w
 #  Author: Paul Horton
-#  Organization: Computational Biology Research Center, AIST, Japan
 #  Copyright (C) 2011, Paul Horton, All rights reserved.
 #  Creation Date: 2011.1.8
 #  Last Modification: $Date: 2013/10/20 09:09:37 $
 #
-#  regression tester for perltab.
+#  Regression tester for perltab.
 #
 use strict;
 use feature qw(say);
