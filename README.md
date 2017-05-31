@@ -32,7 +32,7 @@ or, as long as the column labels do not look like numbers, this will also work:
 `% perltab -e 'bemin $m, F(hei)' -z 'say $m'`
 
 
-To do that on the command line without perltab is quite difficult without a *LOT* of typing, mostly because non-numerical values must be silently skipped but also because $m needed to be initialized properly (for example zero won't work if negative values are present in the data).  perltab defines several reasonably mnenmonic functions to handle issues like that transparently.
+To do that on the command line without perltab is quite difficult without a *LOT* of typing, mostly because non-numerical values must be silently skipped but also because $m needs to be initialized properly (for example zero won't work if negative values are present in the data).  perltab defines several reasonably mnenmonic functions to handle issues like that transparently.
 
 
 The perltab documention `% perltab -h` has close to 50 examples of using perltab and all of these are represented in the regression test suite.
