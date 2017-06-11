@@ -127,7 +127,7 @@ sub donum(&@){  goto &doNum  }
 # _biggerP( NUM1, NUM2 )
 #Return true iff NUM1 would be a preferable value to NUM2 when looking for big values.
 #For special numbers the preference being  1. inf, 2. normal numbers, 3. nan, 4. -nan 5. -inf
-#Used by bemin.  Could be made public by renaming to lesserP if I find a direct use case.
+#Used by bemin.  Could be made public by renaming to biggerP if I find a direct use case.
 sub _biggerP{
     if(  $_[0]=~ /\d/  ){
         if(  $_[1]=~ /\d/      ){   return  $_[0] > $_[1]      }
