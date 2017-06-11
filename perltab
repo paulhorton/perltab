@@ -1414,10 +1414,10 @@ state sub printSection_ifNotYetPrinted(){
                   state @FprevOut;   ### assert: $finalPassP_
                   if(  @FprevOut  ){
                       @F == @FprevOut   or  _diell("When printing, number of columns changed between formerly printed row '@FprevOut' and current row '@F'",
-                                                   "行を出力しようとしたら、前に出力した行'@{FprevOut}'と列数と現在行'@{F}'の列数が一致しない。");
+                                                   "行を出力しようとしたら、前に出力した行'@{FprevOut}'の列数と現在行'@{F}'の列数が一致しない。");
                       for( 0..$#F ){
                           if(  $F[$_] eq $FprevOut[$_]  ){    $F[$_]  =  dittoMark   }
-                          else{                            $FprevOut[$_]  =  $F[$_]   }
+                          else{                           $FprevOut[$_]  =  $F[$_]   }
                       }
                   }
                   else{
