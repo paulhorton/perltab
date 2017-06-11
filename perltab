@@ -802,12 +802,9 @@ END2             z2|end2=*
   dlock $bundleFlag;  dlock $bundleOpt;  lock_hash %default;  lock_hash %needVal_optS;  lock_hash %toOptName;  lock_hash %scriptOptS;
 
 
+  #  Set scripts and return information to prepend to @ARGV from contents of file with pathname passed as $_[0].
   my sub parseScriptFile{
-      my $optKey=  shift;
-      @ARGV   or   _dieUsage(  "option '$optKey' needs a following argument none found."=>
-                               "オプション${optKey}の後に来るはずの引数が見つからない。"  );
-      $opt_{scriptFile}=  shift @ARGV;
-
+      $opt_{scriptFile}=  shift;
       $opt_{scriptFile}=~ /[.][ct]sv$/
           and   _dieUsage("filename '$opt_{scriptFile}' looks like a filename of input data file, but is positioned as a script filename."=>
                           "ファイル名'$opt_{scriptFile}'はスクリプト・ファイル名の位置にあるが、入力データファイルのファイル名に見える。");
@@ -859,8 +856,11 @@ END2             z2|end2=*
           _printHelp_thenExit( @ARGV )                                  ;next;}
 
       if(   $arg=~  /^( -f|--script-file )$/x  ){
-          unshift @ARGV, parseScriptFile $arg                           ;next;}
-
+          my $pathname=  shift @ARGV   or
+              _dieUsage(  "option '${arg}' needs a following argument but none found."=>
+                          "オプション'${arg}'の後に来るはずの引数が見つからない。"  );
+          unshift @ARGV, parseScriptFile $pathname                     ;next;}
+      
       ;                #Ditto and sort bundled together
       if(   $arg=~  /^-Ds/                                                  ){
           $opt_{dittoMark}= '';
