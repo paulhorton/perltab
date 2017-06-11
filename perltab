@@ -1009,7 +1009,7 @@ if(  !$opt_{noHeadP}  ){
 $script_{DATA}  //= $script_{ROWS};
 $script_{DATA2} //= $script_{ROWS2};
 
-#  PH. The following code line added 201700531.
+#  PH. The following code line added 20170531.
 #  Intended to allow   % perltab -g  datafile
 #  To dump all data lines (i.e. skipping head and comment lines.
 #  and  % perltab -c to count such values.
@@ -1339,8 +1339,17 @@ state sub printSection_ifNotYetPrinted(){
           }
           %Nin=  %N;
 
-          _incrNRs(  _runScript 'HEAD'.curPass  );
-
+          if(  $script_{'HEAD'.curPass}  ){
+              my $scriptRetVal=  _runScript 'HEAD'.curPass;
+              _incrNRs $scriptRetVal;
+              if(   $scriptRetVal  &&  $curPassFinalP_   ){
+                  exit 0    if $opt_{grepQuietP};                               #PROGRAM EXIT POINT
+                  if(  $opt_{grepP}  ){
+                      say  for @commentAtTop;   say  $head;
+                  }
+              }
+          }                  
+          
           do{   say for @commentAtTop;  say @F   }if  $printEachRowP;
           @FprevIn= @Fin;
       }# if/else $head already defined (from a preceding input file)
@@ -1387,17 +1396,15 @@ state sub printSection_ifNotYetPrinted(){
           @H= @Hin,  %N= %Nin    if  !$opt_{noHeadP};
           my $scriptRetVal=  _runScript 'DATA'.curPass;
           _incrNRs $scriptRetVal;
-          if(  $scriptRetVal  ){
-              if(  $curPassFinalP_   ){
-                  exit 0    if $opt_{grepQuietP};                               #PROGRAM EXIT POINT
-                  if(  $opt_{grepP}  ){
-                      #Print head if it has not been printed yet  (NRT == 1)
-                      #And will not be via the say @F below     (not in head)
-                      if(   NRT == 1   and   !$opt_{noHeadP}   ){
-                          say  for @commentAtTop;   say  $head;
-                      }
-                      $printCurRowP= 't';
+          if(   $scriptRetVal  &&  $curPassFinalP_   ){
+              exit 0    if $opt_{grepQuietP};                                   #PROGRAM EXIT POINT
+              if(  $opt_{grepP}  ){
+                  #Print head if it has not been printed yet  (NRT == 1)
+                  #And will not be via the say @F below     (not in head)
+                  if(   NRT == 1   and   !$opt_{noHeadP}   ){
+                      say  for @commentAtTop;   say  $head;
                   }
+                  $printCurRowP= 't';
               }
           }
 
