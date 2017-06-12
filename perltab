@@ -2926,12 +2926,12 @@ By the way, under the -g|--grep option if any rows are printed the opening comme
 If you do not like the comments, an easy way to remove them is:
 このコメントを除きたければ、以下のコマンドは使える。
 
- % perltab -ge '...' |  perl -nE 'chomp; /^[^;]/ and say'
+ % perltab -ge '...' |  sed -ne '/^[^;]/ p'
 
 Or to remove only the opening comment at top:
 或は入力先頭のコメントのみを除くには以下のコマンドが便利。
 
- % perltab -ge '...' |  perl -nE 'chomp; $h||=/^[^;]/; $h and say'
+ % perltab -ge '...' |  sed -ne '/^[^;]/,$ p'
 =wk -g|--grep
 =wk stanza
 
