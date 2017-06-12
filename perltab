@@ -1097,7 +1097,7 @@ sub _warn{
 
 # ────────────────────  Numish Related Utilities  ────────────────────
 #Return true iff $_[0] is numish.  $_ used if argument omitted.
-sub numP(_){   $_[0]=~ /$numRE_/? 't' : undef   }
+sub numP(_){    defined $_[0] && $_[0]=~ /$numRE_/?  't' : undef    }
 
 #Return $_[0] if it looks like a number, otherwise return 0.  $_ used if argument omitted.
 sub num0(_){  numP $_[0] ? $_[0] : 0  }
@@ -1355,6 +1355,7 @@ state sub printStanza_ifNotYetPrinted(){
       }# if/else $head already defined (from a preceding input file)
 
 
+
     START_PROCESSING_DATA_LINES:
       if(   $prevPass ne curPass   ){### assert:  $opt_{noHeadP}
           $prevPass=  curPass;
@@ -1362,12 +1363,23 @@ state sub printStanza_ifNotYetPrinted(){
       }
 
       $ih= 0;   my @comment;
+      my $atTopOfStanzaP=  't';
       while(  <$inputFile>   ){
-          push( @comment, $_ ), next   if  /^;/ or /^\n/;
+          #Handle comments.
+          if(   /^$/  or  /^;/   ){
+              push(  @comment,  $_);
+              $atTopOfStanzaP=  't'    if  /^$/;
+              next;
+          }
 
-          setStanza( @comment ),  @comment= ()   if @comment;
+          #Input is a non-comment line...
+          chomp(  $curRow= $_);
 
-          chomp(  $curRow= $_  );
+          if(  @comment  &&  $atTopOfStanzaP){
+              setStanza(  @comment);
+              @comment=  ();
+          }
+          $atTopOfStanzaP=  undef;
 
           @Fin=   split  $opt_{inputFieldSep},  $curRow,  -1;
 
