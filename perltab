@@ -1301,8 +1301,8 @@ state sub printStanza_ifNotYetPrinted(){
       state %Nin;
       state $head= undef;
 
-      my $curPassFinalP_=   curPass eq '2'  ||  !$script_{DATA2} && !$script_{HEAD2};
-      my $printEachRowP=  $opt_{printEachRowP} && $curPassFinalP_;
+      my $curPassFinalP=   curPass eq '2'  ||  !$script_{DATA2} && !$script_{HEAD2};
+      my $printEachRowP=  $opt_{printEachRowP} && $curPassFinalP;
 
 
       goto START_PROCESSING_DATA_LINES  if $opt_{noHeadP};
@@ -1342,7 +1342,7 @@ state sub printStanza_ifNotYetPrinted(){
           if(  $script_{'HEAD'.curPass}  ){
               my $scriptRetVal=  _runScript 'HEAD'.curPass;
               _incrNRs $scriptRetVal;
-              if(   $scriptRetVal  &&  $curPassFinalP_   ){
+              if(   $scriptRetVal  &&  $curPassFinalP   ){
                   exit 0    if $opt_{grepQuietP};                               #PROGRAM EXIT POINT
                   if(  $opt_{grepP}  ){
                       say  for @commentAtTop;   say  $head;
@@ -1396,7 +1396,7 @@ state sub printStanza_ifNotYetPrinted(){
           @H= @Hin,  %N= %Nin    if  !$opt_{noHeadP};
           my $scriptRetVal=  _runScript 'DATA'.curPass;
           _incrNRs $scriptRetVal;
-          if(   $scriptRetVal  &&  $curPassFinalP_   ){
+          if(   $scriptRetVal  &&  $curPassFinalP   ){
               exit 0    if $opt_{grepQuietP};                                   #PROGRAM EXIT POINT
               if(  $opt_{grepP}  ){
                   #Print head if it has not been printed yet  (NRT == 1)
