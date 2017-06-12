@@ -1389,9 +1389,9 @@ state sub printStanza_ifNotYetPrinted(){
               _diell("Error unequal number of columns.  A previous row had $p columns, but on line $.: '$curRow' has $n columns.",
                      "列の本数が合わない。前の行では${p}本の列があったが、${.}行目の現在行には${n}列しかない。");
           }
-          
+
           #Pad trailing columns with the missingMark is necessary.
-          @Fin == $maxNumColsToExpect   or   push  @Fin,  missingMark x  ($maxNumColsToExpect-@Fin);
+          @Fin == $maxNumColsToExpect   or   push  @Fin,  (missingMark) x  ($maxNumColsToExpect-@Fin);
               
           @F= @Fin;
 
