@@ -16,7 +16,14 @@ sub max{   $_[0] > $_[1]?  $_[0]  :  $_[1]   }
 
 $ENV{LANG}= 'C';  #Some test output may contain locale dependent warnings.
 
-my $usage=  "Usage: $0 [-atq] [num [num]]\n";
+my $usage=  "Usage: $0 [-atq] [num [num]]
+  -a   abortOnError
+  -t   justPrint
+  -q   quiet
+";
+
+
+die $usage    if  grep {$_=~ /^--?h/}  @ARGV;
 
 
 my %optSpec=(  a=>'abortOnErrorP',
