@@ -137,7 +137,7 @@ for my $num(  $begTestNum..$endTestNum  ){
     for my $i(  0..$maxFin  ){
         die  'actual output has no line #',    1+$i, "\nCommand $num was expecting: '$expectedOutput[$i]'."
             if  $i > $#actualOutput;
-        die  'actual output has extra line #', 1+$i, ", '$actualOutput[$i]'."
+        die  "Command $num; actual output has extra line #", 1+$i, ", '$actualOutput[$i]'."
             if  $i > $#expectedOutput;
         if(   $actualOutput[$i] ne $expectedOutput[$i]  ){
             $testFailureMsg=  "At line #$i; actual output below:\n$actualOutput[$i]\n$expectedOutput[$i]\nDid not match expected output above.";
