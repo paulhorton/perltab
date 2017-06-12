@@ -1009,12 +1009,6 @@ if(  !$opt_{noHeadP}  ){
 $script_{DATA}  //= $script_{ROWS};
 $script_{DATA2} //= $script_{ROWS2};
 
-#  PH. The following code line added 20170531.
-#  Intended to allow   % perltab -g  datafile
-#  To dump all data lines (i.e. skipping head and comment lines.
-#  and  % perltab -c to count such values.
-#  TODO: Add a description of this behavior to official document this if it seems to work well.
-$script_{DATA} //= '1;'    if  none {defined} @script_{qw(ROWS HEAD)}  &&  any {defined} @opt_{qw(countP grepP grepQuietP)};
 
 doctorScript(  $script_{$_}, _ll("$_ script constructed by combination"=>"組み合わせた${_}スクリプト"),
                _ll("When attempting to construct $_ script by combining two scripts, "=>"${_}スクリプトとしてふたつのスクリプトの組み合わせたところ、"))
