@@ -122,13 +122,13 @@ sub donum(&@){  goto &doNum  }
 
 
 
-#Return true iff NUM1 is greater than NUM2,
-#where NUM1 and NUM2 are assumed to be normal or special {inf, -inf, nan, -nan} numbers.
-# _biggerP( NUM1, NUM2 )
-#Return true iff NUM1 would be a preferable value to NUM2 when looking for big values.
-#For special numbers the preference being  1. inf, 2. normal numbers, 3. nan, 4. -nan 5. -inf
-#Used by bemin.  Could be made public by renaming to biggerP if I find a direct use case.
-sub _biggerP{
+#  bigger( STRING1, STRING2 )
+#  Return true iff NUM1 would be a preferable value to NUM2 when looking for big values.
+#  For special numbers the preference being  1. inf, 2. normal numbers, 3. nan, 4. -nan 5. -inf
+sub bigger{
+    defined $_[0]   and  $_[0]=~ /$numRE_/    or  return;
+    defined $_[1]                             or  return 't';
+
     if(  $_[0]=~ /\d/  ){
         if(  $_[1]=~ /\d/      ){   return  $_[0] > $_[1]      }
         if(  $_[1]=~ /^inf$/i  ){   return                     }
@@ -146,14 +146,16 @@ sub _biggerP{
     if(  $_[0]=~ /^nan$/i  )     {   return(  $_[1]=~ /^-inf$/i  or  $_[1]=~ /^-nan$/i  )}
     if(  $_[0]=~ /^-nan$/i )     {   return   $_[1]=~ /^-inf$/i  }
     return;   # $_[0] is -inf
-}#_biggerP
+}#bigger
 
 
-# _lesserP( NUM1, NUM2 )
-#Return true iff NUM1 would be a preferable value to NUM2 when looking for small values.
-#For special numbers the preference being  1. -inf, 2. normal numbers, 3. -nan, 4. nan 5. inf
-#Used by bemin.  Could be made public by renaming to lesserP if I find a direct use case.
-sub _lesserP{
+#  lesser( STRING1, STRING2 )
+#  Return true iff NUM1 would be a preferable value to NUM2 when looking for small values.
+#  For special numbers the preference being  1. inf, 2. normal numbers, 3. nan, 4. -nan 5. -inf
+sub lesser($$){
+    defined $_[0]   and  $_[0]=~ /$numRE_/    or  return;
+    defined $_[1]                             or  return 't';
+
     if(  $_[0]=~ /\d/  ){
         if(  $_[1]=~ /\d/      ){   return  $_[0] < $_[1]     }
         if(  $_[1]=~ /^-inf/   ){   return                    }
@@ -171,7 +173,7 @@ sub _lesserP{
     if(  $_[0]=~ /^-nan$/i )    {   return( $_[1]=~ /^inf$/i  or  $_[1]=~ /^nan$/i  )}
     if(  $_[0]=~ /^nan$/i  )    {   return  $_[1]=~ /^inf$/i   }
     return;   # $_[0] is inf
-}#_lesserP
+}#lesser
 
 
 #Set first argument to maximum value of all arguments, including itself.
@@ -179,20 +181,14 @@ sub _lesserP{
 #defined values which do not look like numbers are skipped.
 sub bemax{
     for (@_[1..$#_]){
-        if(  defined $_  ){
-            /$numRE_/   or   next;
-            $_[0]= $_    if  !defined $_[0]  or  _biggerP( $_, $_[0] );
-        }
+        $_[0]= $_    if  bigger $_, $_[0];
     }
 }
 
 #Like bemax.
 sub bemin{
     for (@_[1..$#_]){
-        if(  defined $_  ){
-            /$numRE_/   or   next;
-            $_[0]= $_    if  !defined $_[0]  or  _lesserP( $_, $_[0] );
-        }
+        $_[0]= $_    if  lesser $_, $_[0];
     }
 }
 
@@ -200,11 +196,8 @@ sub bemin{
 #Like bemax.
 sub beminmax{
     for (@_[2..$#_]){
-        if(  defined $_  ){
-            /$numRE_/   or   next;
-            $_[0]= $_    if  !defined $_[0]  or  _lesserP( $_, $_[0] );
-            $_[1]= $_    if  !defined $_[1]  or  _biggerP( $_, $_[1] );
-        }
+        $_[0]= $_    if  lesser $_, $_[0];
+        $_[1]= $_    if  bigger $_, $_[1];
     }
 }
 
@@ -3139,6 +3132,17 @@ Or to remove only the opening comment at top:
  Set first  element of @VAL minimum as in bemin( @VAL ), and second element of @VAL maximum as in bemax( @VAL ).
  @VALの先頭要素をbemin( @VAL )のように最小値にし、@VALの２番目の要素をbemax( @VAL )にする。
 =wk bemax|bemin|beminmax
+
+=kw bigger
+ sub bigger( STRING1, STRING2 )
+ Returns iff string STRING1 would be preferable to STRING2 when looking for large numbers.  Tries to handle special numerical values (e.g. 'inf') and non-numerical strings in a robust way.  For example bigger( 'dog', 5) returns false.
+ 大きい数値を探している場合、STRING1がSTRING2より良ければ、真を返す。infのような特殊な数値や非数値の値を渡されてもエラーを投げずに適切な返り値を返す。例えば、bigger( 'dog', 5 )は偽を返す。
+=wk bigger
+=kw lesser
+ sub lesser( STRING1, STRING2 )
+ Returns iff string STRING1 would be preferable to STRING2 when looking for small numbers.  Tries to handle special numerical values (e.g. 'inf') and non-numerical strings in a robust way.  For example bigger( 'dog', 5) returns false.
+ 小さい数値を探している場合、STRING1がSTRING2より良ければ、真を返す。infのような特殊な数値や非数値の値を渡されてもエラーを投げずに適切な返り値を返す。例えば、bigger( 'dog', 5 )は偽を返す。
+=wk lesser
 =wk numeric|数値
 =wk numerical functions
 
@@ -3388,6 +3392,18 @@ The statistical functions: sum( @VAL ), mean( @VAL ), and stdev( @VAL ) share co
  ids.txtにあるIDの行を抽出した後、ids.txtと同じ順番に並べ替える。
  % perltab -b 'SNset %S, "ids.txt"' -s '$S{ F(ID) }' selected.tsv
 =wk SNset|-g|--grep|grep
+
+=kw bigger
+  Print rows with weight > 60.
+  weightが60より大きい行を表示する。
+  % perltab -gd 'bigger F(weight), 60'
+=wk bigger
+
+=kw lesser
+  Print rows with weight < 60.
+  weightが60より小さい行を表示する。
+  % perltab -gd 'lesser F(weight), 60'
+=wk lesser
 
 =kw bemin
  Print minimum value of column 'banana', quietly ignoring non-numerical values.

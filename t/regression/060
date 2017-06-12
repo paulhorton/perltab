@@ -1,0 +1,6 @@
+Print rows with weight < 60.
+perltab --test -gd 'lesser F(weight), 60'  t/regression/input/heightWeightShoesize.tsv 
+MD5:t/regression/input/heightWeightShoesize.tsv	eWLGazGphvq6mm5N/wKmQw
+ID	height	weight	shoe size
+3	160	50	9
+5		55	8
