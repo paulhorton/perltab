@@ -1,5 +1,5 @@
 ;I have put some opening comments here just to show how perltab handles them.
-;The empty line before the languages section should also be treated as a comment line.
+;The empty line marking the languages stanza should also be treated as a comment line.
 feature,apple,mikan,pear,peach,banana
 weight,100,100,165,175,183
 cost,300,347,800,500,218

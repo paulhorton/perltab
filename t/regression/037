@@ -1,8 +1,8 @@
 Lexically sort rows by label, except for the first.  Comment lines are also output by -p.
 perltab --test -pe '@F= F($H[0], sort @H[1..$#H])'  t/regression/input/fruit.tsv
-MD5:t/regression/input/fruit.tsv	2nGYsmtDLAriBfvS8/2Dng
+MD5:t/regression/input/fruit.tsv	MnspXc0mSnyv98Mqd/Xltg
 ;I have put some opening comments here just to show how perltab handles them.
-;The empty line before the languages section should also be treated as a comment line.
+;The empty line marking the languages stanza should also be treated as a comment line.
 feature	apple	banana	mikan	peach	pear
 weight	100	183	100	175	165
 cost	300	218	347	500	800

@@ -1,8 +1,8 @@
 Linearly normalize numbers in column 'banana' to be in range [0,1].
 perltab --test -pe 'beminmax $min, $max, F(banana)'  -e2 'donum  sub{ $_= ($_-$min) / ($max-$min) },  F(banana)'  t/regression/input/fruit.tsv
-MD5:t/regression/input/fruit.tsv	2nGYsmtDLAriBfvS8/2Dng
+MD5:t/regression/input/fruit.tsv	MnspXc0mSnyv98Mqd/Xltg
 ;I have put some opening comments here just to show how perltab handles them.
-;The empty line before the languages section should also be treated as a comment line.
+;The empty line marking the languages stanza should also be treated as a comment line.
 feature	apple	mikan	pear	peach	banana
 weight	100	100	165	175	0.834123222748815
 cost	300	347	800	500	1
