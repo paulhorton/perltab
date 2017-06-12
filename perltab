@@ -1259,25 +1259,25 @@ sub  F : lvalue{   @F[N@_]   }
 
 
 
-#section() returns dualvar yielding the section number in a numerical context.
+#stanza() returns dualvar yielding the stanza number in a numerical context.
 #In a string context it includes trailing newlines so an otherwise empty string comment is "\n", while no comment at all is ''.
-my $section;
-my $sectionPrintedP;
+my $stanza;
+my $stanzaPrintedP;
 
-sub section(){   $section    }
-state sub clearSection(){   $section=  dualvar( $section, '' );
-                            $sectionPrintedP=  undef                      }
+sub stanza(){   $stanza    }
+state sub clearStanza(){   $stanza=  dualvar( $stanza, '' );
+                            $stanzaPrintedP=  undef                      }
 
-state sub zeroSection() {   $section=  dualvar( 0, '');
-                            $sectionPrintedP=  undef                      }
+state sub zeroStanza() {   $stanza=  dualvar( 0, '');
+                            $stanzaPrintedP=  undef                      }
 
-state sub setSection    {   $section=  dualvar ++$section,  join '', @_;
-                            $sectionPrintedP=  undef                      }
+state sub setStanza    {   $stanza=  dualvar ++$stanza,  join '', @_;
+                            $stanzaPrintedP=  undef                      }
 
-state sub printSection_ifNotYetPrinted(){
-    return    if  $sectionPrintedP;
-    print $section;
-    $sectionPrintedP=  't';
+state sub printStanza_ifNotYetPrinted(){
+    return    if  $stanzaPrintedP;
+    print $stanza;
+    $stanzaPrintedP=  't';
 }
 
 
@@ -1324,7 +1324,7 @@ state sub printSection_ifNotYetPrinted(){
       }
       else{
           $prevPass= curPass;
-          zeroSection;
+          zeroStanza;
           $head= $curRow;  $ih= 1;
 
           dunlock \@Hin;
@@ -1358,14 +1358,14 @@ state sub printSection_ifNotYetPrinted(){
     START_PROCESSING_DATA_LINES:
       if(   $prevPass ne curPass   ){### assert:  $opt_{noHeadP}
           $prevPass=  curPass;
-          zeroSection;
+          zeroStanza;
       }
 
       $ih= 0;   my @comment;
       while(  <$inputFile>   ){
           push( @comment, $_ ), next   if  /^;/ or /^\n/;
 
-          setSection( @comment ),  @comment= ()   if @comment;
+          setStanza( @comment ),  @comment= ()   if @comment;
 
           chomp(  $curRow= $_  );
 
@@ -1409,7 +1409,7 @@ state sub printSection_ifNotYetPrinted(){
           }
 
           if(   $printCurRowP  ){
-              printSection_ifNotYetPrinted;
+              printStanza_ifNotYetPrinted;
               if(  defined dittoMark  ){
                   state @FprevOut;   ### assert: $finalPassP_
                   if(  @FprevOut  ){
@@ -2042,12 +2042,12 @@ my @sort_keyVec;
 my @sortPerm;  #To hold permutation of rows, such that sort_row[ @sortPerm ] equals the rows in sorted order.
 
 
-#  Before sorting, the section consists of row numbers [oldBeg, oldFin].
-my %section__oldBeg_comment;
-my %section__oldBeg_oldFin;
-my %section__newBeg_comment;
+#  Before sorting, the stanza consists of row numbers [oldBeg, oldFin].
+my %stanza__oldBeg_comment;
+my %stanza__oldBeg_oldFin;
+my %stanza__newBeg_comment;
 
-my $prevSectionRN;
+my $prevStanzaRN;
 
 state sub configure_sort;
 state sub sortKeylev_recurseOnTies;
@@ -2059,37 +2059,37 @@ sub sortData_andPrint{
     sortKeylev_recurseOnTies   0,  0, 0+@sortPerm;
     dlock @sortPerm;
 
-    if(  defined $prevSectionRN  ){
-        $section__oldBeg_oldFin{$prevSectionRN}=  $#sortPerm;
+    if(  defined $prevStanzaRN  ){
+        $stanza__oldBeg_oldFin{$prevStanzaRN}=  $#sortPerm;
 
         my %newBoundaryS=  (0=>undef, 0+@sortPerm=>undef);
         my %newBeg_newEnd;
 
-        #Place intact section comments into %section__newBeg_comment.
+        #Place intact stanza comments into %stanza__newBeg_comment.
         for  my $i  (0..$#sortPerm){
             my $oldBeg=  $sortPerm[$i];
-            exists $section__oldBeg_oldFin{$oldBeg}   or   next;
+            exists $stanza__oldBeg_oldFin{$oldBeg}   or   next;
 
-            #See if section is intact
-            my $oldFin=  $section__oldBeg_oldFin{$oldBeg};
+            #See if stanza is intact
+            my $oldFin=  $stanza__oldBeg_oldFin{$oldBeg};
 
             my( $newBeg, $newFin)=  ($i,$i);
             $newBeg--  while  $newBeg > 0           &&  $sortPerm[$newBeg-1] >= $oldBeg  &&  $sortPerm[$newBeg-1] <= $oldFin;
             $newFin++  while  $newFin < $#sortPerm  &&  $sortPerm[$newFin+1] >= $oldBeg  &&  $sortPerm[$newFin+1] <= $oldFin;
             if(  $newFin - $newBeg  ==  $oldFin - $oldBeg  ){
-                $section__newBeg_comment{$newBeg}=
-                    $section__oldBeg_comment{$oldBeg}   if exists $section__oldBeg_comment{$oldBeg};
+                $stanza__newBeg_comment{$newBeg}=
+                    $stanza__oldBeg_comment{$oldBeg}   if exists $stanza__oldBeg_comment{$oldBeg};
                 $newBoundaryS{$newBeg}=  undef;
                 $newBeg_newEnd{$newBeg}=  $newFin+1;
 
             }
         }#for  $i (0..$#sortPerm)
 
-        #Remove section comments which are not bracketed.
+        #Remove stanza comments which are not bracketed.
         while(   my( $newBeg, $newEnd )=  each %newBeg_newEnd   ){
             if(   !exists $newBoundaryS{$newBeg}  or
                   !exists $newBoundaryS{$newEnd}    ){
-                delete $section__newBeg_comment{$newBeg};   #Because those rows are no longer bracketed.
+                delete $stanza__newBeg_comment{$newBeg};   #Because those rows are no longer bracketed.
             }
         }
     }
@@ -2102,12 +2102,12 @@ sub sortData_andPrint{
         for  my $i  (0..$#sortPerm){
             my @F= my @Fverb=   split  $opt_{inputFieldSep},  $sort_row[ $sortPerm[$i]],  -1;
             $i  and  $F[$_] eq $FprevIn[$_]   and   $F[$_]= dittoMark    for 0..$#F;
-            print  $section__newBeg_comment{$i}   if exists $section__newBeg_comment{$i};
+            print  $stanza__newBeg_comment{$i}   if exists $stanza__newBeg_comment{$i};
             say @F;    @FprevIn= @Fverb;
         }}
     else{
         for  my $i  (0..$#sortPerm){
-            print  $section__newBeg_comment{$i}   if  exists $section__newBeg_comment{$i};
+            print  $stanza__newBeg_comment{$i}   if  exists $stanza__newBeg_comment{$i};
             say  $sort_row[ $sortPerm[$i]];
         }
     }
@@ -2146,8 +2146,8 @@ sub processInputFile_forSorting{
     else{
         $prevPass= curPass;
         say  for @commentAtTop;
-        zeroSection;
-        $prevSectionRN= undef;
+        zeroStanza;
+        $prevStanzaRN= undef;
         undef %N;
         $head=  $curRow;
         @H =  split $opt_{inputFieldSep}, $curRow, -1;
@@ -2163,9 +2163,9 @@ sub processInputFile_forSorting{
 
   START_PROCESSING_DATA_LINES_FOR_SORT:
     if(   $prevPass ne curPass   ){### assert:  $opt_{noHeadP}
-        $prevSectionRN=  undef;
+        $prevStanzaRN=  undef;
         $prevPass=  curPass;
-        zeroSection;
+        zeroStanza;
     }
 
     my @comment;
@@ -2184,17 +2184,17 @@ sub processInputFile_forSorting{
             push  @sort_row,  $curRow;
         }
 
-        #Handle section comment.
+        #Handle stanza comment.
         if(  @comment  ){
-            setSection  @comment;
+            setStanza  @comment;
             @comment= ();
 
-            #Finish up saving info for previous section.
-            $section__oldBeg_oldFin{$prevSectionRN}=  $#sort_row-1
-                if  defined $prevSectionRN;
+            #Finish up saving info for previous stanza.
+            $stanza__oldBeg_oldFin{$prevStanzaRN}=  $#sort_row-1
+                if  defined $prevStanzaRN;
 
-            $section__oldBeg_comment{$#sort_row}=  section;
-            $prevSectionRN=  $#sort_row;
+            $stanza__oldBeg_comment{$#sort_row}=  stanza;
+            $prevStanzaRN=  $#sort_row;
         }
 
 
@@ -2857,10 +2857,14 @@ Downcased unique prefixes are also matched.  Consider an input file with a colum
 |            (現在の実行passで)行スクリプトが真を返した行数。Number Rows Trueの略。
 =wk NRT
 
-=kw section
- section     In numerical context returns the section number.  In string context returns the header comments lines for the current section.
-|            数値文脈なら節番号を返す。文字列文脈なら節のセンターにあるコメント行を返す。文字列文脈なら節の上部にあるコメント行を返す。
+=kw stanza
+ stanza     In numerical context returns the stanza number.  In string context returns the header comments lines for the current stanza.
+|           数値文脈で呼ばれたら、スタンザ番号を返す。文字列文脈で呼ばれたら、スタンザの先端にあるコメント行を返す。
 =unsettab
+
+A stanza is a section of rows separated by blank lines.
+スタンザとは空行で区切られた、連続した行のブロック。
+
 =kw -g|--grep
  For example given input:
  例えば、以下の入力を与えられたら、
@@ -2884,12 +2888,12 @@ Downcased unique prefixes are also matched.  Consider an input file with a colum
 Both:
 で、
 
- % perltab -ge 'section == 2'  input.tsv
+ % perltab -ge 'stanza == 2'  input.tsv
 
 and:
 又は、
 
- % perltab -ge 'section=~/Trans/'  input.tsv
+ % perltab -ge 'stanza=~/Trans/'  input.tsv
 
 Should yield:
 の両方のコマンドはいづれも以下の出力が得られる。
@@ -2904,7 +2908,7 @@ Should yield:
   German   Apfel   Mikan   Birne   Pfirsich Banane
   ================================================
 
-By the way, under the -g|--grep option if any rows are printed the opening comments will be as well, and if any rows in a section are printed so will the section heading comments.  Continuing our example, the output of:
+By the way, under the -g|--grep option if any rows are printed the opening comments will be as well, and if any rows in a stanza are printed so will the stanza heading comments.  Continuing our example, the output of:
 ちなみに-g|--grepオプション下ではひとつのデータ行でも出力されれば、入力の先頭コメントも表示される。また各節において、その節のひとつの行でも出力されれば節の上部コメントも表示される。
 
  % perltab -ge '$x= F(app); num $x and $x > 99'
@@ -2929,7 +2933,7 @@ Or to remove only the opening comment at top:
 
  % perltab -ge '...' |  perl -nE 'chomp; $h||=/^[^;]/; $h and say'
 =wk -g|--grep
-=wk section
+=wk stanza
 
 =head2  Column Manipulation Functions|列を動かしたりする関数
 
