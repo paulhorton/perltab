@@ -1210,37 +1210,69 @@ my %N;
 sub N{
     my @retVal;
   ARG:
-    for  my $qry  (@_){
-        length $qry   or   _diell('Empty string given as column label.'=>
+    for  my $query  (@_){
+        length $query   or   _diell('Empty string given as column label.'=>
                                   '列ラベルとして空文字列を受け渡された。');
 
-        exists $N{$qry}   and       push( @retVal,  $N{$qry}  ),  next ARG;
+        exists $N{$query}   and       push( @retVal,  $N{$query}  ),  next ARG;
 
-        for  my $prefRx  (qr/^$qry$/, qr/(?i:^$qry$)/, qr/^$qry/, qr/(?i:^$qry)/){
+        #  Code copy from _columnLabelPrefixMatches to avoid spending the time needed for a function call.
+        for  my $prefRx  (qr/^$query$/, qr/(?i:^$query$)/, qr/^$query/, qr/(?i:^$query)/){
             my @match=  grep /$prefRx/, @H   or   next;
             if(  @match == 1  ){
-                push  @retVal,  $N{$qry}= $N{ $match[0]};         next ARG;
-            }
-            else{
-                _diell("String '$qry' matches prefices of column labels: '$match[0]', '$match[1]'..."=>
-                       "文字列'${qry}'は複数の列ラベル'$match[0]', '$match[1]'...の前置詞である。");
+                push  @retVal,  $N{$query}= $N{ $match[0]};         next ARG;
             }
         }
 
-        my @cand=  candMistypedLabel $qry;
-        if   (  @cand==1  ){
-            _diell("No column matches string '$qry', perhaps you intended '$cand[0]?'"=>
-                   "文字列'${qry}'に一致する列ラベルが見つからない。ラベル$cand[0]のつもりだったのでしょうか？");}
-        elsif(  @cand> 1  ){
-            _diell("No column matches string '$qry', perhaps you meant one of {@cand}?"=>
-                   "文字列'${qry}'に一致する列ラベルが見つからない。ラベル{@cand}のどれのつもりだったのでしょうか？");}
-        else{
-            _diell("No column matches string '$qry'."=>"文字列'${qry}'に一致する列ラベルが見つからない。")
-        }
+        _dieAllegedColumnLabelNotFound( $query, '' );
     }
+
     @_   or   _diell('N() called with no arguments.'=>'N()が引数無しで呼ばれた。');
     return  wantarray?  @retVal  :  $retVal[0];
+
+}#sub N
+
+
+sub _columnLabelPrefixMatches{
+    my( $query )=  @_;
+
+    my @match= ();
+    for  my $prefRx  (qr/^$query$/, qr/(?i:^$query$)/, qr/^$query/, qr/(?i:^$query)/){
+        last   if  @match=  grep /$prefRx/, @H;
+    }
+    return @match;
 }
+
+
+#  $msgPrefix should be a phrase which can stand by itself, such as 'Error when calling insAft.'
+#  It will be output as is (i.e. in whatever language it happens to be in).
+sub _dieAllegedColumnLabelNotFound{
+    my( $query, $msgPrefix )=  @_;
+
+    my @match=  _columnLabelPrefixMatches( $query );
+
+    @match == 1   and   dieProg  "Nothing wrong with allegedly mistaken column label '$query'";
+
+    if(  @match > 1  ){
+        _diell("${msgPrefix}String '$query' matches prefices of column labels: '$match[0]', '$match[1]'..."=>
+               "${msgPrefix}文字列'${query}'は複数の列ラベル'$match[0]', '$match[1]'...の前置詞である。");
+    }
+    
+    # $query does not prefix match any column labels.
+    my @cand=  candMistypedLabel $query;
+    if   (  @cand==1  ){
+        _diell("${msgPrefix}No column matches string '$query', perhaps you intended '$cand[0]?'"=>
+               "文字列'${query}'に一致する列ラベルが見つからない。ラベル$cand[0]のつもりだったのでしょうか？");}
+    elsif(  @cand> 1  ){
+        _diell("${msgPrefix}No column matches string '$query', perhaps you meant one of {@cand}?"=>
+               "文字列'${query}'に一致する列ラベルが見つからない。ラベル{@cand}のどれのつもりだったのでしょうか？");}
+    else{
+        _diell("${msgPrefix}No column matches string '$query'."=>
+               "文字列'${query}'に一致する列ラベルが見つからない。")
+    }
+}
+
+
 sub  F : lvalue{   @F[N@_]   }
 
 
@@ -1752,7 +1784,7 @@ sub _toBold{
 
 #────────────────────  Statistics Routines  ────────────────────
 
-my @stats_data;
+my @stats_data;  #Not visible to user.
 
 
 my $stats_numSigDig;  #Max number of significant digits in @stats_data, for prettier output.
@@ -1931,12 +1963,16 @@ sub _binBoundIdxs{
 
 #  Return reference to subroutine to do uniform occupancy binning into $q bins based on the data in @_[1...] (defaulting to @stats_data).
 sub binner{
+    @_   or   _diell
+        'binner() called with no arguments.'=>
+        'binner()が引数無しで呼び出された。';
+
     my $q=  shift;
 
     _stats_set_data @_   if @_;
 
-    _diell(  'binner() called without numerical values to work with.'=>
-             'binner()が呼び出されたが、扱うべき数値は与えられていない。'  );
+    @stats_data   or  _diell(  'binner() called without numerical values to work with.'=>
+                               'binner()が呼び出されたが、扱うべき数値は与えられていない。'  );
 
     my @bound= _binBoundIdxs $q;
 
@@ -2953,7 +2989,7 @@ Or to remove only the opening comment at top:
 =wk del|delete|削除
 
 =kw insert|挿入
-=kw insAft
+=kw insaft
  sub insAft (  PRE, *columnInfo*  )
  sub insaft (  PRE, *columnInfo*  )
 
@@ -2989,7 +3025,7 @@ Or to remove only the opening comment at top:
  The same, but robust to empty string missing values.
  同じ計算をするが、空の文字列などで表した欠損値に頑健。
 =settab    ==
- insAft(  'weight',  'BMI'=> sub{ doNum{10000*$_[1]/$_[0]**2}, @F{height weight} }  );
+ insaft(  'weight',  'BMI'=> sub{ doNum{10000*$_[1]/$_[0]**2}, @F{height weight} }  );
 =unsettab
 
  But when -H|--no-head option is stipulated,
@@ -3000,29 +3036,29 @@ Or to remove only the opening comment at top:
 
  In this case, no need to deal with labels or the head line.
  この場合、ラベルや先頭行の処理は不要。
-=wk insAft
+=wk insaft
 
-=kw insBef
+=kw insbef
  sub insBef(  SUC, *columnInfo*  )
  sub insbef(  SUC, *columnInfo*  )
 
  Insert new columns into @F before column SUC.  SUC may be given by label or as an integer in [-$#F,$#F].  See insAft for more details.
  新しい列をSUCの前に加える。SUCはラベル、又は[-$#F,$#F]内の整数で指定できる。詳細はinsAftを参照。
-=wk insBef
+=wk insbef
 =wk insert|挿入
 
 =kw move|移動
-=kw movAft
+=kw movaft
  sub movAft(  PRE,  @colsToMov   )
  Move columns @colsToMov after column PRE.  Columns may be given as labels of integers in [-$F#,$#F].
  列@colsToMovを列PREの後に移す。列はラベル、又は[-$#F,$#F]内の整数で指定できる。
-=wk movAft
+=wk movaft
 
-=kw movBef
+=kw movbef
  sub movBef(  SUC,  @colsToMov   )
  Move columns @colsToMov before column SUC.  Columns may be given as labels of integers in [-$F#,$#F].
  列@colsToMovを列SUCの前に移す。 列はラベル、又は[-$#F,$#F]内の整数で指定できる。
-=wk movBef
+=wk movbef
 =wk move|移動
 
 =kw swap|入れ換え
