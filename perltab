@@ -2676,13 +2676,11 @@ To convert a full file to ditto format:
 
 
 =head1  VARIABLES|変数
-perltab provides the following variables.
-perltabは以下の変数を提供する。
+perltab provides the following column related variables:
+perltabは列に関する以下の変数を提供する。
 
-Column variables:
-列に関する変数、
-=settab        ==
 =kw @H
+=settab        ==
  @H  $H[i] --> Label of ith column.
 |              i番目の例ラベル
 =wk @H
@@ -2697,17 +2695,8 @@ Column variables:
 =kw @FprevIn
  @FprevIn      @Fin from the previous row, otherwise the empty list ().
 |              ひとつ前の行の@Fin。初期値は空のリスト()。
+=unsettab
 =wk @FprevIn
-=unsettab
-
-Other variables:
-その他の変数、
-=settab        ==
-=kw @stats_data|stats_data
- @stats_data   When statistical functions such as mean and stdev are called with data, a side effect of that call is that the numerical values are cached in @stats_data, e.g. stdev(4,"somestring",2) sets @stats_data to (4,2).  When statistical functions subsequently called with no input @stats_data is used.  In the example, after the call to stdev, mean() would return 3.
-|              meanやstdevのような統計関数はデータ込みで呼ばれると、副作用としてそのデータに含まれる数値は@stats_dataに保存しておく。例えば、stdev(4,"some string",2)は@stats_dataを(4,2)にする。逆にデータを引数リストに含めずに統計関数を呼ぶと@stats_data中のデータは使われる。上記のstdev呼出し後にmean()は３を返す。
-=unsettab
-=wk @stats_data|stats_data
 
 
 =head1  OPTIONS|オプション
@@ -3198,14 +3187,14 @@ Or to remove only the opening comment at top:
 =kw sum|mean|stdev
 The statistical functions: sum( @VAL ), mean( @VAL ), and stdev( @VAL ) share common behaviors.
  *  They ignore non-numerical values in @VAL.
- *  Calling them with non-empty @VAL has the side effect of setting @stats_data
- *  When called with an empty argument list @stats_data is used for values, but if @stats_data is empty undef is returns.
+ *  Calling them with non-empty @VAL has the side effect of setting an internal array to the numerical values in @VAL.
+ *  When called with an empty @VAL, if the internal array has been set, they use those values, otherwise the return undef.
  *  They die with error message if no numerical values are available to perform their operations.
  *  They try to handle special numerical values such as {inf, -inf, nan, -NaN} reasonably.
 統計関数、sum( @VAL )、mean( @VAL )、及びstdev( @VAL )は以下の共通点を持つ。
  •  @VALに含まれる数値以外の値は無視される。
- •  @VALが空でない場合、副作用として@VALに含まれている数値は@stats_dataに保存される。
- •  空の引数リストで呼ばれたら、@stats_dataのデータは使われる。@stata_dataも空であれば、undefを返す。
+ •  @VALが空でない場合、副作用として@VALに含まれている数値を保存する。
+ •  @VALが空の場合、保存された数値があれば、それを使う。保存された数値がなければundefを返す。
  •  {inf, -inf, nan, -NaN}のような特殊の数値を適切に処理するように努力する。
 =wk sum|mean|stdev
 
