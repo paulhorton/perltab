@@ -356,9 +356,9 @@ my %script_;
 
       #Print string in @_ to STDERR and also STDOUT unless both are connected to a terminal.
       my sub say2{
-          for( @_ ){
+          for(  @_  ){
               say STDERR;
-              say STDOUT  if  (stat STDERR)[0] != (stat STDOUT)[0]  or  (stat STDERR)[1] != (stat STDOUT)[1];
+              say STDOUT "STDOUT: $_"   if  (stat STDERR)[0] != (stat STDOUT)[0]  or  (stat STDERR)[1] != (stat STDOUT)[1];
           }
       }
 
@@ -1233,12 +1233,16 @@ sub N{
 }#sub N
 
 
+#  Return labels which prefix match $query.
+#  Side-effect:  found labels are cached in %N to speed up future lookups.
 sub _columnLabelPrefixMatches{
     my( $query )=  @_;
 
     my @match= ();
     for  my $prefRx  (qr/^$query$/, qr/(?i:^$query$)/, qr/^$query/, qr/(?i:^$query)/){
-        last   if  @match=  grep /$prefRx/, @H;
+        if(   @match=  grep /$prefRx/, @H   ){
+            $N{$query}=  $N{ $match[0]};    last;
+        }
     }
     return @match;
 }
@@ -1268,7 +1272,7 @@ sub _dieAllegedColumnLabelNotFound{
                "文字列'${query}'に一致する列ラベルが見つからない。ラベル{@cand}のどれのつもりだったのでしょうか？");}
     else{
         _diell("${msgPrefix}No column matches string '$query'."=>
-               "文字列'${query}'に一致する列ラベルが見つからない。")
+               "文字列'${query}'に一致する列ラベルが見つからない。");
     }
 }
 
@@ -1525,14 +1529,19 @@ state sub printStanza_ifNotYetPrinted(){
       my $callerName=  (caller 1)[3];   $callerName=~ s/^main:://;
       length $arg   or   _diell(  "In $callerName; empty string given as a column label.\n",
                                   "${callerName}は列ラベル引数として空文字列を受け渡された。\n"  );
-      
-      my $msg=  _lln("In $callerName; column label '$arg' not found.",
-                     "${callerName}にて列ラベル'${arg}'が見つからない。");
 
-      my @cand=  candMistypedLabel $arg;
-      $msg.=  _lln("  Typo of @cand?", "  @{cand}のタイプミス？")    if @cand;
-      _diell $msg;
+      my @prefixMatch=  _columnLabelPrefixMatches( $arg );
+      if(  @prefixMatch== 1  ){
+          if(  exists $N{$arg}  ){
+              return  $N{$arg};
+          }else{
+              dieProg  "_columnLabelPrefixMatches should have cached column of '$arg' in %N...";
+          }
+      }
 
+      _dieAllegedColumnLabelNotFound(  $arg,
+                                       _ll  "In $callerName; " => "${callerName}で、"
+                                       );
   }#idx_of()
 
 
