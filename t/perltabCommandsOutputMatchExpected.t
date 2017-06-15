@@ -18,7 +18,8 @@ $ENV{LANG}= 'C';  #Some test output may contain locale dependent warnings.
 
 my $usage=  "Usage: $0 [-atq] [num [num]]
   -a   abortOnError
-  -t   justPrint
+  -n   justPrint
+  -t   timeP
   -q   quiet
 ";
 
