@@ -1994,44 +1994,66 @@ sub binner{
 }#binner
 
 
+#  xqtiles($q,@num) returns the $q extended quantiles of @num (@num defaults to @stats_data),
+#  where extended means the minimum and maximum value are included as the 0th and qth quantiles respectively.
+sub xqtiles{
+    unshift @_, 'xqtiles';
+    goto &_qtiles;
+}
+
 #  qtiles($q,@num) returns the $q quantile of @num (@num defaults to @stats_data).
+#  For example, when called with q=4, it will return 3 values.
 sub qtiles{
+    unshift @_, 'qtiles';
+    goto &_qtiles;
+}
+
+
+#  _qtiles($caller,$q,@num) returns the $q quantile of @num (@num defaults to @stats_data).
+#  When $caller eq 'xqtiles', the min and max values of @stats_data are also included in the returned list.
+sub _qtiles{
+    my( $caller )=  (shift, shift);
+    
     @_   or   _diell
-        'qtiles() called with no arguments.'=>
-        'qtiles()が引数無しで呼び出された。';
+        '${caller}() called with no arguments.'=>
+        '${caller}()が引数無しで呼び出された。';
 
     my $q=  shift;
     $q=~ /^[1-9]+[0-9]*/   or  _diell
-        "qtiles() expected positive integer as its first argument but got '$q'"=>
-        "qtiles()は最初の引数として整数値を期待したが、'${q}'を受け取った。";
+        "${caller}() expected positive integer as its first argument but got '$q'"=>
+        "${caller}()は最初の引数として整数値を期待したが、'${q}'を受け取った。";
 
     $q > 1   or   _diell
-        "qtiles() first argument should be at least 2 but got '$q'"=>
-        "qtiles() 第一引数は２≧でないといけないが、'${q}'を受け取った。";
+        "${caller}() first argument should be at least 2 but got '$q'"=>
+        "${caller}() 第一引数は２≧でないといけないが、'${q}'を受け取った。";
 
     _stats_set_data @_   if @_;
         
     @stats_data   or   _diell
-        'qtiles() called with no numerical arguments to work with.'=>
-        'qtiles()が呼び出されたが、扱うべき数値は与えられていない。';
+        '${caller}() called with no numerical arguments to work with.'=>
+        '${caller}()が呼び出されたが、扱うべき数値は与えられていない。';
 
     $q < @stats_data   or   _warn
-        "qtiles(${q},...) called with only ".@stats_data.' numbers.'=>
-        "qtiles(${q},...)は".@stats_data.'個の数値引数しか受け取れなかった。';
+        "{caller}(${q},...) called with only ".@stats_data.' numbers.'=>
+        "{caller}(${q},...)は".@stats_data.'個の数値引数しか受け取れなかった。';
 
     @stats_data=  sort {$a<=>$b} @stats_data;
 
-    push  my @qtile,  $stats_data[0];
+    my $fin=  $#stats_data;
 
-    my $fin=  @stats_data -1;
+    my @qtile;
     for  my $t  (1..$q-1){
         my $quotient=  $t*$fin / $q;
         my $dw=  floor $quotient;
         my $up=  ceil  $quotient;
         my $r=   $quotient - $dw;
-        push  @qtile,  (1-$r) * $stats_data[$dw]  +  $r * $stats_data[$up];
+        push @qtile,  (1-$r) * $stats_data[$dw]  +  $r * $stats_data[$up];
     }
-    push  @qtile,  $stats_data[-1];
+
+    if(  $caller eq 'xqtiles'  ){
+        unshift  @qtile, $stats_data[ 0];
+        push     @qtile, $stats_data[-1];
+    }
 
     return @qtile;
 }# qtiles.
@@ -2051,7 +2073,7 @@ sub stats{
 
     @stats_data > 4   or   return $stats;
 
-    my @tile4=  _reformatNums qtiles( 4 );
+    my @tile4=  _reformatNums xqtiles( 4 );
 
     $stats .= "  Qs:$tile4[0] $tile4[1] " . _toBold( $tile4[2] ) . " $tile4[3] $tile4[4]";
     return $stats;
