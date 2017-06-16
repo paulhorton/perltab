@@ -1029,7 +1029,8 @@ looks_like_number missingMark    and
 
 
 #━━━━━━━━━━  Check Input Filenames  ━━━━━━━━━━━━━━━━━━━━
-{ dlock my @pathname=  grep !/^-in2$/, @ARGV;
+{ my @pathname=   grep !/^-in2$/,  @ARGV;
+  dlock \@pathname;
 
   2 > grep /^-$/, @pathname   or   _dieUsage( 'STDIN listed as input file more than once'=>
                                               '複数箇所に標準入力を入力と指定した。' );
@@ -2123,7 +2124,7 @@ sub sortData_andPrint{
 
     @sortPerm=  0 .. $#sort_row;
     sortKeylev_recurseOnTies   0,  0, 0+@sortPerm;
-    dlock @sortPerm;
+    dlock \@sortPerm;
 
     if(  defined $prevStanzaRN  ){
         $stanza__oldBeg_oldFin{$prevStanzaRN}=  $#sortPerm;
