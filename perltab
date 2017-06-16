@@ -1085,7 +1085,10 @@ sub _warn{
 
 # ────────────────────  Numish Related Utilities  ────────────────────
 #Return true iff $_[0] is numish.  $_ used if argument omitted.
-sub numP(_){    defined $_[0] && $_[0]=~ /$numRE_/?  't' : undef    }
+sub numP(_){    return 't'   if  defined $_[0] && $_[0]=~ /$numRE_/;
+                return;
+}
+
 
 #Return $_[0] if it looks like a number, otherwise return 0.  $_ used if argument omitted.
 sub num0(_){  numP $_[0] ? $_[0] : 0  }
@@ -1861,7 +1864,7 @@ sub _reformatNums{   map {_reformatNum}  @_   }
     
 #  Return sum of numbers in @stats_data
 sub _sum(){
-    return  undef               if  !@stats_data;
+    return                      if  !@stats_data;
     return  $stats_seenNaN      if  $stats_seenNaN;
     return  'NaN'               if  $stats_seenInfPlus && $stats_seenInfMnus;
     return  $stats_seenInfPlus  if  $stats_seenInfPlus;
@@ -1884,7 +1887,9 @@ sub sum{
 
 
 
-sub _mean(){   @stats_data?   _sum  / @stats_data   :  undef   }
+sub _mean(){   return  _sum / @stats_data    if @stats_data;
+               return;
+}
 
 
 #  Arithmetic mean of numerical values in @_
@@ -1900,7 +1905,7 @@ sub mean{
 
 
 sub _stdev(){
-    return  undef               if !@stats_data;
+    return                      if !@stats_data;
     return  $stats_seenNaN      if $stats_seenNaN;
     return  'NaN'               if @stats_data < 2;
     return  $stats_seenInfPlus  if $stats_seenInfPlus;
