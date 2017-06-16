@@ -2013,7 +2013,7 @@ sub qtiles{
 #  _qtiles($caller,$q,@num) returns the $q quantile of @num (@num defaults to @stats_data).
 #  When $caller eq 'xqtiles', the min and max values of @stats_data are also included in the returned list.
 sub _qtiles{
-    my( $caller )=  (shift, shift);
+    my $caller=  shift;
     
     @_   or   _diell
         '${caller}() called with no arguments.'=>
