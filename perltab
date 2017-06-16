@@ -1855,8 +1855,8 @@ sub _stats_set_data{
 }
 
 
-sub _reformatNum(_){  sprintf  '%.*g', $stats_numSigDig, $_[0]  }
-sub _reformatNums{  map {_reformatNum} @_  }
+sub _reformatNum(_){   sprintf  '%.*g', $stats_numSigDig,  $_[0]   }
+sub _reformatNums{   map {_reformatNum}  @_   }
 
     
 #  Return sum of numbers in @stats_data
@@ -2062,21 +2062,24 @@ sub _qtiles{
 
 
 sub stats{
-    @_    or      _diell
+    _stats_set_data @_   if @_;
+
+    @stats_data    or      _diell
         'stats() called with no numerical arguments to work with.'=>
         'stats()が呼び出されたが、扱うべき数値は与えられていない。';
 
-    my $stats.=  _reformatNum(  mean @_  );
-    $stats=  'n:'.@stats_data."  μ$stats";
-    @_ < 3   and   return  $stats;
+    my $stats=  'n:'.@stats_data;
+    @stats_data > 0   or   return  $stats;
 
-    $stats.= '±' . _reformatNum stdev;
+    $stats.=  '  μ' . _reformatNum  _mean;
+    @stats_data > 1   or   return  $stats;
 
-    @stats_data > 4   or   return $stats;
+    $stats.=    '±' . _reformatNum stdev;
+    @stats_data > 2   or   return $stats;
 
-    my @tile4=  _reformatNums xqtiles( 4 );
+    my @q4tile=  _reformatNums xqtiles 4;
 
-    $stats .= "  Qs:$tile4[0] $tile4[1] " . _toBold( $tile4[2] ) . " $tile4[3] $tile4[4]";
+    $stats.=  "  Q4s:$q4tile[0] $q4tile[1] " . _toBold( $q4tile[2] ) . " $q4tile[3] $q4tile[4]";
     return $stats;
 }
 
@@ -3215,20 +3218,21 @@ Or to remove only the opening comment at top:
 =wk numerical functions
 
 =head2  Statistical Functions|統計関数
-=kw statistical functions
-=kw sum|mean|stdev
-The statistical functions: sum( @VAL ), mean( @VAL ), and stdev( @VAL ) share common behaviors.
- *  They ignore non-numerical values in @VAL.
- *  Calling them with non-empty @VAL has the side effect of setting an internal array to the numerical values in @VAL.
- *  When called with an empty @VAL, if the internal array has been set, they use those values, otherwise the return undef.
+=kw statistics|統計
+=kw sum|mean|stdev|qtiles|quantiles|quartiles|percentiles|stats|和|平均値|標準偏差|分位値|分位数
+The statistical functions: sum, mean, stdev, qtiles, xqtiles, stats; share some properties.
+ *  They ignore non-numerical data values.
+ *  Calling them with non-empty data has the side effect of setting an internal array.
+ *  When called with an empty data [e.g. mean()], if the internal array has been set, they use those values.
  *  They die with error message if no numerical values are available to perform their operations.
  *  They try to handle special numerical values such as {inf, -inf, nan, -NaN} reasonably.
-統計関数、sum( @VAL )、mean( @VAL )、及びstdev( @VAL )は以下の共通点を持つ。
- •  @VALに含まれる数値以外の値は無視される。
- •  @VALが空でない場合、副作用として@VALに含まれている数値を保存する。
- •  @VALが空の場合、保存された数値があれば、それを使う。保存された数値がなければundefを返す。
+統計関数、sum, mean, stdev, qtiles, xqtiles, statsは以下の共通点を持つ。
+ •  データに含まれる数値以外の値は無視する。
+ •  副作用として渡されたデータを内部配列に保存しておく。
+ •  データ無しで呼ばれたら[例えば、mean()]、内部配列に保存してあるデータを使う。
  •  {inf, -inf, nan, -NaN}のような特殊の数値を適切に処理するように努力する。
-=wk sum|mean|stdev
+=wk sum|mean|stdev|qtiles|quantiles|quartiles|percentiles|stats|和|平均値|標準偏差|分位値|分位数
+
 
 =kw sum
  sub sum( @VAL )
@@ -3247,7 +3251,24 @@ The statistical functions: sum( @VAL ), mean( @VAL ), and stdev( @VAL ) share co
  Returns the mean of the numerical values in @VAL.
  @VALに含まれている数値の標準偏差を返す。
 =wk stdev
-=wk statistical functions
+
+=kw qtiles|xqtiles|quantile|median|quartile|percentile|分位値|分位数|中央値|４分位値|四分位値|４分位数|四分位数|百分位値|パーセンタイル
+ sub qtiles( Q, @VAL ),   xqtiles( Q, @VAL )
+ Return  Q-quantile of @VAL.  xqtiles includes minimum and maximum values as well.
+ For example,  qtiles( 2,  1..5 ) --> returns   (3).
+              xqtiles( 2,  1..5 ) --> returns (1,3,5).
+ @VALのQ分位値を返す。xqtilesの場合は、Q分位値に最小値と最大値も含める。
+ 例えば、 qtiles( 2,  1..5 )は  、(3)  を返すが、
+ 例えば、xqtiles( 2,  1..5 )は、(1,3,5)を返す。
+=wk qtiles|xqtiles|quantile|median|quartile|percentile|分位値|分位数|中央値|４分位値|四分位値|４分位数|四分位数|百分位値|パーセンタイル
+
+=kw stats|mean|stdev|median|quartile|平均値|標準偏差|中央値|４分位値|四分位値|４分位数|四分位数
+ stats( @VAL )
+ Returns a string containing descriptive stats of @VAL.
+ @VALのいくつかの代表値を含んだ文字列を返す。
+=wk stats|mean|stdev|median|quartile|平均値|標準偏差|中央値|４分位値|四分位値|４分位数|四分位数
+=wk statistics|統計
+
 
 =head2  Other Functions|その他の関数
 
@@ -3579,6 +3600,28 @@ The statistical functions: sum( @VAL ), mean( @VAL ), and stdev( @VAL ) share co
  % perltab -d 'bemax $m, F(hei)' -gd2 '$m==F(hei)'  heightWeight.tsv more_heightWeight.tsv  -in2 heightWeight.tsv more_heightWeight.tsv
 =unsettab
 =wk donum|-g2|--grep2|grep
+
+=kw qtiles|xqtiles|quantile|median|quartile|percentile|分位値|分位数|中央値|４分位値|四分位値|４分位数|四分位数|百分位値|パーセンタイル
+=head2  Examples with statistical functions|統計関数の使用例
+=wk qtiles|xqtiles|quantile|median|quartile|percentile|分位値|分位数|中央値|４分位値|四分位値|４分位数|四分位数|百分位値|パーセンタイル
+=kw statistics|統計
+=kw stats|mean|stdev|median|quartile|平均値|標準偏差|中央値|４分位値|四分位値|４分位数|四分位数
+ Print a few descriptive stats on feature avgT...
+ 特徴量avgT…についていくつかの代表値を表示する。
+ % perltab -d 'push @d, F(avgT)'  -z 'say stats @d'  input.tsv
+=wk stats|mean|stdev|median|quartile|平均値|標準偏差|中央値|４分位値|四分位値|４分位数|四分位数
+
+=kw qtiles|xqtiles|quantile|median|quartile|percentile|分位値|分位数|中央値|４分位値|四分位値|４分位数|四分位数|百分位値|パーセンタイル
+ Print quintiles of feature givenM...  Four values are output.
+ 特徴量givenM…の５分位値を表示する。出力は４つの数値となる。
+ % perltab  -d 'push @d, F(givenM)'  -z 'say qtiles(5,@d)'  input.tsv
+
+ Print quintiles of feature givenM...  With xqtiles the minimum and maximum values are included to produce 6 values.
+ 特徴量givenM…の５分位値を表示する。xqtilesを使うと、出力は最小値と最大値を含める６つの数値となる。
+ % perltab  -d 'push @d, F(givenM)'  -z 'say xqtiles(5,@d)'  input.tsv
+=wk qtiles|xqtiles|quantile|median|quartile|percentile|分位値|分位数|中央値|４分位値|四分位値|４分位数|四分位数|百分位値|パーセンタイル
+ 
+=wk statistics|統計
 
 
 =head1  SORTING ROWS|行の並べ替え
