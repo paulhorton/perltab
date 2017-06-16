@@ -1,0 +1,4 @@
+Print quintiles of feature givenM….
+perltab --test -d 'push @d, F(givenM)' -z 'say qtiles(5,@d)' t/regression/input/yeast_genes_mitoLocData.tsv
+MD5:t/regression/input/yeast_genes_mitoLocData.tsv	dPPDSl+tSoUKx2rz7cxWqw
+0.00974	0.0683	0.32364	0.70872
