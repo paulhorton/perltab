@@ -15,7 +15,7 @@
 use utf8::all;
 use Encode;
 use Carp;
-use List::Util qw(first max maxstr min minstr reduce shuffle);
+use List::Util qw(first max maxstr min minstr reduce shuffle pairkeys pairmap pairvalues pairs);
 use List::MoreUtils qw(:all);
 use POSIX qw(ceil floor);
 use Scalar::Util qw(looks_like_number dualvar);
