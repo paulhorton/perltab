@@ -433,9 +433,8 @@ my %script_;
 sub _diell{   die  _ll(@_) . "\n"   }
 
 
-#Intentionally named dieProg instead of _dieProg, because I Would like to declare
-#state sub dieProg{...},  but that crashes on v5.18.2.  May work for v5.20?
-sub dieProg{   say STDERR 'perltab internal programming error: ', @_;  exit 1   }
+#Tried using state sub dieProg{...},  but that crashes on v5.18.2 and v5.20.2.
+sub _dieProg{   say STDERR 'perltab internal programming error: ', @_;  exit 1   }
 
 
 {#────────────────────  Help Doc Related Code   ────────────────────
@@ -454,7 +453,7 @@ sub dieProg{   say STDERR 'perltab internal programming error: ', @_;  exit 1   
 
 
   state sub sayDocLines{
-      @_ == 1   or   dieProg  'wrong number of args';
+      @_ == 1   or   _dieProg  'wrong number of args';
       chomp(  my $docLines=  shift  );
 
       state $termWidth=  `tput cols`;
@@ -557,7 +556,7 @@ sub dieProg{   say STDERR 'perltab internal programming error: ', @_;  exit 1   
                $lang ne '---' ||  exists $wrappedTab{$text}
               ){
               ($leftPad)=  exists $wrappedTab{$text}?  $wrappedTab{$text}  :  $text=~ /\A(\s*)/;
-              width $leftPad  < $termWidth   or   dieProg  'In doc, leading white space too long';
+              width $leftPad  < $termWidth   or   _dieProg  'In doc, leading white space too long';
 
               #Output initial line.
               defined(  my $break=  bestBreak  )   or   say($text),  next DOC_LINE;
@@ -788,7 +787,7 @@ END2             z2|end2=*
               $bundleOpt  .= $alias;
               $bundleFlag .= $alias    unless exists $needVal_optS{$optName}
           }
-          exists $toOptName{$alias}   and   dieProg  "tried to overwrite existing option alias '$alias'";
+          exists $toOptName{$alias}   and   _dieProg  "tried to overwrite existing option alias '$alias'";
           $toOptName{$alias}=  $optName;
       }
   }#WHILE  ($optName, $spec)=  each %optSpec
@@ -1167,7 +1166,7 @@ state sub candMistypedLabel{
     #Character pairs, such as 'a' to 'A', that match except for case are given distance 0.1
     #Uses memory proportional to the length of the shorter string.
     my sub editDistance{
-        @_ == 2   or   dieProg;
+        @_ == 2   or   _dieProg;
         my( $s1, $s2 )=  sort {length $b <=> length $a}  @_;
         my( $l1, $l2 )=  map {length} ($s1, $s2);
         
@@ -1259,7 +1258,7 @@ sub _dieAllegedColumnLabelNotFound{
 
     my @match=  _columnLabelPrefixMatches( $query );
 
-    @match == 1   and   dieProg  "Nothing wrong with allegedly mistaken column label '$query'";
+    @match == 1   and   _dieProg  "Nothing wrong with allegedly mistaken column label '$query'";
 
     if(  @match > 1  ){
         _diell("${msgPrefix}String '$query' matches prefices of column labels: '$match[0]', '$match[1]'..."=>
@@ -1514,10 +1513,10 @@ state sub printStanza_ifNotYetPrinted(){
   #  Dies with error message listing caller, if $arg is invalid.
   #  Assumes @N, @F are up-to-date.
   state sub idx_of{
-      @_   or   dieProg  'idx_of called without arguments';
+      @_   or   _dieProg  'idx_of called without arguments';
 
       my $arg=  $_[0];
-      defined $arg   or   dieProg  'idx_of called with undefined argument';
+      defined $arg   or   _dieProg  'idx_of called with undefined argument';
 
       return  $N{$arg}   if exists $N{$arg};                                         #LOOP EXIT POINT
 
@@ -1539,7 +1538,7 @@ state sub printStanza_ifNotYetPrinted(){
           if(  exists $N{$arg}  ){
               return  $N{$arg};
           }else{
-              dieProg  "_columnLabelPrefixMatches should have cached column of '$arg' in %N...";
+              _dieProg  "_columnLabelPrefixMatches should have cached column of '$arg' in %N...";
           }
       }
 
@@ -1762,7 +1761,7 @@ state sub printStanza_ifNotYetPrinted(){
   #  Swaps fields F1 and G1, then swaps fields F2 and G2, ...
   sub swap{
       @_    or   return;   #Move of empty list is noop.
-      @_ %2   and   dieProg  "In swap; expected even number of arguments, but got ".@_.'.';
+      @_ %2   and   _dieProg  "In swap; expected even number of arguments, but got ".@_.'.';
       setCallerName 'swap';
 
       my $mid=  @_ / 2;
@@ -2415,7 +2414,7 @@ sub configure_sort{
     for  my $keyLev (0..$#sort_keyVec){
         my $spec=   $cmpSpec[  $keyLev > $#cmpSpec?  -1  :  $keyLev  ];
 
-        $spec=~  /^[01ABMNU]+$/   or   dieProg  "Only chars [01ABMNU] allowed in sort spec: '$spec'";
+        $spec=~  /^[01ABMNU]+$/   or   _dieProg  "Only chars [01ABMNU] allowed in sort spec: '$spec'";
 
         $sortAlfT[$keyLev]=  0;
         $sortPrecs[$keyLev][$_]=  undef    for  0 .. $FIN;
@@ -2437,7 +2436,7 @@ sub configure_sort{
             elsif(  $c eq 'N'  ){     $sortPrecs[$keyLev][$NAN]=  $prec++       }
             elsif(  $c eq 'M'  ){     $sortPrecs[$keyLev][$MIS]=  $prec++       }
             elsif(  $c eq 'U'  ){     $sortPrecs[$keyLev][$UND]=  $prec++       }
-            else{   dieProg  "bad char '$c'"   }
+            else{   _dieProg  "bad char '$c'"   }
         }
 
         $sortPrecs[$keyLev][$ALF] //= $prec;
