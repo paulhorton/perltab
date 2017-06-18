@@ -61,6 +61,13 @@ my $numRE_;
 
 
 # ────────────────────  Utilities  ────────────────────
+#  push2( @f, @g, @val )
+#  Shortcut for  push @f, $val[0]; push @g, $val[1]
+sub push2(\@\@;@){
+    push @{$_[0]}, $_[2];
+    push @{$_[1]}, $_[3];
+}
+
 #Return true if @_ contains no empty strings
 sub nomt{  all {length} @_  }
 
@@ -3346,6 +3353,16 @@ The statistical functions: sum, mean, stdev, qtiles, xqtiles, stats; share some 
  Make %S into a Serial Number set, by adding (LINE=>LINE_NUM) entries to %S, LINE_NUM starts at one.  LINE is the (chomped) LINE_NUMth line of the file.  Reads keys in from stdin if PATHNAME is '-' or 'stdin' (case insensitive).  Mnemonic, both senses of the word set (to assign, and a set of items) apply.
  %Sに(LINE=>LINE_NUM)を加え、入力ファイルの行と通し番号(Serial Number)の集合にする。LINE_NUMは１から数えられ、LINEは入力ファイルのLINE_NUM番目の(chompした)行。PATHNAMEが'-'か'stdin'(や'STDIN')の場合、集合の要素は標準入力から読み込まれる。覚え方、ここでsetは英単語としての両方の意味(代入と集合)が当てはまる。
 =wk SNset
+
+=kw push2
+  push2( @a, @b, $val1, $val2 )
+ is a shortcut for:
+ は、
+  push( @a, $val1 );  push( @b, $val2 )
+ の略。以下の例のように$val1, $val2が@valに入っている場合は特に便利。
+ especially handy when $val1, $val2 are the elements of an array @val.  Compare these:
+  push2( @a, @b, @val )  <-->   push( @a, $val[0] );  push( @b, $val[1] )
+=wk push2
 
 
 =head1  EXAMPLES|使用例
