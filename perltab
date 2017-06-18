@@ -1811,7 +1811,7 @@ my $specialNumRE=  qr/^  (?: inf|nan )  \z/i;
 #Return number of digits in $_[0] which are not simply place holders.
 #Always returns at least one.
 sub _numSigDigits(_){
-    my $val=  shift;
+    dlock my $val=  shift;
 
     my $intPart;  my $frcPart=  '';
     if(  $val=~ /[.]/  ){
@@ -1837,8 +1837,7 @@ sub _numSigDigits(_){
             or   _dieProg  "Regex failed to find significant digits part of value $val, with intPart '$intPart, intPartRevd= '$intPartRevd'";
         return  max  1,  length $sigPart;
     }
-}
-
+}#_numSigDigits
 
 
 #  (Re)set stats variables to reflect content of @_.
@@ -1946,7 +1945,8 @@ sub stdev{
 
 
 #  Return indicies into @stats_data for boundaries of uniform occupancy binning.
-sub _binBoundIdxs{
+#  Side effect: numerically sorts @stats_data.
+sub _binBoundaryIdxs{
     my $q=  shift;
 
     @stats_data=  sort {$a<=>$b} @stats_data;
@@ -1981,24 +1981,36 @@ sub _binBoundIdxs{
     }
 
     return @retVal;
+}# _binBoundaryIdxs
+
+
+
+sub binner{
+    unshift @_, 'binner';
+    goto &_binner;
 }
 
-
-
 #  Return reference to subroutine to do uniform occupancy binning into $q bins based on the data in @_[1...] (defaulting to @stats_data).
-sub binner{
+#  In the future other types of binning might be considered, e.g.  binner( -r, 4, @DATA ) might stipulate uniform range binning
+sub _binner{
+    my $caller=  shift;
+
+    wantarray   and   _diell
+        "${caller}() called in list context."=>
+        "${caller}()がリスト文脈で呼ばれた。";
+
     @_   or   _diell
-        'binner() called with no arguments.'=>
-        'binner()が引数無しで呼び出された。';
+        "${caller}() called with no arguments."=>
+        "${caller}()が引数無しで呼び出された。";
 
     my $q=  shift;
 
-    _stats_set_data 'binner', @_   if @_;
+    _stats_set_data $caller, @_   if @_;
 
-    @stats_data   or  _diell(  'binner() called without numerical values to work with.'=>
-                               'binner()が呼び出されたが、扱うべき数値は与えられていない。'  );
+    @stats_data   or  _diell(  "${caller}() called without numerical values to work with."=>
+                               "${caller}()が呼び出されたが、扱うべき数値は与えられていない。"  );
 
-    my @bound= _binBoundIdxs $q;
+    my @bound= _binBoundaryIdxs $q;
 
     return
         sub{
@@ -2006,7 +2018,30 @@ sub binner{
             $part > -1   or   $part= @bound;
             return $part;
     }
-}#binner
+}#_binner
+
+
+#  Return bin numbers of data in @_[1...] (defaulting to @stats_data), binned into $q bins with approximately uniform occupancy.
+#  In the future other types of binning might be considered, e.g.  binner( -r, 4, @DATA ) might stipulate uniform range binning.
+sub binned{
+    wantarray   or   _diell
+        'binned() called in non-list context.'=>
+        'binned()が非リスト文脈で呼ばれた。';
+
+    @_   or   _diell
+        'binned() called with no arguments.'=>
+        'binned()が引数無しで呼び出された。';
+
+    my @dataCopy=  @_[1..$#_];
+
+    my $binner=  _binner 'binned', @_;
+
+    numP   and   $_=  $binner->($_)    for @dataCopy;
+
+    return @dataCopy;
+}
+    
+    
 
 
 #  xqtiles($q,@num) returns the $q extended quantiles of @num (@num defaults to @stats_data),
@@ -2026,6 +2061,7 @@ sub qtiles{
 
 #  _qtiles($caller,$q,@num) returns the $q quantile of @num (@num defaults to @stats_data).
 #  When $caller eq 'xqtiles', the min and max values of @stats_data are also included in the returned list.
+#  Side effect: numerically sorts @stats_data.
 sub _qtiles{
     my $caller=  shift;
     
@@ -2071,7 +2107,7 @@ sub _qtiles{
     }
 
     return @qtile;
-}# qtiles.
+}# _qtiles.
 
 
 
