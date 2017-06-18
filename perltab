@@ -1835,7 +1835,7 @@ sub _numSigDigits(_){
         my $intPartRevd=   reverse $intPart;
         ( my $sigPart )=(  $intPartRevd=~ /^0*(\d+)\z/  )
             or   _dieProg  "Regex failed to find significant digits part of value $val, with intPart '$intPart, intPartRevd= '$intPartRevd'";
-        return  max  1,  length $sigPart;
+        return  length $sigPart;
     }
 }#_numSigDigits
 
