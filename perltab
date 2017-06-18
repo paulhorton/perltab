@@ -1798,7 +1798,6 @@ sub _toBold{
 
 my @stats_data;  #Not visible to user.
 
-
 my $stats_numSigDig;  #Max number of significant digits in @stats_data, for prettier output.
 
 my(  $stats_seenInfPlus, $stats_seenInfMnus, $stats_seenNaN  );
@@ -1866,8 +1865,13 @@ sub _stats_set_data{
 }
 
 
-sub _reformatNum(_){   sprintf  '%.*g', $stats_numSigDig,  $_[0]   }
-sub _reformatNums{   map {_reformatNum}  @_   }
+# reformat string part of numerical value to have a similar number of non-placeholder digits as the input data.
+sub _reformatNumstring{
+    dualvar(  $_[0],
+              sprintf  '%.*g', max( 4, $stats_numSigDig ),  $_[0]  )
+}
+
+sub _reformatNumstrings{   map {_reformatNumstring $_}  @_   }
 
     
 #  Return sum of numbers in @stats_data
@@ -1890,7 +1894,7 @@ sub sum{
         'tried to compute sum of list with no numbers.'=>
         '数値を含んでないリストの和を求めようとした。';
 
-    return _sum;
+    return _reformatNumstring _sum;
 }
 
 
@@ -1908,7 +1912,7 @@ sub mean{
         'tried to compute mean of list with no numbers.'=>
         '数値を含んでないリストの平均値を求めようとした。';
 
-    return _mean;
+    return _reformatNumstring _mean;
 }
 
 
@@ -1939,7 +1943,7 @@ sub stdev{
         'tried to compute stdev of list with no numbers.'=>
         '数値を含んでないリストの標準偏差を求めようとした。';
 
-    return _stdev;
+    return _reformatNumstring _stdev;
 }
 
 
@@ -2106,7 +2110,7 @@ sub _qtiles{
         push     @qtile, $stats_data[-1];
     }
 
-    return @qtile;
+    return _reformatNumstrings @qtile;
 }# _qtiles.
 
 
@@ -2118,16 +2122,16 @@ sub stats{
         'stats() called with no numerical arguments to work with.'=>
         'stats()が呼び出されたが、扱うべき数値は与えられていない。';
 
-    my $stats=  'n:'.@stats_data;
+    my $stats=  'n:'. @stats_data;
     @stats_data > 0   or   return  $stats;
 
-    $stats.=  '  μ' . _reformatNum  _mean;
+    $stats.=  '  μ' . mean;
     @stats_data > 1   or   return  $stats;
 
-    $stats.=    '±' . _reformatNum stdev;
+    $stats.=    '±' . stdev;
     @stats_data > 2   or   return $stats;
 
-    my @q4tile=  _reformatNums xqtiles 4;
+    my @q4tile=  xqtiles 4;
 
     $stats.=  "  Q4s:$q4tile[0] $q4tile[1] " . _toBold( $q4tile[2] ) . " $q4tile[3] $q4tile[4]";
     return $stats;
