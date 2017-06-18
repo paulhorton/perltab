@@ -1840,6 +1840,13 @@ sub _numSigDigits(_){
 
 #  (Re)set stats variables to reflect content of @_.
 sub _stats_set_data{
+    my $caller=  shift;
+    {   my $undefIdx=  firstidx {!defined} @_;
+        $undefIdx == -1   or
+            _diell("${caller} called with an undef in place of ".(1+$undefIdx).'th data value'=>
+                   "${caller}に渡された".(1+$undefIdx).'番目のデータ値はundefである。')
+    }
+
     @stats_data=  ();
     $stats_seenNaN= $stats_seenInfPlus= $stats_seenNaN=  '';
     $stats_numSigDig=  1;
@@ -1875,7 +1882,7 @@ sub _sum(){
 
 #  Return sum of numbers in @_
 sub sum{   
-    _stats_set_data @_   if @_;
+    _stats_set_data 'sum', @_   if @_;
 
     @stats_data   or   _diell
         'tried to compute sum of list with no numbers.'=>
@@ -1893,7 +1900,7 @@ sub _mean(){   return  _sum / @stats_data    if @stats_data;
 
 #  Arithmetic mean of numerical values in @_
 sub mean{
-    _stats_set_data @_   if @_;
+    _stats_set_data 'mean', @_   if @_;
 
     @stats_data   or   _diell
         'tried to compute mean of list with no numbers.'=>
@@ -1924,7 +1931,7 @@ sub _stdev(){
 
 #  Sample standard deviation of numerical values in @_
 sub stdev{
-    _stats_set_data @_   if @_;
+    _stats_set_data 'stdev', @_   if @_;
         
     @stats_data   or   _diell
         'tried to compute stdev of list with no numbers.'=>
@@ -1983,7 +1990,7 @@ sub binner{
 
     my $q=  shift;
 
-    _stats_set_data @_   if @_;
+    _stats_set_data 'binner', @_   if @_;
 
     @stats_data   or  _diell(  'binner() called without numerical values to work with.'=>
                                'binner()が呼び出されたが、扱うべき数値は与えられていない。'  );
@@ -2032,7 +2039,7 @@ sub _qtiles{
         "${caller}() first argument should be at least 2 but got '$q'"=>
         "${caller}() 第一引数は２≧でないといけないが、'${q}'を受け取った。";
 
-    _stats_set_data @_   if @_;
+    _stats_set_data $caller, @_   if @_;
         
     @stats_data   or   _diell
         '${caller}() called with no numerical arguments to work with.'=>
@@ -2066,7 +2073,7 @@ sub _qtiles{
 
 
 sub stats{
-    _stats_set_data @_   if @_;
+    _stats_set_data 'stats', @_   if @_;
 
     @stats_data    or      _diell
         'stats() called with no numerical arguments to work with.'=>
