@@ -1,4 +1,4 @@
 Print a few descriptive stats on feature avgT….
 perltab --test -d 'push @d, F(avgT)' -z 'say stats @d' t/regression/input/yeast_genes_mitoLocData.tsv
 MD5:t/regression/input/yeast_genes_mitoLocData.tsv	dPPDSl+tSoUKx2rz7cxWqw
-n:497  μ76.1558±6.78387  Q4s:2.2 12.15 31.38 83.04 1430
+n:497  μ76.1558±6.78387  Q4s:2.2 12.15 [1m31.38[0m 83.04 1430
