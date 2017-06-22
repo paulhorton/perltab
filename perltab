@@ -68,6 +68,26 @@ sub push2(\@\@;@){
     push @{$_[1]}, $_[3];
 }
 
+#  List List::MoreUtils::part, but returns indices
+sub partidx(&@){
+    my $code=  shift;
+    my @retVal;
+    for  my $i(  0..$#_  ){
+        $_=  $_[$i];
+        my $part=  &$code;
+        defined $part   or
+            _diell("Working with element $i, partIdxs expected a non-negative integer partition number but got undef"=>
+                   "${i}番目の要素の処理中に、非負整数の分割番号を期待したが、undefに出くわした。");
+        $part =~ /\D/   and
+            _diell("Working with element $i, partIdxs expected a non-negative integer partition number but got '$part'"=>
+                   "${i}番目の要素の処理中に、非負整数の分割番号を期待したが、'${part}'に出くわした。");
+
+        push @{$retVal[$part]}, $i;
+    }
+    return @retVal;
+}
+
+
 #Return true if @_ contains no empty strings
 sub nomt{  all {length} @_  }
 
