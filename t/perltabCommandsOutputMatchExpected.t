@@ -118,6 +118,8 @@ for  my $testNum  (@testNum){
 my $numTests=  my $numPassed=  0;
 my $timeBefore=  Time::HiRes::time;
 
+$ENV{TERM}= 'xterm';   #Affects perltab output in some cases.
+
 #  ──────────  Run scripts and compare output with expected  ──────────
 for my $num(  $begTestNum..$endTestNum  ){
     my $numString=  sprintf '%03u', $num;
