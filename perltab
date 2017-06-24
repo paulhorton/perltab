@@ -457,6 +457,9 @@ my %script_;
 }
 
 
+#  Substitute the string 'undef' for undef values in @_.
+sub _stringifyUndef{   defined   or  $_= 'undef'   for @_   }
+
 sub _diell{   die  _ll(@_) . "\n"   }
 
 
@@ -1609,8 +1612,11 @@ state sub printStanza_ifNotYetPrinted(){
       }
 
       # ──────────  Else input has head line  ──────────
-      @_ % 2   and   die _ll("In $callerName; -H|--no-head option not given, so $callerName expected an even number of (<LABEL, DATA_GEN> pair forming) trailing args, but got (@_)",
-                             "${callerName}で、-H|--no-headオプションをしていないので、${callerName}は(<LABEL, DATA_GEN>の２組リストとなる)偶数の後尾引数を期待していたが、(@_)を受け取った。");
+      if(  @_ % 2  ){
+          _stringifyUndef @_;
+          die _ll("In $callerName; -H|--no-head option not given, so $callerName expected an even number of (<LABEL, DATA_GEN> pair forming) trailing args, but got (@_)",
+                  "${callerName}で、-H|--no-headオプションをしていないので、${callerName}は(<LABEL, DATA_GEN>の２組リストとなる)偶数の後尾引数を期待していたが、(@_)を受け取った。");
+      }
       
       my @label=   splice  @_,  0,  @_/2;
 
