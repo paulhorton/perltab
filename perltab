@@ -308,6 +308,16 @@ sub _dieUsage{
           if $@;
   }
 
+
+  #Print string in @_ to STDERR and also STDOUT unless both are connected to a terminal.
+  sub _say2{
+      for(  @_  ){
+          say STDERR;
+          say STDOUT "STDOUT: $_"   if  (stat STDERR)[0] != (stat STDOUT)[0]  or  (stat STDERR)[1] != (stat STDOUT)[1];
+      }
+  }
+
+
   #  Use eval to test if $script appears to be well-formed Perl.
   #  Die with warning based on error message $errMsg if it fails.
   #  $scriptDesc_ is used for diagnostic messages.
@@ -324,14 +334,14 @@ sub _dieUsage{
 
           $errMsg=~  s| \(eval \d+\)||;
           if(  @scriptLine < 2  ){
-              say _ll("Trouble compiling $scriptDesc_ '$compilingScript_'. ",
-                      "${scriptDesc_}スクリプト'${compilingScript_}'にコンパイル・エラー。")
+              _say2 _ll("Trouble compiling $scriptDesc_ '$compilingScript_'. ",
+                        "${scriptDesc_}スクリプト'${compilingScript_}'にコンパイル・エラー。")
                   . $errMsg;
               exit 64;                                                          #PROGRAM EXIT POINT
           }
 
-          say _ll("${errMsg}\n\nWhen compiling ${scriptDesc_} script, at line ${lineNum}.",
-                  "${errMsg}\n\n${scriptDesc_}スクリプト、コンパイル時、${lineNum}行目。");
+          _say2 _ll("${errMsg}\n\nWhen compiling ${scriptDesc_} script, at line ${lineNum}.",
+                    "${errMsg}\n\n${scriptDesc_}スクリプト、コンパイル時、${lineNum}行目。");
 
           #  ─────  Print part of script near error  ─────
           my $begLineNo  =  max        0     , $lineNum-7;
@@ -339,15 +349,15 @@ sub _dieUsage{
 
           $begLineNo == 0   or   say  '    ...';
 
-          say(  $_ == $lineNum-1?   #Count from zero.
-                "--> $scriptLine[$_]"  :
-                "    $scriptLine[$_]"  )    for  $begLineNo .. $endLineNo;
+          _say2(  $_ == $lineNum-1?   #Count from zero.
+                  "--> $scriptLine[$_]"  :
+                  "    $scriptLine[$_]"  )    for  $begLineNo .. $endLineNo;
 
           $endLineNo == $#scriptLine   or   say  '    ...';
       }
       else{   #No line number in $errMsg.
-          say _ll("perltab error encountered when compiling $scriptDesc_ script:",
-                  "perltab ${scriptDesc_}スクリプトのコンパイル時にエラーが発生した。")
+          _say2 _ll("perltab error encountered when compiling $scriptDesc_ script:",
+                    "perltab ${scriptDesc_}スクリプトのコンパイル時にエラーが発生した。")
               ,substr $errMsg, 0, 1024;
       }
 
@@ -381,15 +391,6 @@ my %script_;
   sub _runtimeErrorHandler{
       chomp(  my $errMsg=  $_[0]  );
 
-      #Print string in @_ to STDERR and also STDOUT unless both are connected to a terminal.
-      my sub say2{
-          for(  @_  ){
-              say STDERR;
-              say STDOUT "STDOUT: $_"   if  (stat STDERR)[0] != (stat STDOUT)[0]  or  (stat STDERR)[1] != (stat STDOUT)[1];
-          }
-      }
-
-
       (my $lineNum)=  $errMsg=~/ at \(eval \d+\) line (\d+)/;
       my @scriptLine=  split "\n", $script_{$scriptType_};
 
@@ -412,11 +413,11 @@ my %script_;
           if(  @scriptLine < 2  ){
               $errMsg= _ll("Trouble running $scriptType_ script '$script_{$scriptType_}'.  ",
                            "${scriptType_}スクリプト'$script_{$scriptType_}'の実行エラー。") . $errMsg;
-              say2 $errMsg;   exit 64;                                       #PROGRAM EXIT POINT
+              _say2 $errMsg;   exit 64;                                       #PROGRAM EXIT POINT
           }
 
-          say2 _ll("${errMsg}\n\n${scriptType_} script, line ${lineNum}.",
-                   "${errMsg}\n\n${scriptType_}スクリプト、${lineNum}行目。");
+          _say2 _ll("${errMsg}\n\n${scriptType_} script, line ${lineNum}.",
+                    "${errMsg}\n\n${scriptType_}スクリプト、${lineNum}行目。");
 
           #  ─────  Print part of script near error  ─────
           my $begLineNo  =  max        0     , $lineNum-7;
@@ -424,15 +425,15 @@ my %script_;
 
           $begLineNo == 0   or   say  '    ...';
 
-          say2(  $_ == $lineNum-1?   #Count from zero.
-                 "--> $scriptLine[$_]"  :
-                 "    $scriptLine[$_]"  )    for  $begLineNo .. $endLineNo;
+          _say2(  $_ == $lineNum-1?   #Count from zero.
+                  "--> $scriptLine[$_]"  :
+                  "    $scriptLine[$_]"  )    for  $begLineNo .. $endLineNo;
 
-          $endLineNo == $#scriptLine   or   say2  '    ...';
+          $endLineNo == $#scriptLine   or   _say2  '    ...';
       }
       else{   #No line number in $errMsg.
-          say2  _ll("perltab error encountered when executing $scriptType_ script:",
-                    "perltab ${scriptType_}スクリプトを実行中にエラーが発生した。")
+          _say2  _ll("perltab error encountered when executing $scriptType_ script:",
+                     "perltab ${scriptType_}スクリプトを実行中にエラーが発生した。")
               ,substr $errMsg, 0, 1024;
       }
 
