@@ -13,13 +13,16 @@
 #  UNLESS they are intended to be available to users, e.g. ih().
 #
 use utf8::all;
-use Encode;
 use Carp;
+use Encode;
+use Hash::Util qw(lock_keys lock_keys_plus unlock_keys lock_hash);
 use List::Util qw(first max maxstr min minstr reduce shuffle pairkeys pairmap pairvalues pairs);
 use List::MoreUtils qw(:all);
 use POSIX qw(ceil floor);
 use Scalar::Util qw(looks_like_number dualvar);
-use Hash::Util qw(lock_keys lock_keys_plus unlock_keys lock_hash);
+use Statistics::Basic;
+use Statistics::Distributions;
+use Statistics::RankCorrelation;
 use Unicode::Collate;
 use Data::Lock qw(dlock dunlock);
 
@@ -67,6 +70,13 @@ sub push2(\@\@;@){
     push @{$_[0]}, $_[2];
     push @{$_[1]}, $_[3];
 }
+
+
+#  Like builtin ::push, but first argument should be an array reference.
+sub pushref{
+    push @{$_[0]}, @_[1..$#_];
+}
+
 
 #  List List::MoreUtils::part, but returns indices
 sub partidx(&@){
@@ -1981,6 +1991,53 @@ sub stdev{
 }
 
 
+sub corrs{
+    @_ > 1   or   _diell
+        'corrs expected at least two arguments, but got '.(@_? 'only one':'none')  =>
+        'corrsはふたつ以上の引数が必要であるが、１個'.(@_? 'しか':'も').'受け取らなかった';
+
+    if(  any {ref ne 'ARRAY'} @_  ){
+        my $badIdx=  firstidx {ref ne 'ARRAY'} @_;
+        my $argType=  ref $_[$badIdx];
+        _diell(
+            "corrs expected each of its arguments ARG to be an array reference, but ARG[$badIdx] is ".(length $argType? "a reference to $argType":'not a reference.')  =>
+            "corrsの各引数ARGはarray参照子でなければならないが、ARG[$badIdx]は".(length $argType? "${argType}参照子である。":'参照子ではない。')
+            );
+    }
+
+
+    for (0..$#_-1){
+        @{$_[$_]} == @{$_[1+$_]}    or
+            _diell(  "corrs expected references to equal size arrays, but encountered unequal sizes: ARG[$_]=" .@{$_[$_]}. ' ≠ ARG[' .(1+$_). ']=' .@{$_[1+$_]}  =>
+                     "corrsの引数はすべて同じ大きさのarrayへの参照子でなければならないが、ARG[$_]の大きさ("
+            # _diell(  "corrs expected references to equal size arrays, but the sizes of ARG[$_] (" .@{$_[$_]}. ') and ARG[' .1+$_. '] (' .@{$_[1+$_]}. ') are unequal'  =>
+            #          "corrsの引数はすべて同じ大きさのarrayへの参照子でなければならないが、ARG[$_]の大きさ(" .@{$_[$_]}. ')とARG[' .1+$_. ']の大きさ(' .@{$_[1+$_]}. ')は等しくない。'
+            );
+    }
+    my $retVal;
+
+    $retVal=  'dummy return value';
+
+    # Statistics::Basic::correlation( $X, $Y );
+    # my $r=  Statistics::Basic::correlation( $X, $Y );
+    # my $n=  0+@$X;
+    # my $t=  $r * sqrt(  ($n-2) / (1-$r*$r)  )  if $r*$r < 1.0;
+
+
+    # my $pVal = 'NaN';
+    # $pVal = defined $t? 2 * Statistics::Distributions::tprob( $n-1, abs $t ) : 'NaN';
+
+
+    # my $rankCorr  =  Statistics::RankCorrelation->new( $X, $Y );
+    # print    "n: $n";
+    # printf    ' r:%5.3f',   $r;
+    # printf ' pVal:%5.3f',   $pVal;
+    # printf    ' τ:%5.3f',   $rankCorr->kendall();
+    # printf    " ρ:%5.3f\n", $rankCorr->spearman();
+
+    return $retVal;
+}
+
 
 #  Return indicies into @stats_data for boundaries of uniform occupancy binning.
 #  Side effect: numerically sorts @stats_data.
@@ -3613,7 +3670,7 @@ The statistical functions: sum, mean, stdev, qtiles, xqtiles, stats; share some 
 =wk -H|header|label|grep
 
 =kw allnum|-g|--grep|grep
- Remove any data columns with non-numerical entries.
+ Remove any data rows with non-numerical entries.
  数値でない値を持つ行を取り除く。
  % perltab -gd 'allnum @F'
 =wk allnum|-g|--grep|grep
