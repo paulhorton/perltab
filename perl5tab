@@ -108,15 +108,34 @@ sub an{  grep {defined && length} @_  }
 
 { state $printfWantsNumRx=  qr{ % [-+.#0-9]* l? [defgoux] }x;
 
-  #Return @_ sprintf formated according to FORMAT.
+  #Return strings in @_ sprintf formated according to FORMAT.
   #When FORMAT expects a number, non-numbers are passed through as is.
   sub form{
+      wantarray   or  goto &_formScalar;
       @_ > 1   or   _diell(  'form() expected at least two arguments but got '.@_=>'form()はふたつ以上の引数が必要であるが、'.@_.'個しか受け取らなかった。'  );
       my $format=  shift;
       if(  $format=~  /$printfWantsNumRx/  ){
           map  {looks_like_number $_?  sprintf $format, $_  :  $_}    @_;}
       else{
           map  {                       sprintf $format, $_       }    @_;}
+  }
+
+  #Version of form when called in scalar context.
+  sub _formScalar{
+      defined  wantarray   or
+          _diell(  'form() called in a void context'  =>
+                   'void文脈でform()が呼ばれた。'  );
+      @_ == 2   or
+          _diell(  'form() called in scalar context should have 2 arguments, but called with '.@_  =>
+                   'スカラ文脈ではform()はふたつの引数で呼ばなければならないが、'.@_.'を受け取った。'  );
+
+      my $format=  shift;
+      if(  $format=~  /$printfWantsNumRx/  ){
+          looks_like_number $_[0]?  sprintf $format, $_[0]  :  $_[0];
+      }
+      else{
+          ;                         sprintf $format, $_[0];
+      }
   }
 
   #Modify @_ sprintf formated according to FORMAT.
