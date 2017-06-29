@@ -1523,6 +1523,7 @@ state sub printStanza_ifNotYetPrinted(){
                   }
               }#defined dittoMark
 
+              $_ //= missingMark()  for @F;
               say @F;
           }
 
@@ -2988,8 +2989,8 @@ perltabは列に関する以下の変数を提供する。
                              出力時の列の区切文字列SEP.  省略すると入力時の区切文字列は出力にも使われる。
 =wk -OF|--OF|--output-field-sep
 =kw -p|--print-each-row
-  -p|--print-each-row        Print @F after executing (the final) row script on each row.
-|                            (最終入力走査で)各行に対し行スクリプト実行後に@Fを出力する。
+  -p|--print-each-row        Print @F after executing (the final) row script on each row.  Any undef values in @F are quietly replaced with the missing value mark.
+|                            (最終入力走査で)各行に対し行スクリプト実行後に@Fを出力する。  出力時に@Fにあるundef値は静か欠損値マーク(デフォルトは空文字列)に変えられる。
 =wk -p|--print-each-row
 =kw -n|--print-script
   -n|--print-script          Output script suitable for use with -f|--script-file.  See -h script-file.
