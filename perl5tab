@@ -1267,13 +1267,24 @@ state sub candMistypedLabel{
 
 
 #━━━━━━━━━━━━━━━━━━━━  User Functions  ━━━━━━━━━━━━━━━━━━━━
+my $callerNF_;   #Temporary store for N() or F() caller name for error messages.
 
 #────────────────────  Accessors  ────────────────────
 my %N;
+
 sub N{
+    $callerNF_=  'N';
+    goto &_N;
+}
+
+sub _N{
     my @retVal;
   ARG:
     for  my $query  (@_){
+        if(  length ref($query)  ){
+            _diell(  "Function ${callerNF_}() expected scalar column name argument but got reference to ".ref($query).'.'=>
+                     "関数${callerNF_}()はスカラの列名を期待していたが、".ref($query).'への参照子を受け取った。'  );
+        }
         length $query   or   _diell('Empty string given as column label.'=>
                                   '列ラベルとして空文字列を受け渡された。');
 
@@ -1290,10 +1301,13 @@ sub N{
         _dieAllegedColumnLabelNotFound( $query, '' );
     }
 
-    @_   or   _diell('N() called with no arguments.'=>'N()が引数無しで呼ばれた。');
+    @_   or   _diell('${callerNF_}() called with no arguments.'=>'${callerNF_}()が引数無しで呼ばれた。');
     return  wantarray?  @retVal  :  $retVal[0];
 
-}#sub N
+}#sub _N
+
+
+sub  F : lvalue{  $callerNF_=  'F';  return  @F[_N(@_)]   }
 
 
 #  Return labels which prefix match $query.
@@ -1337,10 +1351,7 @@ sub _dieAllegedColumnLabelNotFound{
         _diell("${msgPrefix}No column matches string '$query'."=>
                "文字列'${query}'に一致する列ラベルが見つからない。");
     }
-}
-
-
-sub  F : lvalue{   @F[N@_]   }
+}#_dieAllegedColumnLabelNotFound
 
 
 
