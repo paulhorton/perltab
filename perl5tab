@@ -1915,6 +1915,7 @@ sub _stats_set_data{
     @stats_data=  ();
     $stats_seenNaN= $stats_seenInfPlus= $stats_seenNaN=  '';
     $stats_numSigDig=  1;
+
     for(  @_  ){
         /$numRE_/   or  next;
         if   (     /^[+-]? nan$/ix  ){   $stats_seenNaN=     $_   }
@@ -2011,11 +2012,17 @@ sub stdev{
 }
 
 
+
+
+#  Return string summarizing pairwise correlations of input data.
+#  UNDER CONSTRUCTION
+#  Still thinking about the best interface and implementation for this.
 sub corrs{
     @_ > 1   or   _diell
         'corrs expected at least two arguments, but got '.(@_? 'only one':'none')  =>
         'corrsはふたつ以上の引数が必要であるが、１個'.(@_? 'しか':'も').'受け取らなかった';
 
+    
     if(  any {ref ne 'ARRAY'} @_  ){
         my $badIdx=  firstidx {ref ne 'ARRAY'} @_;
         my $argType=  ref $_[$badIdx];
@@ -2028,12 +2035,10 @@ sub corrs{
 
     for (0..$#_-1){
         @{$_[$_]} == @{$_[1+$_]}    or
-            _diell(  "corrs expected references to equal size arrays, but encountered unequal sizes: ARG[$_]=" .@{$_[$_]}. ' ≠ ARG[' .(1+$_). ']=' .@{$_[1+$_]}  =>
-                     "corrsの引数はすべて同じ大きさのarrayへの参照子でなければならないが、ARG[$_]の大きさ("
-            # _diell(  "corrs expected references to equal size arrays, but the sizes of ARG[$_] (" .@{$_[$_]}. ') and ARG[' .1+$_. '] (' .@{$_[1+$_]}. ') are unequal'  =>
-            #          "corrsの引数はすべて同じ大きさのarrayへの参照子でなければならないが、ARG[$_]の大きさ(" .@{$_[$_]}. ')とARG[' .1+$_. ']の大きさ(' .@{$_[1+$_]}. ')は等しくない。'
-            );
+            _diell(  "corrs expected references to equal size arrays, but encountered unequal sizes: size ARG[$_]=" .@{$_[$_]}. ' ≠ size ARG[' .(1+$_). ']=' .@{$_[1+$_]}  =>
+                     "corrsの引数はすべて同じ大きさのarrayへの参照子でなければならないが、size ARG[$_]=" .@{$_[$_]}. ' ≠ size ARG[' .(1+$_). ']=' .@{$_[1+$_]}  );
     }
+            
     my $retVal;
 
     $retVal=  'dummy return value';
@@ -2056,7 +2061,7 @@ sub corrs{
     # printf    " ρ:%5.3f\n", $rankCorr->spearman();
 
     return $retVal;
-}
+}#sub corrs
 
 
 #  Return indicies into @stats_data for boundaries of uniform occupancy binning.
