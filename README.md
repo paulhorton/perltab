@@ -22,7 +22,8 @@ But it also allows for using named columns (and allows for abbreviation).<BR>
 This is convenient, but when numerical computation and missing values come to play perltab is particularly helpful.
 
 For example the minimum value of a column can be output in this way:<BR>
-`% perltab -d 'bemin $m, F(hei)' -z 'say $m'`
+`% perltab -d 'bemin $m, F(hei)' -z 'say $m'`<BR>
+where the script following the -d option is run on all input lines EXCEPT the initial header line holding the colum names, and the -z option script is run once at the end.
 
 or, as long as the column labels do not look like numbers, this will also work:<BR>
 `% perltab -e 'bemin $m, F(hei)' -z 'say $m'`
