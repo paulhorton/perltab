@@ -73,8 +73,10 @@ my $endTestNum;  #  End testing with test number $endTestNum.
 
 
 
-opendir  my $regressDir, 't/regression'   or
-    die  "Could not open directory 't/regression'.\n"  .  (-d '../t/regression'? "Try running in parent directory.\n" : '');
+my $commandLineScriptsDir=  't/regression/commandLineScripts';
+
+opendir  my $regressDir, $commandLineScriptsDir   or
+    die  "Could not open directory '$commandLineScriptsDir'.\n"  .  (-d '../t/regression'? "Try running in parent directory.\n" : '');
 
     
 @testNum=  sort  grep {/^\d\d\d$/}  readdir $regressDir;
@@ -93,7 +95,7 @@ my %title;
 
 #  ──────────  Read in expected outputs  ──────────
 for  my $testNum  (@testNum){
-    my $path=  "t/regression/$testNum";
+    my $path=  "$commandLineScriptsDir/$testNum";
     -e $path   or   die  "File '$path' does not exist";
     -f $path   or   die  "Expected '$path' to be a plain file, but it is not";
     open  my $command_output_file, $path   or   die  "could not open file '$path'";
