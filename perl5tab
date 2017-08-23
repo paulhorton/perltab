@@ -1169,6 +1169,7 @@ sub nums{   grep  {numP $_}  @_   }
 state sub openAndProcessInputFiles;
 state sub openAndProcessInputFiles_forSorting;
 
+dlock state $noncommentLineRegex=  qr/^[^;\n]/;
 
 dlock state $curPass= '';
 state sub curPass(){  $curPass  }
@@ -1409,7 +1410,7 @@ state sub printStanza_ifNotYetPrinted(){
       my $curRow;
       my @commentAtTop;
       while(   $curRow= <$inputFile>   ){
-          chomp $curRow;   last if $curRow=~ /^ [^;] /x;
+          chomp $curRow;   last if $curRow=~ /$noncommentLineRegex/;
           push @commentAtTop, $curRow;
       }
       defined $curRow   or   return;                                          #EMPTY INPUT SUB EXIT
@@ -1463,7 +1464,7 @@ state sub printStanza_ifNotYetPrinted(){
       my $atTopOfStanzaP=  't';
       while(  <$inputFile>   ){
           #Handle comments.
-          if(   /^$/  or  /^;/   ){
+          if(  !/$noncommentLineRegex/   ){
               push(  @comment,  $_);
               $atTopOfStanzaP=  't'    if  /^$/;
               next;
@@ -2380,7 +2381,7 @@ sub processInputFile_forSorting{
     my $curRow;
     my @commentAtTop;
     while(   $curRow= <$inputFile>   ){
-        chomp $curRow;   last   if $curRow =~ /^ [^;] /x;
+        chomp $curRow;   last   if $curRow =~ /$noncommentLineRegex/;
         push @commentAtTop, $curRow;
     }
 
@@ -2388,7 +2389,7 @@ sub processInputFile_forSorting{
 
     if(  $prevPass eq curPass  ){
         while(   $curRow= <$inputFile>   ){
-            chomp $curRow;   last if $curRow=~ /^ [^;] /x;   #Quietly skip comment lines.
+            chomp $curRow;   last if $curRow=~ /$noncommentLineRegex/;   #Quietly skip comment lines.
         }
         $head eq $curRow   or
             _diell("Line at top of input file $inputName: '$curRow'\nnot equal to previously seen head line: '$head'", 
@@ -2421,7 +2422,7 @@ sub processInputFile_forSorting{
 
     my @comment;
     while(  <$inputFile>   ){
-        push( @comment, $_ ), next   if  /^;/ or /^\n/;
+        push( @comment, $_ ), next   if  !/$noncommentLineRegex/;
         
         chomp(  $curRow= $_  );
 
