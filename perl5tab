@@ -1169,7 +1169,7 @@ sub nums{   grep  {numP $_}  @_   }
 state sub openAndProcessInputFiles;
 state sub openAndProcessInputFiles_forSorting;
 
-dlock state $noncommentLineRegex=  qr/^[^;\n]/;
+dlock state $noncommentLineRegex=  qr/^[^#\n]/;   #Caveat: not sure if \n in character class will work for dos newlines.  PH20180823
 
 dlock state $curPass= '';
 state sub curPass(){  $curPass  }

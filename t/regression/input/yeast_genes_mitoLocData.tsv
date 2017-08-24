@@ -1,4 +1,4 @@
-;;  Some data used for a study of mRNA localization to mitochondria
+#   Some data used for a study of mRNA localization to mitochondria
 Gene	avgTranslationInitTimeSecs	avgNumRibosomes	givenMitoLocProb
 YAL010C	95.52	2.23	0.6471
 YAL015C	125.58	1.01	0.0334

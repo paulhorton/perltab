@@ -1,10 +1,10 @@
 Print section matching pattern.
 perltab -test -ge 'stanza=~ /Trans/'  t/regression/input/fruit_withStanzaLabels.tsv
-MD5:t/regression/input/fruit_withStanzaLabels.tsv	xSzK3mQ4+qE8EfClWhFq3w
-;I have put an opening comment followed by a blank line here just to show how perltab handles it.
+MD5:t/regression/input/fruit_withStanzaLabels.tsv	oG5aP55tdzhCCOEBkHo6Lw
+#I have put an opening comment followed by a blank line here just to show how perltab handles it.
 
 FEATURE	apple	mikan	pear	peach	banana
 
-; Translations
+# Translations
 French	pomme	mikan	poire	pêche	banane
 German	Apfel	Mikan	Birne	Pfirsich	Banane

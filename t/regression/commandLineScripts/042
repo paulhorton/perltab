@@ -1,4 +1,4 @@
-Sort heightWeight.tsv so that IDs found in file age.tsv are in the same relative order as they appear in age.tsv, but without moving the rows of other IDs not found in age.tsv. Using DEFAULT spec.
+Sort heightWeight.tsv so that IDs found in file age.tsv are in the same relative order as they appear in age.tsv, but without moving the rows of other IDs not found in age.tsv. Using DEFAULT sort order spec.
 perltab --test -e '$R{ F(ID)}= NR' -s2 '$R{ F(ID)}' t/regression/input/age.tsv -in2 t/regression/input/heightWeight.tsv
 MD5:t/regression/input/age.tsv	vypX4+KenGyamTzhY90Phg
 MD5:t/regression/input/heightWeight.tsv	wqbXPt1Elw/A/OE7HHxj2Q

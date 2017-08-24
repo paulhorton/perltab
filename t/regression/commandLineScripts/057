@@ -1,6 +1,6 @@
 Print height, weight and shoe size columns of rows for which at least one of those has a value.
 perltab -test -e '@x= F(hei wei shoe); say @x if an @x' t/regression/input/heightWeightShoesize.tsv
-MD5:t/regression/input/heightWeightShoesize.tsv	eWLGazGphvq6mm5N/wKmQw
+MD5:t/regression/input/heightWeightShoesize.tsv	eLPlx+qBxH/MvkQ683lwWA
 height	weight	shoe size
 160	50	9
 175	78	11

@@ -1,4 +1,4 @@
 Print quintiles of feature givenM…, including its minimum and maximum values.
 perltab --test -d 'push @d, F(givenM)' -z 'say xqtiles(5,@d)' t/regression/input/yeast_genes_mitoLocData.tsv
-MD5:t/regression/input/yeast_genes_mitoLocData.tsv	dPPDSl+tSoUKx2rz7cxWqw
+MD5:t/regression/input/yeast_genes_mitoLocData.tsv	MRpkJLpKK9W1akYtCEbI2w
 0	0.00974	0.0683	0.3236	0.7087	0.8988

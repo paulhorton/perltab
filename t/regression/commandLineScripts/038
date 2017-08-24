@@ -1,6 +1,6 @@
 Lexically sort rows by label, except for the first.  Comment lines skipped.
 perltab --test -e 'say F($H[0], sort @H[1..$#H])'  t/regression/input/fruit.tsv
-MD5:t/regression/input/fruit.tsv	MnspXc0mSnyv98Mqd/Xltg
+MD5:t/regression/input/fruit.tsv	Ua3MH4gz6URazxP6xwt9TQ
 feature	apple	banana	mikan	peach	pear
 weight	100	183	100	175	165
 cost	300	218	347	500	800
