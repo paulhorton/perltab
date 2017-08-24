@@ -2076,9 +2076,44 @@ sub corrs{
 }#sub corrs
 
 
-#  Return indicies into @stats_data for boundaries of uniform occupancy binning.
-#  Side effect: numerically sorts @stats_data.
+
+#  Return indicies into @stats_data for boundaries of $q bins
+#  Sorts @stats_data as side effect.
 sub _binBoundaryIdxs{
+    my $arg1=  shift;
+
+    @stats_data=  sort {$a<=>$b} @stats_data;
+
+    if   (  $arg1 eq '-w'  ){
+        goto &_binBoundaryIdxs_uniformRange;
+    }
+    elsif(  $arg1 eq '-o' ){
+        goto &_binBoundaryIdxs_uniformOccupancy;
+    }
+    else{
+        _diell(  "unknown binning spec '$arg1', supported specs are {-r,-o}."=>"データを区間に分割する仕様には{-r,-o}がある。'${arg1}'は無効な仕様'"  );
+    }
+}
+    
+
+
+#  Return indicies into @stats_data for boundaries of $q uniform size ranges
+sub _binBoundaryIdxs_uniformRange{
+    my $q=  shift;
+
+    my(  $min, $max  )=  minmax @stats_data;
+    
+    my $range=  $max - $min;
+    my $binWidth= $range / $q-1;
+
+    return    map  {$min + $binWidth*$_}   1 .. $q-1;
+}
+
+
+
+#  Return indicies into @stats_data for boundaries of $q uniformly occupied bins.
+#  Side effect: numerically sorts @stats_data.
+sub _binBoundaryIdxs_uniformOccupancy{
     my $q=  shift;
 
     @stats_data=  sort {$a<=>$b} @stats_data;
@@ -2113,7 +2148,7 @@ sub _binBoundaryIdxs{
     }
 
     return @retVal;
-}# _binBoundaryIdxs
+}# _binBoundaryIdxs_uniformOccupancy
 
 
 
