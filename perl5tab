@@ -3333,17 +3333,17 @@ Or to remove only the opening comment at top:
  普通はsay( @STRING )と同じであるが、@STRINGが空である、もしくは空の文字列を含んでいれば、speakは何もしない。
 =wk speak
 
-=kw form
+=kw form|format
  sub form( FORMAT, STRING1... )
  Return STRING1... sprintf formated according to FORMAT.  When FORMAT expects a number (e.g. '%3d'), non-numbers are passed through as is.
  文字列STRING1...にsprintf( FORMAT, STRING1 )をかけ、その結果を返す。FORMATが（例えば'%3d'）のような数値を前提にしている場合、数値以外の値にはsprintfをかけずにそのまま返す。
-=wk form
+=wk form|format
 
-=kw reform
+=kw reform|format
  sub reform( FORMAT, STRING1... )
  Caution, modifies STRING1... according to sprintf format FORMAT.  When FORMAT expects a number (e.g. '%3d'), non-numerical STRINGs are left unchanged.
  注意、STRING1...の値を変えてしまう。文字列STRING1...をsprintf形式のFORMATに従って変更する。FORMATが（例えば'%3d'）のような数値を前提にしている場合、数値以外のSTRINGはそのまま残る。
-=wk reform
+=wk reform|format
 
 =kw nomt|noempty|no empty|empty
  sub nomt( @STRING )
@@ -3650,7 +3650,7 @@ The statistical functions: sum, mean, stdev, qtiles, xqtiles, stats; share some 
 =unsettab
 =wk insaft
 
-=kw reform
+=kw reform|format
  Reformat numbers in field 'BMI'.
  列BMI中の数字の表示形式を変える。
  % perltab -pe 'reform "%.2f", F(BMI)'  heightWeightBMI.tsv
@@ -3660,7 +3660,7 @@ The statistical functions: sum, mean, stdev, qtiles, xqtiles, stats; share some 
  LaTeX表のデータ(ラベル行無しで、列は' & 'で区切られている形式)で２〜４番号の列中の数値の小数点以下の桁数を変更する。
  % perltab -N -F=' & '  -pe 'reform "%5.3f", @F[2..4]'  tableBody.tex
 =wk -N|--no-head|nohead|-F|--field-sep|field-separator
-=wk reform
+=wk reform|format
 
 =kw number|numeric|isnum|数値
 =kw speak|nums
