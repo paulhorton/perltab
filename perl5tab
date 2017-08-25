@@ -1928,7 +1928,17 @@ sub _stats_set_data{
     $stats_seenNaN= $stats_seenInfPlus= $stats_seenNaN=  '';
     $stats_numSigDig=  1;
 
-    for(  @_  ){
+    @_   or   return;   #Called with empty list.  (Should not happen?)
+
+    my $dataRf=  \@_;
+    if(  ref $_[0] eq "ARRAY"  ){
+        @_ == 1   or   _diell
+            "${caller} received arguments following the first array reference argument."=>
+            "${caller}の引数に問題があった。最初のARRAY参照子引数の後に余分な引数を受け取った。";
+        $dataRf= $_[0];
+    }
+
+    for(  @$dataRf  ){
         /$numRE_/   or  next;
         if   (     /^[+-]? nan$/ix  ){   $stats_seenNaN=     $_   }
         elsif(     /^[+] ? inf$/ix  ){   $stats_seenInfPlus= $_   }
@@ -2021,6 +2031,75 @@ sub stdev{
         '数値を含んでないリストの標準偏差を求めようとした。';
 
     return _reformatNumstring _stdev;
+}
+
+
+
+
+#  Return array holding counts of $@_ in $q equal width intervals
+#  Still experimenting with interface...
+sub _histc{
+    my $caller=  shift;
+    @_    or   _diell
+        "${caller} needs at least one argument"=>
+        "${caller}は少なくともひとつの引数が必要";
+
+    my $q=  shift;
+    $q =~ /^[1-9]\d*$/   or   _diell
+        "${caller} expected first argument to a positive integer but got '$q'."=>
+        "${caller}の第一引数は正整数でなければならないが、'${q}'を受け取った。";
+
+    return (1)   if $q==1;
+
+    if(  @_  ){
+        ref $_[0] eq 'ARRAY'   or   _diell
+            "currently ${caller} requires second argument (if present) to be an array reference, but got '${_[0]}'"=>
+            "現状の実装では${caller}に第二引数を与える場合、そのタイプはarray参照子でなければならないが、'${_[0]}'を受け取った。";
+    }
+
+    _stats_set_data( $caller, @_  )    if @_;
+
+    @stats_data   or   _diell
+        'tried to compute ${caller} of list with no numbers.'=>
+        '数値を含んでないリストに${caller}を呼んだ。';
+
+    my(  $min, $max  )=  minmax @stats_data;
+    $min=~ /inf/ || $max=~ /inf/   and   _diell
+        "${caller} encountered infinite value"=>
+        "${caller}は-inf値に出くわした。";
+
+    my $span=  $max-$min;
+
+    my @count=  (0) x ($q+1);
+
+    for  my $val  (@stats_data){
+        next   if  $val=~  /nan/i;
+        ++$count[$q*($val-$min)/$span];
+    }
+
+    # Now $count[-1] is special, holding only values exactly equal to $max, so merge it with $count[-2].
+    $count[-2]+= pop @count;
+
+    return @count;
+}
+
+
+#  Return array holding frequencies of @_ in $q equal width intervals
+#  Still experimenting with interface...
+sub histc{
+    unshift  @_,  'histc';
+    goto  &_histc;
+}
+
+
+#  Return array holding frequencies of @_ in $q equal width intervals
+#  Still experimenting with interface...
+sub histf{
+    unshift  @_,  'histf';
+    my @freq=  _histc @_;
+    my $sum=  sum @freq;;
+    $_ /= $sum  for @freq;
+    return @freq;
 }
 
 
