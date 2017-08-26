@@ -1447,6 +1447,10 @@ state sub printStanza_ifNotYetPrinted(){
                   }
               }
           }                  
+
+          ($_=  firstidx  {!defined}  @F)  == -1   or   _diell
+              "When attempting to output head line, \$F[$_] was undefined."=>
+              "先頭行を出力しようとした時に、\$F[$_]はundef値だった。";
           
           do{   say for @commentAtTop;  say @F   }if  $printEachRowP;
           @FprevIn= @Fin;
