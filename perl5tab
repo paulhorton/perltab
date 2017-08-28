@@ -64,6 +64,12 @@ my $numRE_;
 
 
 # ────────────────────  Utilities  ────────────────────
+sub Dumper{
+    eval  'use Data::Dumper';
+    goto &Data::Dumper::Dumper;
+}
+
+
 #  push2( @f, @g, @val )
 #  Shortcut for  push @f, $val[0]; push @g, $val[1]
 sub push2(\@\@;@){
@@ -3646,6 +3652,11 @@ The statistical functions: sum, mean, stdev, qtiles, xqtiles, stats; share some 
 
 
 =head2  Other Functions|その他の関数
+
+=kw Dumper|dump
+ Invokes Data::Dumper::Dumper.
+ Data::Dumper::Dumperを呼び出す。
+=wk Dumper|dump
 
 =kw ih|inhead|in head
  sub ih()
