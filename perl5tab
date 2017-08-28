@@ -67,8 +67,23 @@ my $numRE_;
 #  push2( @f, @g, @val )
 #  Shortcut for  push @f, $val[0]; push @g, $val[1]
 sub push2(\@\@;@){
+    @_ == 4   or   _diell(
+        'push2 expected 4 arguments, but got '.@_=>
+        'push2の引数は４個あるはずだが、'.@_.'個を受け取った。');
     push @{$_[0]}, $_[2];
     push @{$_[1]}, $_[3];
+}
+
+
+#  push3( @f, @g, @h, @val )
+#  Like push2, but with three arrays to copy into.
+sub push3(\@\@\@;@){
+    @_ == 6   or   _diell(
+        'push3 expected 6 arguments, but got '.@_=>
+        'push3の引数は６個あるはずだが、'.@_.'個を受け取った。');
+    push @{$_[0]}, $_[3];
+    push @{$_[1]}, $_[4];
+    push @{$_[2]}, $_[5];
 }
 
 
@@ -500,8 +515,8 @@ sub _diell{
     if(  grep /CALLER/, @_  ){
         length $callerForDieMsg_   or   _dieProg  '$callerForDieMsg_ was on defined when _diell called with arguments ', @_;
         map  {s/CALLER/$callerForDieMsg_/g}  @_;
-        die  _ll(@_) . "\n"
     }
+    die  _ll(@_) . "\n"
 }
 
 
@@ -3662,6 +3677,16 @@ The statistical functions: sum, mean, stdev, qtiles, xqtiles, stats; share some 
  especially handy when $val1, $val2 are the elements of an array @val.  Compare these:
   push2( @a, @b, @val )  <-->   push( @a, $val[0] );  push( @b, $val[1] )
 =wk push2
+
+=kw push3
+  push3( @a, @b, @c, $val1, $val2, $val3 )
+ is a shortcut for:
+ は、
+  push( @a, $val1 );  push( @b, $val2 );  push( @c, $val3 )
+ の略。以下の例のように$val1, $val2, $val3が@valに入っている場合は特に便利。
+ especially handy when $val1, $val2, $val3 are the elements of an array @val.  Compare these:
+  push3( @a, @b, @c, @val );  #Push one value each onto @a, @b, and @c.
+=wk push3
 
 
 =head1  EXAMPLES|使用例
