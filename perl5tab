@@ -2386,6 +2386,12 @@ sub stats{
 
 
 
+#────────────────────  Convenience Routines  ────────────────────
+sub log2{    map  {1.442695040888963 * log $_}  @_   }
+sub log10{   map  {0.434294481903252 * log $_}  @_   }
+
+
+
 #────────────────────  Sorting Routines  ────────────────────
 state sub processInputFile_forSorting;
 state sub sortData_andPrint;
@@ -3569,6 +3575,16 @@ The statistical functions: sum, mean, stdev, qtiles, xqtiles, stats; share some 
 =wk stats|mean|stdev|median|quartile|平均値|標準偏差|中央値|４分位値|四分位値|４分位数|四分位数
 =wk statistics|統計
 
+=head2  Statistical Functions|統計関数
+=kw math functions|数学関数
+=kw log|logarithm|対数
+ log2( $VAL )
+ log10( $VAL )
+ Return log to the base 2 or 10 of $VAL.  Like log(), $_ is used when $VAL is omitted.
+ はそれぞれ、２もしくは10を底にした$VALの対数を返す。log関数と同様、$VALを省略すると$_が使われる。
+=wk log|logarithm|対数
+=wk math functions|数学関数
+
 
 =head2  Other Functions|その他の関数
 
@@ -3932,6 +3948,7 @@ The statistical functions: sum, mean, stdev, qtiles, xqtiles, stats; share some 
 =wk qtiles|xqtiles|quantile|median|quartile|percentile|分位値|分位数|中央値|４分位値|四分位値|４分位数|四分位数|百分位値|パーセンタイル
  
 =wk statistics|統計
+
 
 
 =head1  SORTING ROWS|行の並べ替え
