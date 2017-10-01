@@ -1095,7 +1095,7 @@ END2             z2|end2=*
 
   pop @ARGV   if  @ARGV  and  $ARGV[0] eq '--';
   
-  @ARGV   or   !-t *STDIN   or   $opt_{printEachRowP}
+  @ARGV   or   !-t *STDIN   or   $opt_{printEachRowP}   or   $opt_{BEGIN}
   or   _dieUsage( 'expected more command line arguments, perhaps you forgot the input file.'=>
                   'コマンド行の引数が足りない。入力ファイルを書き忘れた？');
 
