@@ -70,6 +70,64 @@ sub Dumper{
 }
 
 
+#  Return true iff $_[0] is a Reference to a List of Lists.
+#  Loose in the sense that it accepts undef elements, such as [ [3,4], undef, ...]
+sub _LoLRefP_loose{
+    @_   or   _dieProg(  '_LoL_P called with no arguments'  );
+    ref $_[0] eq 'ARRAY'   or   return undef;
+    for(   @{ $_[0]}   ){
+        return undef  if defined && ref ne 'ARRAY';
+    }
+    return 't';
+}
+
+# Return one minus the size of longest component list pointed to by $_[0]
+sub _LoLRef_maxListSize{
+    my $maxSize=  -1;
+    for(   @{ $_[0]}   ){
+        $maxSize=  @$_   if defined && @$_ > $maxSize;
+    }
+    return  $maxSize;
+}
+
+
+#  fillHoles( $fillVal, \@matrixWannabeLoL )
+#  @matrixWannabe should be a list of lists.
+#  fillHoles makes @matrixWannabe into a rectangular shape and fills any undef values with $fillVal.
+#  If $fillVal is omitted missingMark() is used as the value to fill.
+#  If there is demand, interface may be expanded to take multiple @matrixWannabeLoL
+sub fillholes{  goto &fillHoles  }
+sub fillHoles{
+    @_   or   _diell(
+        'fillHoles called with no arguments.'=>
+        'fillHolesが引数無しで呼び出された。');
+    my $fillVal=  missingMark();
+    my $firstRefIdx=  firstidx {ref} @_;
+    $firstRefIdx > -1   or   _diell(
+        'fillHoles called without any array reference argument'=>
+        'fillHolesの引数にarray参照子がなかった。');
+    $firstRefIdx < +2   or   _diell(
+        'fillHoles expects at most one non-reference argument but got '. 1+$firstRefIdx .'.'=>
+        'fillHolesは多くとも１個の非参照子引数を受け付けるが、'. 1+$firstRefIdx .'を受け取った。');
+    $fillVal=  shift   if $firstRefIdx == 1;
+
+    _LoLRefP_loose( $_[0] )   or   _diell(
+        'fillHoles expects any reference argument to refer to a list of lists, but argument number '. $firstRefIdx .'is a reference to something else.'=>
+        'fillHolesの参照子引数はすべてリストへのリスト（「LoL」、例えば、[[3,4],[1,3,5]]）への参照子でなければならないが、第' .$firstRefIdx. 'の引数はLoLと異なる型のデータへの参照子。');
+
+    my $maxListSize=   _LoLRef_maxListSize $_[0];
+    for  my $listRf(  @{ $_[0]}  ){
+        if(  defined $listRf ){
+            $$listRf[$_] //= $fillVal   for 0..$maxListSize-1;
+        }
+        else{
+            $listRf=  [($fillVal) x $maxListSize];
+        }
+    }
+}#fillHoles
+
+
+
 #  push2( @f, @g, @val )
 #  Shortcut for  push @f, $val[0]; push @g, $val[1]
 sub push2(\@\@;@){
