@@ -1,0 +1,11 @@
+Try using return value of log2 as an array index.
+perltab -b '++$freq[log2] for 1..511; say for @freq'
+1
+2
+4
+8
+16
+32
+64
+128
+256

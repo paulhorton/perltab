@@ -20,6 +20,7 @@ use List::Util qw(first max maxstr min minstr reduce shuffle pairkeys pairmap pa
 use List::MoreUtils qw(:all);
 use POSIX qw(ceil floor);
 use Scalar::Util qw(looks_like_number dualvar);
+use Scalar::Util::Numeric qw(isfloat isint isneg);
 use Statistics::Basic;
 use Statistics::Distributions;
 use Statistics::RankCorrelation;
@@ -2476,37 +2477,89 @@ sub stats{
 
 #────────────────────  Convenience Routines  ────────────────────
 #  Return log base 2 or 10 of arguments.  Let non-numeric arguments pass through unchanged.
+
 {
-    state $reciprocalOf_lnOfBase;
+    state sub _log2(_){
+        return $_[0]    if  !numP $_[0];
 
-    sub log2{
-        $reciprocalOf_lnOfBase=  1.442695040888963;
-        $callerForDieMsg_=  'log2';
-        goto &_logs;
+        !isneg( $_[0] )   or   _diell
+            "log2 called with negative argument '$_[0]', but the logarithm of a negative number is mathematically undefined."=>
+            "log2が負の引数'$_[0]'で呼び出されたが、負の数の対数は定義されていない。";
+
+        $_[0] > 0   or   _diell
+            'log2 called with 0, but the logarithm of a zero is mathematically undefined.'=>
+            'log2の引数に0が含まれているが、０の対数は定義されていない。';
+
+        #If $_[0] is a floating point number or and integer which is not a power of 2, use the standard log function to compute log2.
+        return  log( $_[0] ) / log(2)    if   isfloat $_[0]  or  $_[0] & ($_[0] - 1);
+
+
+        #$_[0] is a positive power of 2, in this case compute and return integer value for log2.
+        my( $x, $intRetVal )=  ( $_[0], 0 );
+
+        ++$intRetVal   while $x >>= 1;
+        return $intRetVal;
     }
 
-    sub log10{
-        $reciprocalOf_lnOfBase=  0.434294481903252;
-        $callerForDieMsg_=  'log10';
-        goto &_logs;
+
+    state sub _log10(_){
+        return $_[0]    if  !numP $_[0];
+
+        !isneg( $_[0] )   or   _diell
+            "log10 called with negative argument '$_[0]', but the logarithm of a negative number is mathematically undefined."=>
+            "log10が負の引数'$_[0]'で呼び出されたが、負の数の対数は定義されていない。";
+
+        $_[0] > 0   or   _diell
+            'log10 called with 0, but the logarithm of a zero is mathematically undefined.'=>
+            'log10の引数に0が含まれているが、０の対数は定義されていない。';
+
+        #If $_[0] is a floating point number use the standard log function to compute log10.
+        return  log( $_[0] ) / log(10)    if   isfloat $_[0];
+
+        my $valStr=  sprintf( '%d', $_[0]  );
+
+        return length $1   if $valStr=~ /^1(0+)$/;
+
+        return  log( $_[0] ) / log(10);
     }
 
-    sub _logs{    
+
+
+    sub log2(_){
+        defined wantarray   or   _diell
+            'log2 called in void context.'=>
+            'log2がvoid文脈に呼び出された。';
+
         @_   or   unshift @_, $_;
-        if(  wantarray  ){
-            return  map   {numP()?  $reciprocalOf_lnOfBase * log $_:  $_}   @_;
-        }
-        if(  defined wantarray  ){
-            @_ == 1   or   _diell
-                'CALLER called in scalar context, but wants to return '.@_.' elements.'=>
-                'CALLERはスカラ文脈で呼び出されたが、返すべきリストに'.@_.'個の引数が含まれている。';
-            return  numP($_[0])?  $reciprocalOf_lnOfBase * log $_[0]:  $_[0];
-        }
+        wantarray   or   @_==1   or   _diell
+            'log2 called in scalar context, but with multiple arguments.'=>
+            'log2はスカラ文脈で呼び出されたが、返すべきリストに'.@_.'個の引数が含まれている。';
+
+        my @retVal=  map  {_log2}  @_;
+        return(  wantarray? @retVal : $retVal[0]  );
         _diell
-            'CALLER called in void context.'=>
-            'CALLERがvoid文脈に呼び出された。';
+            'log2 called in void context.'=>
+            'log2がvoid文脈に呼び出された。';
     }
-}#  log functions.
+
+
+    sub log10(_){
+        defined wantarray   or   _diell
+            'log10 called in void context.'=>
+            'log10がvoid文脈に呼び出された。';
+
+        @_   or   unshift @_, $_;
+        wantarray   or   @_==1   or   _diell
+            'log10 called in scalar context, but with multiple arguments.'=>
+            'log10はスカラ文脈で呼び出されたが、返すべきリストに'.@_.'個の引数が含まれている。';
+
+        my @retVal=  map  {_log10}  @_;
+        return(  wantarray? @retVal : $retVal[0]  );
+        _diell
+            'log10 called in void context.'=>
+            'log10がvoid文脈に呼び出された。';
+    }
+}
 
 
 
@@ -3700,9 +3753,15 @@ The statistical functions: sum, mean, stdev, qtiles, xqtiles, stats; share some 
  log2( @VAL )
  log10( @VAL )
  Return log to the base 2 or 10 of values in @VAL.  Like Perl log(), $_ is used when @VAL is omitted.
+ Integer values are returned when @VAL holds integers which are positive powers of 2 (or 10) respectively.
+ For example ++$freq[log2 8] and ++$freq[log10 1000] are equivalent to ++$freq[3].
+
  Unlike log() which only takes one argument, a list may be given and non-numerical values are passed through unchanged.
  Okay to call in scalar context if @VAL has no more than one element, otherwise dies with error message.
  はそれぞれ、@VALの数値要素の２もしくは10を底にしたの対数を返す。Perlのlog()関数と同様、$VALを省略すると$_が使われる。
+ @VALの値が整数で２(10)の倍数であれば、返り値として整数を返す。
+ 例えば、++$freq[log2 8]と++$freq[log10 1000]は++$freq[3]と同じ。
+
  Perlのlog()と違って、リストの引数@VALを受け付ける。また、@VAL中の数値でない値はそのまま通される。
  スカラ文脈で利用できるが、@VALにふたつ以上の要素が入っていれば、perltabはエラー文を吐いて終了する。
 =wk log|logarithm|対数
