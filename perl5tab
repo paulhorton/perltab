@@ -3935,7 +3935,7 @@ The statistical functions: sum, mean, stdev, qtiles, xqtiles, stats; share some 
  Output BMI (Body Mass Index) from rows in which both height and weight have values.
  身長と体重の値がふたつとも記録してある行の体格指数"BMI"を表示する。
 =settab    ==
- % perltab -e '@V= nextNum F(height weight);  say 10000*$V[1]/$V[0]**2'   heightWeight.tsv
+ % perltab -e 'donum{say 10000*$_[1]/$_**2} F(height weight)'  heightWeight.tsv
 =unsettab
 
 =kw insaft
@@ -4331,7 +4331,11 @@ perltabは以下のモジュールを利用する。
   List::MoreUtils qw(:all);
   POSIX qw(ceil floor);
   Scalar::Util qw(looks_like_number dualvar);
+  Scalar::Util::Numeric qw(isfloat isint isneg);
   Hash::Util qw(lock_keys lock_keys_plus unlock_keys lock_hash);
+  Statistics::Basic;
+  Statistics::Distributions;
+  Statistics::RankCorrelation;
   Unicode::Collate;
   Data::Lock qw(dlock dunlock);
   Text::Balanced
