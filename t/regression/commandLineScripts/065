@@ -1,0 +1,4 @@
+Print geometic mean of feature avgT…
+perltab --test -d 'push @d, F(avgT)' -z 'say geomean @d' t/regression/input/yeast_genes_mitoLocData.tsv
+MD5:t/regression/input/yeast_genes_mitoLocData.tsv	MRpkJLpKK9W1akYtCEbI2w
+32.9058

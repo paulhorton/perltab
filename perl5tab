@@ -1957,7 +1957,7 @@ sub moveAft{  goto &movAft  }   sub moveBef{  goto &movBef  }
 #If in xterm, return $_[0] converted to bold
 #Otherwise    return $_[0] as is.
 sub _toBold{
-    state $xtermP=  $ENV{TERM} eq 'xterm';
+    state $xtermP=  $ENV{TERM} =~ /^xterm/;
     return  $xtermP? "\e[1m$_[0]\e[0m"  : $_[0];
 }
 
@@ -2079,8 +2079,10 @@ sub sum{
 
 
 
-sub _mean(){   return  _sum / @stats_data    if @stats_data;
-               return;
+sub _mean(){
+    my $sum=  _sum;
+    return  $sum / @stats_data    if  $sum=~ $numRE_{plain};
+    return  $sum;    # NaN, -inf, etc.
 }
 
 
@@ -2090,11 +2092,43 @@ sub mean{
 
     @stats_data   or   _diell
         'tried to compute mean of list with no numbers.'=>
-        '数値を含んでないリストの平均値を求めようとした。';
+        '数値を含んでいないリストの平均値を求めようとした。';
 
     return _reformatNumstring _mean;
 }
 
+
+
+sub _geomean(){
+    return                      if  !@stats_data;
+    return  $stats_seenNaN      if  $stats_seenNaN;
+    return  'NaN'               if  $stats_seenInfPlus && $stats_seenInfMnus;
+    return  $stats_seenInfPlus  if  $stats_seenInfPlus;
+    return  $stats_seenInfMnus  if  $stats_seenInfMnus;
+
+    my $retVal=  1;
+    my $rootExp=  1 / @stats_data;
+
+    for  my $val  (@stats_data){
+        return 'NaN'   if $val < 0;
+        $retVal *=  $val**$rootExp;
+    }
+
+    return $retVal;
+}
+
+
+#  Geometric mean of numerical values in @_
+sub geomean{
+    _stats_set_data 'geomean', @_   if @_;
+
+    @stats_data   or   _diell
+        'tried to compute geometic mean of list with no numbers.'=>
+        '数値を含んでいないリストの幾何平均値を求めようとした。';
+
+    return _reformatNumstring _geomean
+}
+    
 
 sub _stdev(){
     return                      if !@stats_data;
@@ -3697,32 +3731,38 @@ Or to remove only the opening comment at top:
 
 =head2  Statistical Functions|統計関数
 =kw statistics|統計
-=kw sum|mean|stdev|qtiles|quantiles|quartiles|percentiles|stats|和|平均値|標準偏差|分位値|分位数
-The statistical functions: sum, mean, stdev, qtiles, xqtiles, stats; share some properties.
+=kw sum|mean|average|geomean|geometric mean|stdev|qtiles|quantiles|quartiles|percentiles|stats|和|平均|平均値|幾何平均|幾何平均値|標準偏差|分位値|分位数
+The statistical functions: sum, mean, geomean, stdev, qtiles, xqtiles, stats; share some properties.
  *  They ignore non-numerical data values.
  *  Calling them with non-empty data has the side effect of setting an internal array.
  *  When called with an empty data [e.g. mean()], if the internal array has been set, they use those values.
  *  They die with error message if no numerical values are available to perform their operations.
  *  They try to handle special numerical values such as {inf, -inf, nan, -NaN} reasonably.
-統計関数、sum, mean, stdev, qtiles, xqtiles, statsは以下の共通点を持つ。
+統計関数、sum, mean, geomean, stdev, qtiles, xqtiles, statsは以下の共通点を持つ。
  •  データに含まれる数値以外の値は無視する。
  •  副作用として渡されたデータを内部配列に保存しておく。
  •  データ無しで呼ばれたら[例えば、mean()]、内部配列に保存してあるデータを使う。
  •  {inf, -inf, nan, -NaN}のような特殊の数値を適切に処理するように努力する。
-=wk sum|mean|stdev|qtiles|quantiles|quartiles|percentiles|stats|和|平均値|標準偏差|分位値|分位数
+=wk sum|mean|average|geomean|geometric mean|stdev|qtiles|quantiles|quartiles|percentiles|stats|和|平均|平均値|幾何平均|幾何平均値|標準偏差|分位値|分位数
 
 
-=kw sum
+=kw sum|和
  sub sum( @VAL )
  Returns the sum of the numerical values in @VAL.
  @VALに含まれている数値の和を返す。
-=wk sum
+=wk sum|和
 
-=kw mean
+=kw mean|average|平均|平均値
  sub mean( @VAL )
  Returns the mean of the numerical values in @VAL.
  @VALに含まれている数値の平均値を返す。
-=wk mean
+=wk mean|average|平均|平均値
+
+=kw geomean|geometic mean|average|幾何平均|きかへいきんち|幾何平均値
+ sub geomean( @VAL )
+ Returns the geometic mean of the numerical values in @VAL.
+ @VALに含まれている数値の幾何平均値を返す。
+=wk geomean|average
 
 =kw stdev
  sub stdev( @VAL )
@@ -3802,7 +3842,7 @@ The statistical functions: sum, mean, stdev, qtiles, xqtiles, stats; share some 
  は、
   push( @a, $val1 );  push( @b, $val2 )
  の略。以下の例のように$val1, $val2が@valに入っている場合は特に便利。
- especially handy when $val1, $val2 are the elements of an array @val.  Compare these:
+ especially handy when $val1, $val2 are the elements of an array @val.
   push2( @a, @b, @val )  <-->   push( @a, $val[0] );  push( @b, $val[1] )
 =wk push2
 
