@@ -591,9 +591,10 @@ sub _diell{
   #Return language of line $_[0].
   state sub lineLang{
       return 'JPN'    if  $_[0]  =~  /(\p{Hiragana}|\p{Katakana})/;
-      return '---'    if  $_[0]  =~  /^  [^-]/ ;                #Lines starting with two spaces (followed by anything but -, for options table).
-      return 'ENG'    if  $_[0]  =~  /   [a-zA-Z]+.*[.,:]$/x;   #Lines ending in {.,:} considered English.
-      return 'ENG'    if  $_[0]  =~  /^\S[a-zA-Z]+.*    ;$/x;   #Or ending in ';', if flush with the left margin.
+      return '---'    if  $_[0]  =~  /^  [^-]/ ;                   #Lines starting with two spaces (followed by anything but: -, for options table).
+      return 'ENG'    if  $_[0]  =~  /   [a-zA-Z]+.*   [.,:] $/x;  #Lines ending in {.,:} considered English.
+      return 'ENG'    if  $_[0]  =~  /^\S[a-zA-Z]+.*       ; $/x;  #Or ending in ';', if flush with the left margin.
+      return 'ENG'    if  $_[0]  =~  /   [a-zA-Z]+.* [.] [)] $/x;  #Lines ending in  ).   considered English.
       return '---';  #verbatim line.
   }
 
@@ -3805,10 +3806,11 @@ The statistical functions: sum, mean, geomean, stdev, qtiles, xqtiles, stats; sh
  はそれぞれ、@VALの数値要素の２(もしくは10)を底にした引数の対数を返す。Perlのlog()関数と同様、$VALを省略すると$_が使われる。
 
  log2 and log20 differ from Perl log() in these respects:
- * a list of arguments @VAL may be given. (Dies with error message when called in scalar context if @VAL has more than one element.)
- * non-numerical values are passed through unchanged
- * When passed integer powers of 2(10) integer values,
-   so ++$freq[log2 8] and ++$freq[log10 1000] are equivalent to ++$freq[3].
+ *  A list of arguments @VAL may be given.
+    (Dies with error message when called in scalar context if @VAL has more than one element.)
+ *  Non-numerical values are passed through unchanged.
+ *  When passed integer powers of 2(10) integer values,
+    so ++$freq[log2 8] and ++$freq[log10 1000] are equivalent to ++$freq[3].
 
  log2及びlog10の挙動は以下の点でPerl log()と異なる、
  ・ リストの引数@VALを受け付ける。
