@@ -2516,17 +2516,16 @@ sub stats{
     state sub _log2(_){
         return $_[0]    if  !numP $_[0];
 
-        !isneg( $_[0] )   or   _diell
+        isneg $_[0]   and    _diell
             "log2 called with negative argument '$_[0]', but the logarithm of a negative number is mathematically undefined."=>
-            "log2が負の引数'$_[0]'で呼び出されたが、負の数の対数は定義されていない。";
+            "log2が負の引数'$_[0]'で呼び出されたが、負の数の対数は数学的に定義されていない。";
 
-        $_[0] > 0   or   _diell
-            'log2 called with 0, but the logarithm of a zero is mathematically undefined.'=>
-            'log2の引数に0が含まれているが、０の対数は定義されていない。';
+        $_[0] == 0   and   _diell
+            "log2 called with '$_[0]', but the logarithm of zero is mathematically undefined."=>
+            "log2の引数に'$_[0]'が含まれていたが、０の対数は数学的に定義されていない。";
 
-        #If $_[0] is a floating point number or and integer which is not a power of 2, use the standard log function to compute log2.
-        return  log( $_[0] ) / log(2)    if   isfloat $_[0]  or  $_[0] & ($_[0] - 1);
-
+        #If $_[0] is a floating point number or an integer which is not a power of 2, use the standard log function to compute log2.
+        return  log( $_[0] ) / log(2)    if   isfloat $_[0]  or  $_[0] & ($_[0] -1);
 
         #$_[0] is a positive power of 2, in this case compute and return integer value for log2.
         my( $x, $intRetVal )=  ( $_[0], 0 );
@@ -2539,7 +2538,7 @@ sub stats{
     state sub _log10(_){
         return $_[0]    if  !numP $_[0];
 
-        !isneg( $_[0] )   or   _diell
+        isneg $_[0]   and   _diell
             "log10 called with negative argument '$_[0]', but the logarithm of a negative number is mathematically undefined."=>
             "log10が負の引数'$_[0]'で呼び出されたが、負の数の対数は定義されていない。";
 
@@ -2565,6 +2564,11 @@ sub stats{
             'log2がvoid文脈に呼び出された。';
 
         @_   or   unshift @_, $_;
+
+        defined $_[0]   or   _diell
+            'log2 called with undefined value.'=>
+            'log2の引数にundef値で含まれていた。';
+
         wantarray   or   @_==1   or   _diell
             'log2 called in scalar context, but with multiple arguments.'=>
             'log2はスカラ文脈で呼び出されたが、返すべきリストに'.@_.'個の引数が含まれている。';
@@ -2583,6 +2587,11 @@ sub stats{
             'log10がvoid文脈に呼び出された。';
 
         @_   or   unshift @_, $_;
+
+        defined $_[0]   or   _diell
+            'log10 called with undefined value.'=>
+            'log10の引数にundef値で含まれていた。';
+
         wantarray   or   @_==1   or   _diell
             'log10 called in scalar context, but with multiple arguments.'=>
             'log10はスカラ文脈で呼び出されたが、返すべきリストに'.@_.'個の引数が含まれている。';
@@ -3758,11 +3767,11 @@ The statistical functions: sum, mean, geomean, stdev, qtiles, xqtiles, stats; sh
  @VALに含まれている数値の平均値を返す。
 =wk mean|average|平均|平均値
 
-=kw geomean|geometic mean|average|幾何平均|きかへいきんち|幾何平均値
+=kw geomean|geometic mean|average|幾何平均|幾何平均値
  sub geomean( @VAL )
  Returns the geometic mean of the numerical values in @VAL.
  @VALに含まれている数値の幾何平均値を返す。
-=wk geomean|average
+=wk geomean|geometic mean|average|幾何平均|幾何平均値
 
 =kw stdev
  sub stdev( @VAL )
@@ -3789,22 +3798,25 @@ The statistical functions: sum, mean, geomean, stdev, qtiles, xqtiles, stats; sh
 
 =head2  Statistical Functions|統計関数
 =kw math functions|数学関数
-=kw log|logarithm|対数
+=kw log|log2|log10|logarithm|対数
  log2( @VAL )
  log10( @VAL )
  Return log to the base 2 or 10 of values in @VAL.  Like Perl log(), $_ is used when @VAL is omitted.
- Integer values are returned when @VAL holds integers which are positive powers of 2 (or 10) respectively.
- For example ++$freq[log2 8] and ++$freq[log10 1000] are equivalent to ++$freq[3].
+ はそれぞれ、@VALの数値要素の２(もしくは10)を底にした引数の対数を返す。Perlのlog()関数と同様、$VALを省略すると$_が使われる。
 
- Unlike log() which only takes one argument, a list may be given and non-numerical values are passed through unchanged.
- Okay to call in scalar context if @VAL has no more than one element, otherwise dies with error message.
- はそれぞれ、@VALの数値要素の２もしくは10を底にしたの対数を返す。Perlのlog()関数と同様、$VALを省略すると$_が使われる。
- @VALの値が整数で２(10)の倍数であれば、返り値として整数を返す。
- 例えば、++$freq[log2 8]と++$freq[log10 1000]は++$freq[3]と同じ。
+ log2 and log20 differ from Perl log() in these respects:
+ * a list of arguments @VAL may be given. (Dies with error message when called in scalar context if @VAL has more than one element.)
+ * non-numerical values are passed through unchanged
+ * When passed integer powers of 2(10) integer values,
+   so ++$freq[log2 8] and ++$freq[log10 1000] are equivalent to ++$freq[3].
 
- Perlのlog()と違って、リストの引数@VALを受け付ける。また、@VAL中の数値でない値はそのまま通される。
- スカラ文脈で利用できるが、@VALにふたつ以上の要素が入っていれば、perltabはエラー文を吐いて終了する。
-=wk log|logarithm|対数
+ log2及びlog10の挙動は以下の点でPerl log()と異なる、
+ ・ リストの引数@VALを受け付ける。
+    (スカラ文脈で呼ぶ場合、@VALの引数の個数がふたつ以上ならperltabはエラー文を吐いて終了する。)
+ ・ 数値でない値はそのまま通される。
+ ・ @VALの値が整数かつ２(10)の冪数であれば、整数を返す。
+    例えば、++$freq[log2 8]と++$freq[log10 1000]は++$freq[3]と同じ。
+=wk log|log2|log10|logarithm|対数
 =wk math functions|数学関数
 
 
