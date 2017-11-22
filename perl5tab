@@ -1377,9 +1377,9 @@ sub _N{
                      "関数${callerNF_}()はスカラの列名を期待していたが、".ref($query).'への参照子を受け取った。'  );
         }
         length $query   or   _diell('Empty string given as column label.'=>
-                                  '列ラベルとして空文字列を受け渡された。');
+                                    '列ラベルとして空文字列を受け渡された。');
 
-        exists $N{$query}   and       push( @retVal,  $N{$query}  ),  next ARG;
+        exists $N{$query}   and       push( @retVal,  $N{$query} ),  next ARG;
 
         #  Code copy from _columnLabelPrefixMatches to avoid spending the time needed for a function call.
         for  my $prefRx  (qr/^$query$/, qr/(?i:^$query$)/, qr/^$query/, qr/(?i:^$query)/){
@@ -1982,6 +1982,45 @@ my $stats_pairData_size;   #Number of pairs.
 
 my $stats2_numSigDig;  #Max number of significant digits in @stats_dataData, for prettier output.
 
+
+#  Push stats data onto @stats_pairData.
+#  In future may switch to have this construct a PDL.
+sub pushStats{
+    (@_ % 2)   and   _diell
+        'In the current implementation, pushStats expects exactly two arguments, but got ' .@_  =>
+        '現状の実装ではちょうどふたつの引数を期待するが、' .@_. '個を受け取った。';
+
+    goto &_pushStats2;
+}
+
+
+sub _pushStats2{
+    defined $_[0]   or   _diell
+        'pushStats called with undef value for first argument.'=>
+        'pushStatsの第一引数としてundefを受け取った。';
+
+    defined $_[1]   or   _diell
+        'pushStats called with undef value for second argument.'=>
+        'pushStatsの第二引数としてundefを受け取った。';
+
+    if(  numP $_[0]  ){
+        numP $_[1]   or   _diell
+            "pushStats called with list in which pair the" .@stats_pairData. "th pair: (@_) is mixed numeric and non-numeric"=>
+            "pushStatsが呼び出された引数リストの" .@stats_pairData. "番目の２組(@_)に数値と数値でない値が混在している";
+
+        bemax  $stats2_numSigDig,  _numSigDigits( $_[0] ), _numSigDigits( $_[1] );
+        push @stats_pairData, @_;
+        ++$stats_pairData_size;
+    }
+    else{
+        numP $_[1]   and   _diell
+            "pushStats called with list in which pair the" .@stats_pairData. "th pair: (@_) is mixed numeric and non-numeric"=>
+            "pushStatsが呼び出された引数リストの" .@stats_pairData. "番目の２組(@_)に数値と数値でない値が混在している";
+        return;   #Pairs for which both values are non-numerical are quietly skipped.
+    }
+}
+
+
 #───────────  Related to number of digits to display  ──────────
 
 #Return number of digits in $_[0] which are not simply place holders.
@@ -2323,6 +2362,45 @@ sub MAE{
     
     return  _stats2_reformatNumstring(  $sum / $stats_pairData_size  );
 }
+
+
+
+#  Return Pearson's linear correlation of paired data in @_
+sub corrP{
+    _stats_set_pairData 'corrP', @_   if @_;
+
+    @stats_pairData    or      _diell
+        'corrP() called with no numerical arguments to work with.'=>
+        'corrP()が呼び出されたが、扱うべき数値は与えられていない。';
+
+    @stats_pairData > 3   or   _diell
+        'corrP() requires at least two pairs of numbers, but got only one pair.'=>
+        'corrP()はふたつ以上の数値２組を必要とするがひとつしか受け取っていない。';
+
+
+    my( $mean0, $mean1 )=  (0, 0);
+    for(  pairs @stats_pairData  ){
+        $mean0 +=  $$_[0];
+        $mean1 +=  $$_[1];
+    }
+    {  my $n=  @stats_pairData / 2;
+       $mean0 /= $n;
+       $mean1 /= $n;
+    }
+
+
+    my( $diffInnerProd, $diffSqrd0, $diffSqrd1 ) =  (0, 0, 0);
+    for  (pairs @stats_pairData){
+        my $d0=  ($$_[0]-$mean0);
+        my $d1=  ($$_[1]-$mean1);
+        $diffInnerProd+=  $d0 * $d1;
+        $diffSqrd0+=      $d0 * $d0;
+        $diffSqrd1+=      $d1 * $d1;
+    }
+    
+    return  _stats2_reformatNumstring(  $diffInnerProd / sqrt( $diffSqrd0 ) / sqrt $diffSqrd1  );
+}
+
 
 
 #  Return string summarizing pairwise correlations of input data.
