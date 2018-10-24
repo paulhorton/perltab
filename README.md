@@ -68,7 +68,7 @@ Runs on a linux box under Perl v5.18.2.  Untested elsewhere.
 * Move column 'ID' to directly after column 'weight'.<BR>
 `% perltab -pe 'movaft qw(weight ID)'  heightWeight.tsv`
 
-* Manually move column 'ID' to directly after column 'weight', assuming column ID comes before colun weight in the input.<BR>
+* Manually move column 'ID' to directly after column 'weight', assuming column ID comes before column weight in the input.<BR>
 `% perltab -e '($x,$y)= N(ID weight);  say @F[0..$x-1,$x+1..$y,$x,$y+1..$#F]'   heightWeight.tsv`
 
 * Delete columns starting in 'c', 'd' or 'e'.<BR>
