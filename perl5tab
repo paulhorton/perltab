@@ -564,6 +564,16 @@ my %script_;
   #Select string based on output language.
   sub _ll {  my $msg= $_[$langI] // $_[0];  $msg       }
   sub _lln{  my $msg= $_[$langI] // $_[0];  $msg."\n"  }
+
+  sub _lln_concat{
+    # Receive flattened list (msgLang1, msgLang2,... extraMsgLang1, extraMsgLang2,...)
+    # Concatenate newline, then extra message modifying @_
+    @_ % 2   and   die  'Programming error, expected even length list.';
+
+    my @half2=  splice @_, @_/2;
+    $_[$_] .=  "\n" . $half2[$_]   for 0..$#_
+  }
+
 }
 
 
@@ -1193,8 +1203,17 @@ looks_like_number missingMark    and
               if -t *STDIN;
       }
       else{
-          -e $pathname   or   _dieUsage(  "Data input file '${pathname}' does not exist."=>
-                                          "データ入力ファイル'${pathname}'は存在しない。"  );
+          unless( -e $pathname ){
+              my @msg= ("Data input file '${pathname}' does not exist."=>
+                        "データ入力ファイル'${pathname}'は存在しない。");
+              if(  _looksLikeScriptP( ${pathname} ) ){
+                  _lln_concat( @msg,
+                               'Perhaps that argument was intended to be a script, but you forgot to place -e (or -d etc.) before it?'=>
+                               'もしかしたらスクリプトのつもりでしたがその前に-e (や-d等)を入れるの忘れたのでしょうか？');
+              }
+              _dieUsage(  @msg  );
+          }
+
           -f $pathname   or   _dieUsage(  "Data input file '${pathname}' is not a plain file."=>
                                           "データ入力ファイル'${pathname}'は普通のファイルではない。"  );
           -r $pathname   or   _dieUsage(  "Data input file '${pathname}' is not readable."=>
@@ -1223,6 +1242,9 @@ if(  $opt_{outputFile}  ){
     select $outStream;   #To make user script print and say statements default to $outStream.
 }
 
+
+#String looks more like a script than a pathname?
+sub _looksLikeScriptP{  $_[0] =~ /\s[@\$]\S/   }
 
 sub _warn{
     select(   (select(STDERR), $|=1)[0]    );
