@@ -3282,6 +3282,8 @@ perltabはperlのautosplitモードに毛の生えたような、タブ区切り
 |                    説明書全体を表示。
  perltab -h kw       List keywords with documentation.
 |                    説明書のキーワード・リストを表示。
+ perltab -h opts     Describes command line options.
+|                    コマンド行オプションを表示。
  perltab -h toc      Prints documentation table of contents.
 |                    説明書の目録を表示。
  perltab -h KEYWORD  Prints part of documentation matching KEYWORD.
