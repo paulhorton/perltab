@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #  Author: Paul Horton
-#  Copyright (C) 2016, 2017  Paul B. Horton, All rights reserved.
+#  Copyright (C) 2016, 2017, 2018  Paul B. Horton, All rights reserved.
 #
 #  License: Anyone may use this software under the GNU Public License GPLv3.
 #  For discussion of other licenses please contact the author, Paul Horton.
@@ -363,9 +363,9 @@ sub  snset{  goto &SNset  };
 
 # ──────────────────────────────  Global Variables  ──────────────────────────────
 #  Variables intentionally visible to user
-my @F;           #Fields of the current row.
-my @Fin;         #F of previous row, after ditto substitution under the -D|--ditto option.
-my @FinPrev;     #Fields of previously read row as input (after ditto substitution).
+my @F;           #Fields of the current row, subject to ditto substitution under the -D|--ditto option..
+my @Fin;         #F of the current row as read in.
+my @FinPrev;     #Fields of previously read row as input.
 my @H;           #To hold head fields unless $opt_{noHeadP}.
 
 
@@ -1013,8 +1013,8 @@ END2             z2|end2=*
                           "オプション'${arg}'の後に来るはずの引数が見つからない。"  );
           unshift @ARGV, parseScriptFile $pathname                     ;next;}
       
-      ;                #Ditto and sort bundled together
-      if(   $arg=~  /^-Ds/                                                  ){
+      #Ditto and another flag bundled together
+      if(   $arg=~  /^-D[des]/                                              ){
           $opt_{dittoMark}= '';
           unshift @ARGV,  '-' . substr $arg, 2                          ;next;}
 
