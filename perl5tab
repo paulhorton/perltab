@@ -1655,7 +1655,7 @@ state sub printStanza_ifNotYetPrinted(){
               say @F;
           }
 
-          @FinPrev= @Fin;  #Might try (\@FinPrev, \@F)= (\@F, \@FinPrev)  If reference aliasing becomes standard.
+          @FinPrev= @Fin;
       }#  while(  $curRow = <INPUT_STREAM>  )
       
   }#processInputFile
@@ -3443,11 +3443,11 @@ perltabは列に関する以下の変数を提供する。
  @Fin          Copy of @F as read in.
 |              読み込んだ時の@Fのコピー。
 =wk @Fin
-=kw @FinPrev
- @FinPrev      @Fin from the previous row, otherwise the empty list ().
+=kw prev|@FinPrev
+ @FinPrev      @Fin from the previous row (initially the empty list).
 |              ひとつ前の行の@Fin。初期値は空のリスト()。
 =unsettab
-=wk @FinPrev
+=wk prev|@FinPrev
 
 
 =head1  OPTIONS|オプション
