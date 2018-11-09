@@ -365,7 +365,7 @@ sub  snset{  goto &SNset  };
 #  Variables intentionally visible to user
 my @F;           #Fields of the current row.
 my @Fin;         #F of previous row, after ditto substitution under the -D|--ditto option.
-my @FprevIn;     #Fields of previously read row as input (after ditto substitution).
+my @FinPrev;     #Fields of previously read row as input (after ditto substitution).
 my @H;           #To hold head fields unless $opt_{noHeadP}.
 
 
@@ -1565,7 +1565,7 @@ state sub printStanza_ifNotYetPrinted(){
               "先頭行を出力しようとした時に、\$F[$_]はundef値だった。";
           
           do{   say for @commentAtTop;  say @F   }if  $printEachRowP;
-          @FprevIn= @Fin;
+          @FinPrev= @Fin;
       }# if/else $head already defined (from a preceding input file)
 
 
@@ -1611,7 +1611,7 @@ state sub printStanza_ifNotYetPrinted(){
 
           if(  defined dittoMark  ){
               for( 0..$#F ){
-                  $F[$_]= $Fin[$_]=  $FprevIn[$_]     if  $F[$_] eq dittoMark;
+                  $F[$_]= $Fin[$_]=  $FinPrev[$_]     if  $F[$_] eq dittoMark;
               }
           }
 
@@ -1655,7 +1655,7 @@ state sub printStanza_ifNotYetPrinted(){
               say @F;
           }
 
-          @FprevIn= @Fin;  #Might try (\@FprevIn, \@F)= (\@F, \@FprevIn)  If reference aliasing becomes standard.
+          @FinPrev= @Fin;  #Might try (\@FinPrev, \@F)= (\@F, \@FinPrev)  If reference aliasing becomes standard.
       }#  while(  $curRow = <INPUT_STREAM>  )
       
   }#processInputFile
@@ -2885,9 +2885,9 @@ sub sortData_andPrint{
     if(  defined dittoMark  ){
         for  my $i  (0..$#sortPerm){
             my @F= my @Fverb=   split  $opt_{inputFieldSep},  $sort_row[ $sortPerm[$i]],  -1;
-            $i  and  $F[$_] eq $FprevIn[$_]   and   $F[$_]= dittoMark    for 0..$#F;
+            $i  and  $F[$_] eq $FinPrev[$_]   and   $F[$_]= dittoMark    for 0..$#F;
             print  $stanza__newBeg_comment{$i}   if exists $stanza__newBeg_comment{$i};
-            say @F;    @FprevIn= @Fverb;
+            say @F;    @FinPrev= @Fverb;
         }}
     else{
         for  my $i  (0..$#sortPerm){
@@ -2942,7 +2942,7 @@ sub processInputFile_forSorting{
         }
         _incrNR;
     }
-    @FprevIn= (dittoMark x @H)   if defined dittoMark;
+    @FinPrev= (dittoMark x @H)   if defined dittoMark;
 
 
   START_PROCESSING_DATA_LINES_FOR_SORT:
@@ -2961,8 +2961,8 @@ sub processInputFile_forSorting{
         @F= @Fin=  split $opt_{inputFieldSep}, $curRow, -1;
 
         #Store row in sort_row
-        if(  defined dittoMark  and  @FprevIn  ){
-            $F[$_] eq dittoMark   and   $F[$_]= $FprevIn[$_]    for 0..$#F;
+        if(  defined dittoMark  and  @FinPrev  ){
+            $F[$_] eq dittoMark   and   $F[$_]= $FinPrev[$_]    for 0..$#F;
             push  @sort_row,  join $opt_{outputFieldSep}, @F;}
         else{
             push  @sort_row,  $curRow;
@@ -2987,7 +2987,7 @@ sub processInputFile_forSorting{
         $sort_keyVec[$_][NR-1]=  $retVal[$_]    for 0..$#retVal;
         
         _incrNR;
-        @FprevIn= @F;  #Might try (\@FprevIn, \@F)= (\@F, \@FprevIn)  If reference aliasing becomes standard.
+        @FinPrev= @F;  #Might try (\@FinPrev, \@F)= (\@F, \@FinPrev)  If reference aliasing becomes standard.
     }#while reading data lines.
 
 }#processInputFile_forSorting
@@ -3443,11 +3443,11 @@ perltabは列に関する以下の変数を提供する。
  @Fin          Copy of @F as read in.
 |              読み込んだ時の@Fのコピー。
 =wk @Fin
-=kw @FprevIn
- @FprevIn      @Fin from the previous row, otherwise the empty list ().
+=kw @FinPrev
+ @FinPrev      @Fin from the previous row, otherwise the empty list ().
 |              ひとつ前の行の@Fin。初期値は空のリスト()。
 =unsettab
-=wk @FprevIn
+=wk @FinPrev
 
 
 =head1  OPTIONS|オプション
