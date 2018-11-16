@@ -237,6 +237,17 @@ sub speak{    say @_   if  @_  and  all {length} @_    }
 #Like say, but replaces undef arguments with the missing value mark.
 sub dit{    say   map  {$_ // missingMark()}  @_    }
 
+#Defined and EQual.  If any arguments are undefined return undef.  Otherwise return 't' if all arguments are string equal and '' if not.
+sub deq{
+    defined $_[0]  or  return _diell(  'deq called with no arguments'=>
+                                       'deqが引数無しで呼び出された。'  );
+    for(  1..$#_  ){
+        defined  $_[$_]   or  return undef;
+        $_[0] eq $_[$_]   or  return '';
+    }
+    return 't';
+}
+
 
 sub numP(_);  #Declared here, but defined later after defining %opt_.
 
@@ -969,12 +980,12 @@ END2             z2|end2=*
                                               "スクリプト・ファイル'$opt_{scriptFile}'の読込み権限がない。"  );
       open  my $scriptFile, '<', $opt_{scriptFile};
       my $scripts=  do{ local $/; <$scriptFile> };
-      my( $ARGVfromFile )=  $scripts=~ /\A#perltab(.*)/g;
-      my @ARGVfromFile=  split ' ', $ARGVfromFile;
+      my @ARGVfromFile;
+      @ARGVfromFile=  split ' ', $1    if  $scripts=~ /\A#perltab(.*)/;
 
       require Text::Balanced;
       for  my $scriptType(  qw(BEGIN BEGIN2 HEAD DATA DATA2 ROWS ROWS2 END SORT_KEY SORT_KEY2)  ){
-          if(my(               $upToBlockLabel,              $rest        )=
+          if(my(               $upToBlockLabel,          $rest        )=
              (  $scripts=~  / ^( .*? ) $scriptType \s* ({ .* ) /xs   )
               ){
 
@@ -3820,6 +3831,13 @@ Or to remove only the opening comment at top:
 
 =head2  Value Filters|値フィルター
 =kw valuefilters|value filters|値フィルター
+=kw deq
+ sub deq( STRING1, STRING2... )
+ Defined and EQual.  If any arguments are undefined return undef.  Otherwise return 't' if all arguments are string equal and '' if not.
+ If all arguments are string equal return 't'; else if any argument is undefined return undef, otherwise return ''.  Mnemonic: Defined and EQual.
+ 引数がすべて同じ文字列ならば't'を返す、そうでなければ引数にundefがあればundefを返し、なければ''を返す。覚え方、Defined and EQual
+=wk deq
+
 =kw dit
  sub dit( @STRING )
  Like say( @STRING ), but replaces undef arguments with the missing value mark.  Mnemonic: French for say, starts with 'd' as does defined.
@@ -4490,8 +4508,12 @@ Should produce the same output as:
 Both output the rows for which column 'Weight' has a numerical value over 70.  The donum{} construct serving to silently skip non-numerical values; if all values in column Weight are numerical, -ge 'F(Weight) > 70' would work as well.
 =wk donum|-g|--grep|grep
 
-The correspondence between inline script command line options and blocks is as follows:
+=kw BLOCK|BEGIN|DATA|ROW|END
+=head2  CODE BLOCKS IN SCRIPT FILE|スクリプト・ファイルでのコード・ブロック
+
+The correspondence between inline script command line options and named code blocks is as follows:
 コマンド行に書き込む各種スクリプトとスクリプト・ファイルに於けるブロック名の対応は以下の通り、
+
 
   b |begin          BEGIN
   b2|begin2         BEGIN2
@@ -4501,8 +4523,9 @@ The correspondence between inline script command line options and blocks is as f
   e2|rows-script2   ROWS2
   z |end            END
 
-At the time of this writing (20170114) the use of script files with perltab has not been tested.
-現時点(20170114)でperltabのファイルからスクリプトを読み込む機能はまだ検証されていない。
+At the time of this writing (20170114) the use of script files with perltab has been tried out by not tested.
+現時点(20170114)でperltabのファイルからスクリプトを読み込む機能は試されてはいるが検証はされていない。
+=wk BLOCK|BEGIN|DATA|ROW|END
 =wk -f|--script-file|script-file
 
 
