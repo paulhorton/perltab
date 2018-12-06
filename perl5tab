@@ -1079,6 +1079,8 @@ END2             z2|end2=*
                       "'${val}'は自分自身がオプションに見えるが、コマンド行での位置を考慮すると'${arg}'の値にも見える。もし'${val}'は本当に'${arg}'の値なら、'$arg=${val}'で指定できる。")
               if  $val=~ /^-/  and  !exists $seenValS{$val};
 
+          _dieUsage(  "Value for option ${arg} defined more than once."=>
+                      "オプション${arg}を二度以上指定しようとしている。"  )    if  defined $opt_{$optName};
           $opt_{$optName}=  $val;
           $ARGVforPrintScript.=  " $arg$OPT_VALseparator$val"   if !exists $scriptOptS{$optName};
       }elsif(   exists $default{$optName}   ){
