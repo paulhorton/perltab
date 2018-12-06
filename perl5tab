@@ -1555,7 +1555,12 @@ state sub printStanza_ifNotYetPrinted(){
           $maxNumColsToExpect=  @Hin;
           unlock_keys %N;  undef %N;
           for  my $i  (0..$#H){
-              _diell(  "Input error; Duplicate label '$H[$i]'", "入力エラー、ラベル$H[$i]が重複している。"  )    if  exists  $N{ $H[$i]};
+              if(  exists $N{ $H[$i]}  ){
+                  _diell(  "Input error: on first input line; label '$H[$i]' in column $i duplicates previous column label.
+If the input has no column label head line you may use the '-N|--no-head' option."=>
+                           "入力エラー、入力の１行目${i}番目の列ラベル'$H[$i]'はその前にある列ラベルと重複している。
+もし入力に列ラベルがなければオプション'-N|--nohead'を使ってください。"  );
+              }
               $N{ $H[$i]}=  $i;
           }
           %Nin=  %N;
@@ -3834,8 +3839,9 @@ Or to remove only the opening comment at top:
 =kw deq
  sub deq( STRING1, STRING2... )
  Defined and EQual.  If any arguments are undefined return undef.  Otherwise return 't' if all arguments are string equal and '' if not.
- If all arguments are string equal return 't'; else if any argument is undefined return undef, otherwise return ''.  Mnemonic: Defined and EQual.
- 引数がすべて同じ文字列ならば't'を返す、そうでなければ引数にundefがあればundefを返し、なければ''を返す。覚え方、Defined and EQual
+ If all arguments are string equal return 't'; else if any argument is undefined return undef, otherwise return ''.
+ Mnemonic: Defined and EQual.
+ 引数がすべて同じ文字列ならば't'を返す、そうでなければ引数にundefがあればundefを返し、なければ''を返す。覚え方、Defined and EQual。
 =wk deq
 
 =kw dit
