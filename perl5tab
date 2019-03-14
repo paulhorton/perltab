@@ -897,9 +897,7 @@ sub _diell{
 @ARGV   or   _dieUsage( 'expected options and arguments on command line, but got none.',
                         'コマンド行にオプションと引数を期待したが、何もない。');
 
-
-#To hold information passed in from user via command line or script file.
-my %opt_=  (inputFieldSep=> "\t");
+my %opt_;   #To map option names to values, obtained either via command line or top of script file.
 
 { my %optSpecs=  qw(
 BEGIN             b|begin=*
@@ -1096,6 +1094,8 @@ END2             z2|end2=*
       }
       $OPT_VALseparator=  ' ';
   }#WHILE  @ARGV
+
+  $opt_{inputFieldSep}  //=  "\t";  #Defaults to tab even when -F not given as a flag.
   $opt_{outputFieldSep}  //=  $opt_{inputFieldSep};
   lock_hash %opt_;
 
@@ -3472,6 +3472,7 @@ perltabは列に関する以下の変数を提供する。
 
 =head1  OPTIONS|オプション
 =kw opts
+=head2  Inline Script Options|コマンド行内スクリプト・オプション
 =kw -b|--begin
 =settab                      ==
   -b|--begin  SCRIPT         SCRIPT to execute before reading input.
@@ -3481,27 +3482,14 @@ perltabは列に関する以下の変数を提供する。
  -b2|--begin2 SCRIPT         On second pass, SCRIPT to execute before reading input.
 |                            ２回目の入力走査で、入力を読み込む前に実行するスクリプト。
 =wk -b2|--begin2
-=kw -c|--count               
-  -c|--count                 Print number of rows for which the row script returned true (on final pass).
-|                            (最終の入力走査で)行スクリプトが真を返した行数を出力する。
-=wk -c|--count               
 =kw -d|--data-script         
-  -d|--data-script           SCRIPT to run on all but the header row.
+  -d|--data-script  SCRIPT   SCRIPT to run on all but the header row.
 |                            ラベル行(入力の先頭行)以外の行に対して実行するスクリプト。
 =wk -d|--data-script         
 =kw -d2|--data-script2
- -d2|--data-script2          On second pass, SCRIPT to run on all but the header row.
+ -d2|--data-script2  SCRIPT  On second pass, SCRIPT to run on all but the header row.
 |                            ２回目の入力走査で、ラベル行(入力の先頭行)以外の行に対して実行するスクリプト。
 =wk -d2|--data-script2
-=kw ditto|-D|--ditto|ditto-mark
-  -D|--ditto                 When an empty string column value is encountered, substitute value from previous row.
-|                            入力ファイルに空文字列となっている列の値は上の行から取る。つまり空文字列を「同上」と見なす。
- --ditto-mark MARK           Like -D|ditto, but use MARK instead of empty string as ditto marker.
-|                            -D|dittoと似ているか、入力ファイルにあるMARKに一致する値をその上の行から取る。
-=wk ditto|-D|--ditto|ditto-mark
-=kw -X|--extra-fields-OK     Extra fields allowed in input lines.  Suppresses fatal error normally thrown when some lines have more fields than expected.  The extra fields appear at the end of @F; otherwise behavior under this option is not well defined and may cause 
-|                            入力ファイルに余計な列(例えばレベルの数より多い列)があってもエラーとして停止せずにその列を適当に@Fに入れて実行を続行する。ただし、列の数が合わないことにより他のエラーが発生する恐れはある。
-=wk -X|--extra-fields-OK
 =kw -e|--row-script
   -e|--row-script  SCRIPT    SCRIPT to run on each row.
 |                            各行に対して実行するスクリプト。
@@ -3510,6 +3498,40 @@ perltabは列に関する以下の変数を提供する。
  -e2|--row-script2 SCRIPT    On second pass, SCRIPT to run on each row.
 |                            ２回目の入力走査で、各行に対して実行するスクリプト。
 =wk -e2|--row-script2
+=kw -H|--head-script
+  -H|--head-script  SCRIPT   SCRIPT to run after reading head row, but before any data rows are read.
+|                            先頭行を読み込んだ直後に実行するスクリプト。
+=wk -H|--head-script
+=kw -H2|--head-script2
+ -H2|--head-script2 SCRIPT   On second pass, SCRIPT to run after reading head row, but before any data rows are read.
+|                            ２回目の入力走査で、先頭行を読み込んだ直後に実行するスクリプト。
+=wk -H2|--head-script2
+=kw -s|--sort|ソート|整列|並べ替え
+  -s|--sort[CMP]  SCRIPT     Sort rows by key(s) returned by SCRIPT for each row, according to CMP specification.  See -h sort for more.
+|                            SCRIPTが行ごとに返すキーをCMPで指定した仕様で比較し、行を並べ替える。CMPの仕様について-h sortを参照。
+=wk -s|--sort|ソート|整列|並べ替え
+=kw -s2|--sort2|ソート|整列|並べ替え
+ -s2|--sort2[CMP] SCRIPT     On second pass, sort rows by key(s) returned by SCRIPT for each row, according to CMP specification.  See -h sort for more.
+|                            ２回目の入力走査で、スクリプトSCRIPTが行ごとに返すキーをCMPで指定した仕様で比較し、行を並べ替える。CMPの仕様について-h sortを参照。
+=wk -s2|--sort2|ソート|整列|並べ替え
+=kw -z|--end
+  -z|--end= SCRIPT           SCRIPT to execute after processing all of the input.
+|                            入力全体を処理した後に実行するスクリプト。
+=wk -z|--end
+=unsettab
+
+=head2  Other Options|その他のオプション
+=settab                      ==
+=kw -c|--count               
+  -c|--count                 Print number of rows for which the row script returned true (on final pass).
+|                            (最終の入力走査で)行スクリプトが真を返した行数を出力する。
+=wk -c|--count               
+=kw ditto|-D|--ditto|ditto-mark
+  -D|--ditto                 When an empty string column value is encountered, substitute value from previous row.
+|                            入力ファイルに空文字列となっている列の値は上の行から取る。つまり空文字列を「同上」と見なす。
+ --ditto-mark MARK           Like -D|ditto, but use MARK instead of empty string as ditto marker.
+|                            -D|dittoと似ているか、入力ファイルにあるMARKに一致する値をその上の行から取る。
+=wk ditto|-D|--ditto|ditto-mark
 =kw -f|--script-file
   -f|--script-file FILE      Read scripts to execute in from FILE.
 |                            実行すべきスクリプトをファイルFILEから読み込む。
@@ -3526,14 +3548,6 @@ perltabは列に関する以下の変数を提供する。
   -h|--help [TOPIC]          Print help on TOPIC.  e.g. -h 'OPTIONS'. Default TOPIC is HELP.
 |                            TOPICに関する説明を出力する。例えば、-h 'OPTIONS'。省略するとTOPICは'HELP'となる。
 =wk -h|--help
-=kw -H|--head-script
-  -H|--head-script  SCRIPT   SCRIPT to run after reading head row, but before any data rows are read.
-|                            先頭行を読み込んだ直後に実行するスクリプト。
-=wk -H|--head-script
-=kw -H2|--head-script2
- -H2|--head-script2 SCRIPT   On second pass, SCRIPT to run after reading head row, but before any data rows are read.
-|                            ２回目の入力走査で、先頭行を読み込んだ直後に実行するスクリプト。
-=wk -H2|--head-script2
 =kw -N|--no-head|no-head|nohead
   -N|--no-head               Do not treat the first (non-comment) line of input files as a head line.
 |                            入力ファイルの先頭を(列ラベルの行として)特別扱いしない。
@@ -3574,23 +3588,15 @@ perltabは列に関する以下の変数を提供する。
   -q|--grep-quiet            perltab process returns 0 if -g option would have found any match rows.
 |                            -gオプションの安静版。行スクリプトが真を返す入力行があれば、perltabプロセスはゼロを返す。
 =wk -q|--grep-quiet
-=kw -s|--sort|ソート|整列|並べ替え
-  -s|--sort[CMP]  SCRIPT     Sort rows by key(s) returned by SCRIPT for each row, according to CMP specification.  See -h sort for more.
-|                            SCRIPTが行ごとに返すキーをCMPで指定した仕様で比較し、行を並べ替える。CMPの仕様について-h sortを参照。
-=wk -s|--sort|ソート|整列|並べ替え
-=kw -s2|--sort2|ソート|整列|並べ替え
- -s2|--sort2[CMP] SCRIPT     On second pass, sort rows by key(s) returned by SCRIPT for each row, according to CMP specification.  See -h sort for more.
-|                            ２回目の入力走査で、スクリプトSCRIPTが行ごとに返すキーをCMPで指定した仕様で比較し、行を並べ替える。CMPの仕様について-h sortを参照。
-=wk -s2|--sort2|ソート|整列|並べ替え
 =kw -V|--version
   -V|--version               Print version number of perltab.
 |                            perltabのバージョン番号を出力する。
 =wk -V|--version
-=kw -z|--end
-  -z|--end= SCRIPT           SCRIPT to execute after processing all of the input.
-|                            入力全体を処理した後に実行するスクリプト。
+=kw -X|extra-fields|--extra-fields-OK
+  -X|--extra-fields-OK       Extra fields allowed in input lines.  Suppresses fatal error normally thrown when some input lines have more fields than expected.  The extra fields are included in @F; otherwise behavior under this option is not well defined.
+|                            入力ファイルに余分な列(第１行より多い数の列)があってもエラーとして停止せずにその列を適当に@Fに入れて実行を続行する。ただし、列の数が合わないことにより他のエラーが発生する恐れはある。
+=wk -X|extra-fields|--extra-fields-OK
 =unsettab
-=wk -z|--end
 =wk opts
 
 
