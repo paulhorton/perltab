@@ -909,6 +909,7 @@ DATA              d|data-script=*
 DATA2            d2|data-script2=*
 defaultDittoMarkP D|ditto
 dittoMark           ditto-mark=
+extraFieldsOK     X|extra-fields-OK
 ROWS              e|rows-script=*
 ROWS2            e2|rows-script2=*
 scriptFile        f|script-file=
@@ -1618,12 +1619,13 @@ If the input has no column label head line you may use the '-N|--no-head' option
           $maxNumColsToExpect //=  @Fin;
           if(  @Fin > $maxNumColsToExpect   ){
               my $p= $maxNumColsToExpect;  my $n= @Fin;
-              _diell("Error unequal number of columns.  A previous row had $p columns, but on line $.: '$curRow' has $n columns.",
-                     "列の本数が合わない。前の行では${p}本の列があったが、${.}行目の現在行には${n}列しかない。");
+              $opt_{extraFieldsOK}   or
+                  _diell("Error unequal number of columns.  A previous row had $p columns, but on line $.: '$curRow' has $n columns.",
+                         "列の本数が合わない。前の行では${p}本の列があったが、${.}行目の現在行には${n}列しかない。");
           }
 
-          #Pad trailing columns with the missingMark is necessary.
-          @Fin == $maxNumColsToExpect   or   push  @Fin,  (missingMark) x  ($maxNumColsToExpect-@Fin);
+          #Pad trailing columns with the missingMark if necessary.
+          @Fin >= $maxNumColsToExpect   or   push  @Fin,  (missingMark) x  ($maxNumColsToExpect-@Fin);
               
           @F= @Fin;
 
@@ -3497,6 +3499,9 @@ perltabは列に関する以下の変数を提供する。
  --ditto-mark MARK           Like -D|ditto, but use MARK instead of empty string as ditto marker.
 |                            -D|dittoと似ているか、入力ファイルにあるMARKに一致する値をその上の行から取る。
 =wk ditto|-D|--ditto|ditto-mark
+=kw -X|--extra-fields-OK     Extra fields allowed in input lines.  Suppresses fatal error normally thrown when some lines have more fields than expected.  The extra fields appear at the end of @F; otherwise behavior under this option is not well defined and may cause 
+|                            入力ファイルに余計な列(例えばレベルの数より多い列)があってもエラーとして停止せずにその列を適当に@Fに入れて実行を続行する。ただし、列の数が合わないことにより他のエラーが発生する恐れはある。
+=wk -X|--extra-fields-OK
 =kw -e|--row-script
   -e|--row-script  SCRIPT    SCRIPT to run on each row.
 |                            各行に対して実行するスクリプト。
