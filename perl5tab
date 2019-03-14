@@ -1791,8 +1791,8 @@ If the input has no column label head line you may use the '-N|--no-head' option
       # ──────────  Else input has head line  ──────────
       if(  @_ % 2  ){
           _stringifyUndef @_;
-          die _ll("In $callerName; -H|--no-head option not given, so $callerName expected an even number of (<LABEL, DATA_GEN> pair forming) trailing args, but got (@_)",
-                  "${callerName}で、-H|--no-headオプションをしていないので、${callerName}は(<LABEL, DATA_GEN>の２組リストとなる)偶数の後尾引数を期待していたが、(@_)を受け取った。");
+          die _ll("In $callerName; -N|--no-head option not given, so $callerName expected an even number of (<LABEL, DATA_GEN> pair forming) trailing args, but got (@_)",
+                  "${callerName}で、-N|--no-headオプションをしていないので、${callerName}は(<LABEL, DATA_GEN>の２組リストとなる)偶数の後尾引数を期待していたが、(@_)を受け取った。");
       }
       
       my @label=   splice  @_,  0,  @_/2;
@@ -3361,7 +3361,7 @@ EXAMPLESにperltabの使用例が数多く挙げられている。
 
 
 =head1  INPUT|入力
-perltab assumes input files to be text files with fields (possibly empty) separated by single tabs.  Unless specified by command line option -H|--no-head, the first line of each input file is assumed to hold column labels.
+perltab assumes input files to be text files with fields (possibly empty) separated by single tabs.  Unless specified by command line option -N|--no-head, the first line of each input file is assumed to hold column labels.
 
 An example input file:
 入力ファイルの例、
@@ -3766,8 +3766,8 @@ Or to remove only the opening comment at top:
 
  新しい列をPREの後に加える。PREはラベル、又は[-$#F,$#F]内の整数で指定できる。
 
- In general (without the -H|--no-head option),
- 一般に(-H|--no-head)オプションを指定していない場合、
+ In general (without the -N|--no-head option),
+ 一般に(-N|--no-head)オプションを指定していない場合、
  
  sub insAft(  PRE,  LABEL1, ...,  DATA_GEN1, ...  )
  sub insaft(  PRE,  LABEL1, ...,  DATA_GEN1, ...  )
@@ -3797,8 +3797,8 @@ Or to remove only the opening comment at top:
  insaft(  'weight',  'BMI'=> sub{ doNum{10000*$_[1]/$_[0]**2}, @F{height weight} }  );
 =unsettab
 
- But when -H|--no-head option is stipulated,
- ただし、-H|--no-headオプションが指定された場合、
+ But when -N|--no-head option is stipulated,
+ ただし、-N|--no-headオプションが指定された場合、
 
  insAft(  SUC,  DATA_GEN1, ...,  )
  insaft(  SUC,  DATA_GEN1, ...,  )
