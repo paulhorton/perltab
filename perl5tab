@@ -424,7 +424,7 @@ sub _dieUsage{
       eval  "no strict 'vars';  no indirect;  use warnings;  sub{ $compilingScript_ }";
       substr( $compilingScript_, 1024 )= '...'   if length $compilingScript_ > 1024;
       _dieUsage $msgStart_._ll(" but the string '$compilingScript_' produced error '$@' when compiling."=>
-                               "文字列'${compilingScript_}'のコンパイル時にエラー" . decode_utf8($@) . 'が発生した。')
+                               "文字列'${compilingScript_}'のコンパイル時にエラー:\n" . decode_utf8($@) . 'が発生した。')
           if $@;
   }
 
