@@ -2408,16 +2408,16 @@ sub MAE{
 
 
 #  Return Pearson's linear correlation of paired data in @_
-sub corrP{
-    _stats_set_pairData 'corrP', @_   if @_;
+sub corrLinear{
+    _stats_set_pairData 'corrLinear', @_   if @_;
 
     @stats_pairData    or      _diell
-        'corrP() called with no numerical arguments to work with.'=>
-        'corrP()が呼び出されたが、扱うべき数値は与えられていない。';
+        'corrLinear() called with no numerical arguments to work with.'=>
+        'corrLinear()が呼び出されたが、扱うべき数値は与えられていない。';
 
     @stats_pairData > 3   or   _diell
-        'corrP() requires at least two pairs of numbers, but got only one pair.'=>
-        'corrP()はふたつ以上の数値２組を必要とするがひとつしか受け取っていない。';
+        'corrLinear() requires at least two pairs of numbers, but got only one pair.'=>
+        'corrLinear()はふたつ以上の数値２組を必要とするがひとつしか受け取っていない。';
 
 
     my( $mean0, $mean1 )=  (0, 0);
