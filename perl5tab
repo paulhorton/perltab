@@ -16,13 +16,11 @@ use utf8::all;
 use Carp;
 use Encode;
 use Hash::Util qw(lock_keys lock_keys_plus unlock_keys lock_hash);
-use List::Util qw(first max maxstr min minstr reduce shuffle pairkeys pairmap pairvalues pairs);
+use List::Util qw(first max maxstr min minstr reduce shuffle sum0 pairkeys pairmap pairvalues pairs);
 use List::MoreUtils qw(:all);
 use POSIX qw(ceil floor);
 use Scalar::Util qw(looks_like_number dualvar);
 use Scalar::Util::Numeric qw(isfloat isint isneg);
-use Statistics::Basic;
-use Statistics::Distributions;
 use Statistics::RankCorrelation;
 use Unicode::Collate;
 use Data::Lock qw(dlock dunlock);
@@ -2007,6 +2005,7 @@ sub _toBold{
 
 
 #────────────────────  Statistics Routines  ────────────────────
+# Perhaps consider using PDL? or CPERL shape arrays in the future.
 
 my @stats_data;  #Not visible to user.  Considering making this a PDL instead of a Perl array PH:20171120.
 
@@ -2017,50 +2016,56 @@ my(  $stats_seenInfPlus, $stats_seenInfMnus, $stats_seenNaN  );
 my $specialNumRE=  qr/^  (?: inf|nan )  \z/i;
 
 
-#Analogous to @stats_data but used by functions such as pairwise correlation functions expecting pairs of values.
-#Considering making this a PDL instead of a Perl array PH:20171120.
-my @stats_pairData;  
-my $stats_pairData_size;   #Number of pairs.
+#──────────  Paired data for correlation functions etc.  ──────────
+my $stats_data0;  #For 1st half of paired data
+my $stats_data1;  #For 2nd half of paired data
 
 my $stats2_numSigDig;  #Max number of significant digits in @stats_dataData, for prettier output.
 
+sub stats_pairData_size{
+    my $size=  scalar @$stats_data0;
+    $size  ==  scalar @$stats_data1   or
+        _dieProg  'stats pair data, paired arrays have unequal size';
+    return $size;
+}
 
-#  Push stats data onto @stats_pairData.
-#  In future may switch to have this construct a PDL.
-sub pushStats{
+
+
+
+sub storeNum{
     (@_ % 2)   and   _diell
-        'In the current implementation, pushStats expects exactly two arguments, but got ' .@_  =>
+        'In the current implementation, storeNums expects exactly two arguments, but got ' .@_  =>
         '現状の実装ではちょうどふたつの引数を期待するが、' .@_. '個を受け取った。';
 
-    goto &_pushStats2;
+    goto &_storeNum2;
 }
+sub stnum{ goto &_storeNum }
 
-
-sub _pushStats2{
+sub _storeNum2{
     defined $_[0]   or   _diell
-        'pushStats called with undef value for first argument.'=>
-        'pushStatsの第一引数としてundefを受け取った。';
+        'storeNum called with undef value for first argument.'=>
+        'storeNumの第一引数としてundefを受け取った。';
 
     defined $_[1]   or   _diell
-        'pushStats called with undef value for second argument.'=>
-        'pushStatsの第二引数としてundefを受け取った。';
+        'storeNum called with undef value for second argument.'=>
+        'storeNumの第二引数としてundefを受け取った。';
 
-    if(  numP $_[0]  ){
-        numP $_[1]   or   _diell
-            "pushStats called with list in which pair the" .@stats_pairData. "th pair: (@_) is mixed numeric and non-numeric"=>
-            "pushStatsが呼び出された引数リストの" .@stats_pairData. "番目の２組(@_)に数値と数値でない値が混在している";
 
+    if(  numP $_[0]   and   numP $_[1]  ){
         bemax  $stats2_numSigDig,  _numSigDigits( $_[0] ), _numSigDigits( $_[1] );
-        push @stats_pairData, @_;
-        ++$stats_pairData_size;
+        push @$stats_data0, $_[0];  push @$stats_data1, $_[1];
+        return;
     }
-    else{
-        numP $_[1]   and   _diell
-            "pushStats called with list in which pair the" .@stats_pairData. "th pair: (@_) is mixed numeric and non-numeric"=>
-            "pushStatsが呼び出された引数リストの" .@stats_pairData. "番目の２組(@_)に数値と数値でない値が混在している";
-        return;   #Pairs for which both values are non-numerical are quietly skipped.
+    elsif(  !numP $_[0]   and   !numP $_[1]  ){
+        return;   #nothing to do
     }
-}
+       
+
+    my $N=  stats_pairData_size();
+    _diell
+        "${N} pair of data for storeNum (@_) is only half numeric"=>
+        "storeNumに渡した${N}番目の２組(@_)のひとつの値は数値になっていない。";
+}#_storeNum2{
 
 
 #───────────  Related to number of digits to display  ──────────
@@ -2100,7 +2105,7 @@ sub _numSigDigits(_){
 #  (Re)set stats @stats_data and related variables to reflect content of @_.
 sub _stats_set_data{
     my $caller=  shift;
-    {   my $undefIdx=  firstidx {!defined} @_;
+    {   my $undefIdx=  firstidx  {!defined} @_;
         $undefIdx == -1   or
             _diell("${caller} called with an undef in place of ".(1+$undefIdx).'th data value'=>
                    "${caller}に渡された".(1+$undefIdx).'番目のデータ値はundefである。')
@@ -2113,7 +2118,7 @@ sub _stats_set_data{
     @_   or   return;   #Called with empty list.  (Should not happen?)
 
     my $dataRf=  \@_;
-    if(  ref $_[0] eq "ARRAY"  ){
+    if(  ref $_[0] eq 'ARRAY'  ){
         @_ == 1   or   _diell
             "${caller} received arguments following the first array reference argument."=>
             "${caller}の引数に問題があった。最初のARRAY参照子引数の後に余分な引数を受け取った。";
@@ -2143,54 +2148,30 @@ sub _stats_set_pairData{
         "${caller} passed empty list"=>
         "${caller}が引数無しで呼び出された。";
 
-    (@_ % 2)   and   _diell
-        "${caller} expects even sized list but got a list of size " .@_. '.'=>
-        "${caller}の引数個数" .@_. 'は偶数個ではなかった。';
+    @_ == 2   and   ref $_[0] eq 'ARRAY'  and  ref $_[0] eq 'ARRAY'   or   _diell
+        "${caller} expected two array ref args, but got (@_)"=>
+        "${caller}は２個のarray refを引数として引き渡されるはずだったが(@_)を渡された。";
 
-    {   my $undefIdx=  firstidx {!defined} @_;
-        $undefIdx == -1   or   _diell
-            "${caller} called with an undef in place of ".(1+$undefIdx).'th data value'=>
-            "${caller}に渡された".(1+$undefIdx).'番目のデータ値はundefである。';
-    }
+    $stats_data0=  $_[0];
+    $stats_data1=  $_[1];
 
-    @stats_pairData=  ();
+    # Place checks for well formed numerical data here??
+    #
+    # {   my $undefIdx=  firstidx {!defined} @_;
+    #     $undefIdx == -1   or   _diell
+    #         "${caller} called with an undef in place of ".(1+$undefIdx).'th data value'=>
+    #         "${caller}に渡された".(1+$undefIdx).'番目のデータ値はundefである。';
+    # }
 
     @_   or   return;   #Called with empty list.  (Should not happen?)
 
     $stats2_numSigDig=  1;
 
-    if(  ref $_[0] eq "ARRAY"  ){
-        _diell
-            "${caller} called with array reference as first argument but that case is not yet implemented"=>
-            "${caller}の第一引数がarray参照子でしたが、その呼び方はまだ実装されていない。";
-    }
-
     my $numSigDig;
-    for  my $pair  (pairs @_){
-        my( $v1, $v2 )=  @$pair;
-        if(  numP $v1  ){
-            numP $v2   or   _diell
-                "${caller} called with list in which pair the" .@stats_pairData. "th pair: ($v1,$v2) is mixed numeric and non-numeric"=>
-                "${caller}が呼び出された引数リストの" .@stats_pairData. "番目の２組($v1,$v2)に数値と数値でない値が混在している";
-
-            $numSigDig=  _numSigDigits $v1;
-            defined $numSigDig  or  die  "numSigDiv of $v1 is undef!!";
-            $stats2_numSigDig= $numSigDig    if  $numSigDig > $stats2_numSigDig;
-            $numSigDig=  _numSigDigits $v2;
-            defined $numSigDig  or  die  "numSigDiv of $v2 is undef!!";
-            $stats2_numSigDig= $numSigDig    if  $numSigDig > $stats2_numSigDig;
-
-            push @stats_pairData, @$pair;
-        }
-        else{
-            numP $v2   and   _diell
-                "${caller} called with list in which pair the" .@stats_pairData. "th pair: ($v1,$v2) is mixed numeric and non-numeric"=>
-                "${caller}が呼び出された引数リストの" .@stats_pairData. "番目の２組($v1,$v2)に数値と数値でない値が混在している";
-            next;   #Pairs for which both values are non-numerical are quietly skipped.
-        }
-    }#  for (pairs @_)
-
-    $stats_pairData_size=  @stats_pairData / 2;
+    my $each_datum = each_arrayref( $stats_data0, $stats_data1 );
+    for(  @$stats_data0, @$stats_data1  ){   #memory inefficent?
+        bemax $stats2_numSigDig, _numSigDigits $_;
+    }
 }
 
 
@@ -2392,67 +2373,109 @@ sub histf{
 sub MAE{
     _stats_set_pairData 'MAE', @_   if @_;
 
-    @stats_pairData    or      _diell
+    stats_pairData_size()    or      _diell
         'MAE() called with no numerical arguments to work with.'=>
         'MAE()が呼び出されたが、扱うべき数値は与えられていない。';
 
     my $sum= 0.0;
-    for  my $pair  (pairs @stats_pairData){
-        my( $v1, $v2 )=  @$pair;
-        $sum+=  abs( $v1 - $v2 );
+    my $each_pair=  each_arrayref $stats_data0, $stats_data1;
+    while(  my( $v0, $v1 )=  $each_pair->()  ){
+        $sum+=  abs( $v0 - $v1 );
     }
     
-    return  _stats2_reformatNumstring(  $sum / $stats_pairData_size  );
+    return  _stats2_reformatNumstring(  $sum / stats_pairData_size()  );
 }
 
 
 
-#  Return Pearson's linear correlation of paired data in @_
+sub _corrInitialize{
+    my $caller=  shift;
+    _stats_set_pairData $caller, @_   if @_;
+
+    my $n=  stats_pairData_size();
+
+    $n > 0   or   _diell
+        "${caller} called with no numerical arguments to work with."=>
+        "${caller}が呼び出されたが、扱うべき数値は与えられていない。";
+
+    $n > 3   or   _diell
+        "${caller} requires at least two pairs of numbers, but got only one pair."=>
+        "${caller}はふたつ以上の数値２組を必要とするがひとつしか受け取っていない。";
+}
+
+
+sub corrRankTau{
+    _corrInitialize  'corrRankRho', @_;
+    _corrKendall();
+}
+
+sub corrKendall{
+    _corrInitialize  'corrSpearman', @_;
+    _corrKendall();
+}
+
+sub _corrKendall{
+    my $RCcompute=  Statistics::RankCorrelation->new( $stats_data0, $stats_data1 );
+    
+    return  _stats2_reformatNumstring(  $RCcompute->kendall );
+}
+
+
+sub corrRankRho{
+    _corrInitialize  'corrRankRho', @_;
+}
+
+sub corrSpearman{
+    _corrInitialize  'corrSpearman', @_;
+    _corrSpearman();
+}
+
+
+sub _corrSpearman{
+    my $RCcompute=  Statistics::RankCorrelation->new( $stats_data0, $stats_data1 );
+    
+    return  _stats2_reformatNumstring(  $RCcompute->spearman );
+}
+
+
 sub corrLinear{
-    _stats_set_pairData 'corrLinear', @_   if @_;
+    _corrInitialize  'corrLinear', @_;
+    _corrLinear();
+}
 
-    @stats_pairData    or      _diell
-        'corrLinear() called with no numerical arguments to work with.'=>
-        'corrLinear()が呼び出されたが、扱うべき数値は与えられていない。';
-
-    @stats_pairData > 3   or   _diell
-        'corrLinear() requires at least two pairs of numbers, but got only one pair.'=>
-        'corrLinear()はふたつ以上の数値２組を必要とするがひとつしか受け取っていない。';
+sub corrPearson{
+    _corrInitialize  'corrPearson', @_;
+    _corrLinear();
+}
 
 
-    my( $mean0, $mean1 )=  (0, 0);
-    for(  pairs @stats_pairData  ){
-        $mean0 +=  $$_[0];
-        $mean1 +=  $$_[1];
-    }
-    {  my $n=  @stats_pairData / 2;
-       $mean0 /= $n;
-       $mean1 /= $n;
-    }
+#  Return Pearson's linear correlation of paired data in @_
+sub _corrLinear{
+    my $n=  stats_pairData_size();
+
+    my $mean0=  ( sum0 @$stats_data0 ) / $n;
+    my $mean1=  ( sum0 @$stats_data1 ) / $n;
 
 
     my( $diffInnerProd, $diffSqrd0, $diffSqrd1 ) =  (0, 0, 0);
-    for  (pairs @stats_pairData){
-        my $d0=  ($$_[0]-$mean0);
-        my $d1=  ($$_[1]-$mean1);
+    my $each_pair=  each_arrayref $stats_data0, $stats_data1;
+    while(  my( $v0, $v1 )=  $each_pair->()  ){
+        my $d0=  ($v0-$mean0);
+        my $d1=  ($v1-$mean1);
         $diffInnerProd+=  $d0 * $d1;
         $diffSqrd0+=      $d0 * $d0;
         $diffSqrd1+=      $d1 * $d1;
     }
     
     return  _stats2_reformatNumstring(  $diffInnerProd / sqrt( $diffSqrd0 ) / sqrt $diffSqrd1  );
-}
+}#_corrLinear
 
 
 
-#  Return string summarizing pairwise correlations of input data.
-#  UNDER CONSTRUCTION
-#  Still thinking about the best interface and implementation for this.
-sub corrs{
-    @_ > 1   or   _diell
-        'corrs expected at least two arguments, but got '.(@_? 'only one':'none')  =>
-        'corrsはふたつ以上の引数が必要であるが、１個'.(@_? 'しか':'も').'受け取らなかった';
 
+#  Return string summarizing some measures of pairwise correlation.
+sub corrsPairwise{
+    _stats_set_pairData 'corrPairwise', @_   if @_;
     
     if(  any {ref ne 'ARRAY'} @_  ){
         my $badIdx=  firstidx {ref ne 'ARRAY'} @_;
@@ -2625,7 +2648,7 @@ sub binned{
     numP   and   $_=  $binner->($_)    for @dataCopy;
 
     return @dataCopy;
-}
+}#binned
     
     
 
