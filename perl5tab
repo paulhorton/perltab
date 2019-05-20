@@ -24,6 +24,7 @@ use Scalar::Util::Numeric qw(isfloat isint isneg);
 use Statistics::RankCorrelation;
 use Unicode::Collate;
 use Data::Lock qw(dlock dunlock);
+use subs 'dump';  #Override CORE::dump
 
 $VERSION= '0.002_001';  eval $VERSION;
 use strict;
@@ -63,6 +64,11 @@ my $numRE_;
 
 
 # ────────────────────  Utilities  ────────────────────
+sub dump{
+    eval  'use Data::Dumper';
+    print Data::Dumper::Dumper(@_);
+}
+
 sub Dumper{
     eval  'use Data::Dumper';
     goto &Data::Dumper::Dumper;
@@ -2039,7 +2045,7 @@ sub storeNum{
 
     goto &_storeNum2;
 }
-sub stnum{ goto &_storeNum }
+sub stnum{ goto &storeNum }
 
 sub _storeNum2{
     defined $_[0]   or   _diell
@@ -4078,10 +4084,18 @@ The statistical functions: sum, mean, geomean, stdev, qtiles, xqtiles, stats; sh
 
 =head2  Other Functions|その他の関数
 
+=kw Dumper
+ sub Dumper( @_ )
+ Shortcut for  Data::Dumper::Dumper( @_ )
+ Data::Dumper::Dumper( @_ )の略
+=wk Dumper
+
 =kw Dumper|dump
- Invokes Data::Dumper::Dumper.
- Data::Dumper::Dumperを呼び出す。
+ sub dump( @_ )
+ Shortcut for:  print Data::Dumper::Dumper(@_)
+ print Data::Dumper::Dumper(@_)の略
 =wk Dumper|dump
+
 
 =kw ih|inhead|in head
  sub ih()
