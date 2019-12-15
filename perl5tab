@@ -3621,10 +3621,10 @@ perltabは列に関する以下の変数を提供する。
   -V|--version               Print version number of perltab.
 |                            perltabのバージョン番号を出力する。
 =wk -V|--version
-=kw -X|extra-fields|--extra-fields-OK|columns
+=kw -X|extra-fields|--extra-fields-OK|column|columns
   -X|--extra-fields-OK       Extra fields allowed in input lines.  Suppresses fatal error normally thrown when some input lines have more fields than expected.  The extra fields are included in @F; otherwise behavior under this option is not well defined.
 |                            入力ファイルに余分な列(第１行より多い数の列)があってもエラーとして停止せずにその列を適当に@Fに入れて実行を続行する。ただし、列の数が合わないことにより他のエラーが発生する恐れはある。
-=wk -X|extra-fields|--extra-fields-OK|columns
+=wk -X|extra-fields|--extra-fields-OK|column|columns
 =unsettab
 =wk opts
 
@@ -4629,11 +4629,13 @@ Open in a speadsheet program (e.g. localc) and check by eye.  Some programs pref
 まず、localcなどの表計算プログラムで結果を見てみると良いでしょう。
 表計算プログラムの一部はタブ区切りのファイルでも.csvのファイル名拡張子を好む。
 
+=kw column|columns
 =head2  COLUMN COUNT|列数の確認
 One can check if the number of columns is the same for each row with this command:
 各行の列数が一致しているかは以下のコマンドで確認できる。
 
   % perl -nE 'say y/\t//' data.tsv  |  uniq
+=wk column|columns
 
 =head2  COLUMNS ONLY PERMUTED?|列の順番以外に変更がない？
 Given a script:
