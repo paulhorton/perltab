@@ -890,7 +890,7 @@ sub _diell{
                   "${qry}についての説明文はない。以下のキーワードの説明文を求めているのでしょうか？");
           say  'candidates are:';   say  for @match;                    exit 0;
       }
-      say _ll("Sorry, no help available for '$qry', try 'perltab -h kw for list of keywords",
+      say _ll("Sorry, no help available for '$qry', try 'perltab -h kw' for list of keywords",
               "'${qry}'についての説明がありません。'perltab -h kw'でキーワードのリストは表示できる。");
       ;                                                                 exit 0;
   }#_printHelp_thenExit
