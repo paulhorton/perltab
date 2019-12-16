@@ -989,7 +989,7 @@ END2             z2|end2=*
       require Text::Balanced;
       for  my $scriptType(  qw(BEGIN BEGIN2 HEAD DATA DATA2 ROWS ROWS2 END SORT_KEY SORT_KEY2)  ){
           if(my(               $upToBlockLabel,          $rest        )=
-             (  $scripts=~  / ^( .*? ) $scriptType \s* ({ .* ) /xs   )
+             (  $scripts=~  / ^( .*? ) $scriptType \s* (\{ .* ) /xs   )
               ){
 
               $scripts=  $upToBlockLabel . $rest
