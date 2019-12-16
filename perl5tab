@@ -4631,8 +4631,13 @@ Open in a speadsheet program (e.g. localc) and check by eye.  Some programs pref
 
 =kw column|columns
 =head2  COLUMN COUNT|列数の確認
-One can check if the number of columns is the same for each row with this command:
+One can check if the number of columns is the same for each row with commands like these:
 各行の列数が一致しているかは以下のコマンドで確認できる。
+
+  % perltab -p data.tsv | diff - data.tsv
+
+or using perl directly,
+もしくはperlを直接使い、
 
   % perl -nE 'say y/\t//' data.tsv  |  uniq
 =wk column|columns
