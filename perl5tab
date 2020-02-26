@@ -1596,6 +1596,7 @@ If the input has no column label head line you may use the '-N|--no-head' option
     START_PROCESSING_DATA_LINES:
       if(   $prevPass ne curPass   ){### assert:  $opt_{noHeadP}
           $prevPass=  curPass;
+          $maxNumColsToExpect= undef;
           zeroStanza;
       }
 
