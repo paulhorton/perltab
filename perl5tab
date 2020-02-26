@@ -3391,7 +3391,7 @@ Next try running perltab with some simple scripts.
 Many more examples can be founds in EXAMPLES.
 EXAMPLESにperltabの使用例が数多く挙げられている。
 
-
+=kw input
 =head1  INPUT|入力
 perltab assumes input files to be text files with fields (possibly empty) separated by single tabs.  Unless specified by command line option -N|--no-head, the first line of each input file is assumed to hold column labels.
 
@@ -3475,6 +3475,15 @@ To convert a full file to ditto format:
  % perltab -pD  NEAsiaMegacities.tsv
 =wk ditto
 
+=kw second|２回目
+=head2  Second Pass|２回目の入力走査(入力pass)
+Options ending in '2', e.g. -e2, -d2 etc. act on a second pass of input
+stipulated as a filename argument of option 'in2'.
+'2'で終るオプション(-e2,-d2等)は一通り入力を処理した後、
+もう１回入力してスクリプトを実行する場合に使われるオプション。
+２回目の入力ファイルはオプション-in2の引数で指定する。
+=wk second|２回目
+=wk input
 
 =head1  VARIABLES|変数
 perltab provides the following column related variables:
@@ -3578,6 +3587,10 @@ perltabは列に関する以下の変数を提供する。
   -h|--help [TOPIC]          Print help on TOPIC.  e.g. -h 'OPTIONS'. Default TOPIC is HELP.
 |                            TOPICに関する説明を出力する。例えば、-h 'OPTIONS'。省略するとTOPICは'HELP'となる。
 =wk -h|--help
+=kw -in2|input
+  -in2                       Input file for second pass scripts.
+|                            ２回目入力走査の入力ファイル。
+=wk -in2|input
 =kw -N|--no-head|no-head|nohead
   -N|--no-head               Do not treat the first (non-comment) line of input files as a head line.
 |                            入力ファイルの先頭を(列ラベルの行として)特別扱いしない。
