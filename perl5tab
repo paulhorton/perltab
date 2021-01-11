@@ -901,6 +901,8 @@ sub _diell{
 @ARGV   or   _dieUsage( 'expected options and arguments on command line, but got none.',
                         'コマンド行にオプションと引数を期待したが、何もない。');
 
+$ARGV[0]= '--help'   if  @ARGV  &&  $ARGV[0] eq '-help';
+
 my %opt_;   #To map option names to values, obtained either via command line or top of script file.
 
 { my %optSpecs=  qw(
