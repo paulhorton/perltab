@@ -687,8 +687,8 @@ sub _diell{
               my $breakPos=  textPosAtWidth $termWidth;
               --$breakPos  while
                   $breakPos > 0
-                  and substr( $text, $breakPos, 1   )=~ qr/[])、。]/                       #Bad line start
-                  ||  substr( $text, $breakPos-1, 1 )=~ qr/[-[(（「参一\#=_a-zA-Z0-9\$@]/  #Bad line end
+                  and substr( $text, $breakPos,   1 )=~ qr{[])、。]}                     #Bad line start
+                  ||  substr( $text, $breakPos-1, 1 )=~ qr{[-[(（「参一\#=_a-zA-Z0-9$@]}  #Bad line end
                   ;
               return $breakPos;
           }
