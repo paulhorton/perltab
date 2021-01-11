@@ -3589,10 +3589,10 @@ perltabは列に関する以下の変数を提供する。
   -h|--help [TOPIC]          Print help on TOPIC.  e.g. -h 'OPTIONS'. Default TOPIC is HELP.
 |                            TOPICに関する説明を出力する。例えば、-h 'OPTIONS'。省略するとTOPICは'HELP'となる。
 =wk -h|--help
-=kw -in2|input
-  -in2                       Input file for second pass scripts.
-|                            ２回目入力走査の入力ファイル。
-=wk -in2|input
+=kw -in2|input|-d2|-e2
+  -in2 FILE(S)               Input for second pass scripts.  If omitted, the first pass input is re-read.
+|                            ２回目入力走査の入力。省略すると１回目のファイルを入力しなおす。
+=wk -in2|input|-d2|-e2
 =kw -N|--no-head|no-head|nohead
   -N|--no-head               Do not treat the first (non-comment) line of input files as a head line.
 |                            入力ファイルの先頭を(列ラベルの行として)特別扱いしない。
