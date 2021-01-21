@@ -3646,7 +3646,7 @@ perltabは列に関する以下の変数を提供する。
 
 
 =head1  FUNCTIONS|関数
-Most perltab functions fall into two categories: 1. accessors, 2. column manipulation functions, and 3. functions to help handle data of mixed type (i.e. numerical and missing value mark).
+Most perltab functions fall into three categories: 1. accessors, 2. column manipulation functions, and 3. functions to help handle data of mixed type (i.e. numerical and missing value mark).
 perltabが提供する関数の多くは、1.アクセサー的な関数、2. 列を動かしたりする関数  3.異なるタイプの値(数値と欠損値の標など)が混在する時に便利な関数。
 
 =head2  Accessors|アクセサー的な関数
@@ -4052,7 +4052,7 @@ The statistical functions: sum, mean, geomean, stdev, qtiles, xqtiles, stats; sh
 
 =kw stdev
  sub stdev( @VAL )
- Returns the mean of the numerical values in @VAL.
+ Returns the standard deviation of the numerical values in @VAL.
  @VALに含まれている数値の標準偏差を返す。
 =wk stdev
 
@@ -4092,7 +4092,7 @@ The statistical functions: sum, mean, geomean, stdev, qtiles, xqtiles, stats; sh
  ・ リストの引数@VALを受け付ける。
     (スカラ文脈で呼ぶ場合、@VALの引数の個数がふたつ以上ならperltabはエラー文を吐いて終了する。)
  ・ 数値でない値はそのまま通される。
- ・ @VALの値が整数かつ２(10)の冪数であれば、整数を返す。
+ ・ できるだけ整数を返す。
     例えば、++$freq[log2 8]と++$freq[log10 1000]は++$freq[3]と同じ。
 =wk log|log2|log10|logarithm|対数
 =wk math functions|数学関数
