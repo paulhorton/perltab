@@ -262,8 +262,8 @@ sub doNum(&@){
     my $sub=  shift;
     ref $sub eq 'CODE'  or  _diell(  'doNum expected code reference (i.e. sub{...}) for first argument',
                                      'doNumの最初の引数はコード参照(つまりsub{...})でなければならない。');
-    @_   or   _diell(  "doNum expected 2 or more arguments, but got only one.  Should look like 'donum( sub{CODE}, VAL )'.",
-                       "doNumはふたつ以上の引数が必要であるが、ひとつしか受け取らなかった。donumは'donum( sub{CODE}, VAL )'のように使う。");
+    @_   or   _diell(  "doNum expected 2 or more arguments, but got only one.  Should look like 'donum( sub{CODE} VAL(s) )'.",
+                       "doNumはふたつ以上の引数が必要であるが、ひとつしか受け取らなかった。donumは'donum( sub{CODE} VAL(s) )'のように使う。");
     
     return missingMark()    if  any {!numP} @_;
 
