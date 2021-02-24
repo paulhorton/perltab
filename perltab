@@ -4127,12 +4127,12 @@ The statistical functions: sum, mean, geomean, stdev, qtiles, xqtiles, stats; sh
  % perltab -pH  '@F= map {uc} @F'  input.tsv
 =wk ih|inhead|in head
 
-=kw SNset
+=kw SNset|serial
  sub SNset( \% $ )
  SNset %S, PATHNAME
  Make %S into a Serial Number set, by adding (LINE=>LINE_NUM) entries to %S, LINE_NUM starts at one.  LINE is the (chomped) LINE_NUMth line of the file.  Reads keys in from stdin if PATHNAME is '-' or 'stdin' (case insensitive).  Mnemonic, both senses of the word set (to assign, and a set of items) apply.
  %Sに(LINE=>LINE_NUM)を加え、入力ファイルの行と通し番号(Serial Number)の集合にする。LINE_NUMは１から数えられ、LINEは入力ファイルのLINE_NUM番目の(chompした)行。PATHNAMEが'-'か'stdin'(や'STDIN')の場合、集合の要素は標準入力から読み込まれる。覚え方、ここでsetは英単語としての両方の意味(代入と集合)が当てはまる。
-=wk SNset
+=wk SNset|serial
 
 =kw push2
   push2( @a, @b, $val1, $val2 )
@@ -4331,7 +4331,7 @@ The statistical functions: sum, mean, geomean, stdev, qtiles, xqtiles, stats; sh
  又は、
  % perltab -e 'say F( grep {!/^height$/} @H )' heightWeight.tsv 
 
-=kw SNset|-g|--grep|grep
+=kw SNset|serial|-g|--grep|grep
  Select rows from heightWeight.tsv matching ids listed in file 'ids.txt' (holding one id per line).
  heightWeight.tsvの内、IDリストにある行を抽出する。IDリストは、各行にひとつのIDという形式のファイルids.txtから読み込む。
 =settab    ==
@@ -4341,7 +4341,7 @@ The statistical functions: sum, mean, geomean, stdev, qtiles, xqtiles, stats; sh
  After selecting those rows, sort them so that the ids are in the same order as in "/tmp/ids".
  ids.txtにあるIDの行を抽出した後、ids.txtと同じ順番に並べ替える。
  % perltab -b 'SNset %S, "ids.txt"' -s '$S{ F(ID) }' selected.tsv
-=wk SNset|-g|--grep|grep
+=wk SNset|serial|-g|--grep|grep
 
 =kw bigger
   Print rows with weight > 60.
