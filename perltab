@@ -1541,10 +1541,8 @@ state sub printStanza_ifNotYetPrinted(){
       # ──────────────────────────────  Read and Process Head Line  ──────────────────────────────
       my $curRow;
       my @commentAtTop;
-      my $line1P= 't';
       while(   $curRow= <$inputFile>   ){
-          $curRow =~ s/^\x{FEFF}//   if $line1P;#  Strip BOM
-          $line1P= undef;
+          $curRow=~ s/^\x{FEFF}//;#  Strip BOM
           chomp $curRow;   last if $curRow=~ /$noncommentLineRegex/;
           push @commentAtTop, $curRow;
       }
