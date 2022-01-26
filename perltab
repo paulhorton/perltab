@@ -1301,7 +1301,7 @@ sub nums{   grep  {numP $_}  @_   }
 state sub openAndProcessInputFiles;
 state sub openAndProcessInputFiles_forSorting;
 
-dlock state $noncommentLineRegex=  qr/^[^#\n]/;   #Caveat: not sure if \n in character class will work for dos newlines.  PH20180823
+dlock state $noncommentLineRegex=  qr/^[^;#\n]/;   #Caveat: not sure if \n in character class will work for dos newlines.  PH20180823
 
 dlock state $curPass= '';
 state sub curPass(){  $curPass  }
@@ -3414,6 +3414,18 @@ The data lines are:
 データ行は、
   'Weight      100     100      165'
   'Calorie     52      47       57'
+
+The default field separator is a single tab character (but see option -F)
+列区切り文字のデフォルト値はタブ(１個)。オプション-F 参照。
+
+=kw comment|コメント
+=head2 Comment lines|コメント行
+
+Empty Lines or lines starting with ';' or '#' are ignored in terms of data.  However comment lines are sometimes included in the perltabl output under options such as -p and -g.
+空行及び':'又は'#'から始まる入力行はコメントとして扱われる。コメント行の内容はデータとして無視されるが、オプション-pや-gなどでは出力に含まれることもある。
+
+=wk comment|コメント
+
 
 =kw missing|Missing values|欠損値
 =head2  Missing values|欠損値
