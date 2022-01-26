@@ -2221,7 +2221,7 @@ sub sum{
         'tried to compute sum of list with no numbers.'=>
         '数値を含んでないリストの和を求めようとした。';
 
-    return _stats_reformatNumstring _sum;
+    return  _sum;
 }
 
 
