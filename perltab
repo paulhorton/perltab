@@ -4224,7 +4224,7 @@ The statistical functions: sum, mean, geomean, stdev, qtiles, xqtiles, stats; sh
  % perltab -pe '@I= N(height weight); @F[@I]= @F[reverse @I]'  heightWeight.tsv
 =unsettab
 
-=kw -F|-OF|--OF|--field-sep|--output-field-separator|convert|csv|comma|カンマ区切り
+=kw -F|-OF|--OF|--field-sep|--output-field-separator|convert|csv|comma|tsv|カンマ区切り|タブ区切り
  Convert comma separated fields file into tab separated fields format.
  カンマ区切り形式ファイルをタブ区切り形式に変換する。
  % perltab -pF=',' -OF='	'  input.csv
@@ -4234,7 +4234,11 @@ The statistical functions: sum, mean, geomean, stdev, qtiles, xqtiles, stats; sh
  Alternatively, using using the bash shell ANSI C quoting form $'string' to generate a tab character from \t.
  又はbashシェルの$'string'引用法を利用し、タブ文字の代わりに\tを使う。
  % perltab -pF=',' -OF=$'\t'  input.csv
-=wk -F|-OF|--OF|--field-sep|--output-field-separator|convert|csv|comma|カンマ区切り
+
+ Or simply use sed.
+ % sed 's/,/\t/g'  input.csv
+
+=wk -F|-OF|--OF|--field-sep|--output-field-separator|convert|csv|comma|tsv|カンマ区切り|タブ区切り
 
 =kw merge|dit|-in2
  Given two tsv files:  height.tsv, weight.tsv  with some common IDs but possibly in a different order and only partially overlapping, output a table with column 'weight' from weight.tsv appended onto the table in height.tsv.  The new column will hold the missing value mark for any IDs in height.tsv but absent in weight.tsv.
