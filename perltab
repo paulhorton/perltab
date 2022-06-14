@@ -3826,7 +3826,7 @@ Or to remove only the opening comment at top:
 =unsettab
 =wk del|delete|削除
 
-=kw insert|挿入
+=kw insert|挿入|append|追加
 =kw insaft
  sub insAft (  PRE, *columnInfo*  )
  sub insaft (  PRE, *columnInfo*  )
@@ -3835,7 +3835,14 @@ Or to remove only the opening comment at top:
 
  新しい列をPREの後に加える。PREはラベル、又は[-$#F,$#F]内の整数で指定できる。
 
- In general (without the -N|--no-head option),
+ For example to append a new column with label "Notes" and the empty string value for each row use:
+ 例えば、ラベルが"Notes"で値がすべて空文字の列を追加するには、
+
+=settab    ==
+ insAft(  $#F, 'Notes', ''  )
+=unsettab
+
+ In general (when not using the -N|--no-head option),
  一般に(-N|--no-head)オプションを指定していない場合、
  
  sub insAft(  PRE,  LABEL1, ...,  DATA_GEN1, ...  )
@@ -3883,7 +3890,7 @@ Or to remove only the opening comment at top:
  Insert new columns into @F before column SUC.  SUC may be given by label or as an integer in [-$#F,$#F].  See insAft for more details.
  新しい列をSUCの前に加える。SUCはラベル、又は[-$#F,$#F]内の整数で指定できる。詳細はinsAftを参照。
 =wk insbef
-=wk insert|挿入
+=wk insert|挿入|append|追加
 
 =kw move|移動
 =kw movaft
