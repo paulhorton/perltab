@@ -2740,6 +2740,9 @@ sub stats{
     my $stats=  'n:'. @stats_data;
     @stats_data > 0   or   return  $stats;
 
+    my ($statsMin,$statsMax)=  minmax @stats_data;
+    $stats.=  "  [$statsMin,$statsMax]";
+
     $stats.=  '  μ' . mean;
     @stats_data > 1   or   return  $stats;
 
