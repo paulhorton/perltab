@@ -88,6 +88,8 @@ sub _LoLRefP_loose{
 
 # Return the size of longest component list pointed to by $_[0]
 sub _LoLRef_maxListSize{
+    _dieProg(  '_LoLRef_maxListSize called in list context'  )    if wantarray;
+
     my $maxSize= -1;
     for(   @{ $_[0]}   ){
         $maxSize= @$_    if defined && @$_ > $maxSize;
