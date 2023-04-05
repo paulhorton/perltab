@@ -3655,10 +3655,10 @@ perltabは列に関する以下の変数を提供する。
   -V|--version               Print version number of perltab.
 |                            perltabのバージョン番号を出力する。
 =wk -V|--version
-=kw -X|extra-fields|--extra-fields-OK|column|columns
+=kw -X|extra-fields|--extra-fields-OK|column|columns|unequal num|unequal number
   -X|--extra-fields-OK       Extra fields allowed in input lines.  Suppresses fatal error normally thrown when some input lines have more fields than expected.  The extra fields are included in @F; otherwise behavior under this option is not well defined.
 |                            入力ファイルに余分な列(第１行より多い数の列)があってもエラーとして停止せずにその列を適当に@Fに入れて実行を続行する。ただし、列の数が合わないことにより他のエラーが発生する恐れはある。
-=wk -X|extra-fields|--extra-fields-OK|column|columns
+=wk -X|extra-fields|--extra-fields-OK|column|columns|unequal num|unequal number
 =unsettab
 =wk opts
 
@@ -3914,7 +3914,22 @@ Or to remove only the opening comment at top:
 =kw swap|入れ換え
  sub swap( F1,F2,...,Fn, G1,G2,...,Gn )
  Swaps columns F1 and G1, then columns fields F2 and G2,...   Columns may be given as labels of integers in [-$F#,$#F].
- 列F1とG1を入れ換え、それから列F2とG2を入れ換え...。列はラベル、又は[-$#F,$#F]内の整数で指定できる。
+ 列F1とG1を入れ換え、それから列F2とG2を入れ換え...。列はラベル又は[-$#F,$#F]内の整数で指定できる。
+
+ The perl idiom ($a,$b) = ($b,$a) can also be handy for swapping values.
+ For example,
+ 値の入れ換えにperlの慣用句 @F[0,1] = @F[1,0] も便利。
+ 例えば、
+
+=settab    ==
+ % perltab -Xpe '@F[0,1] = @F[1,0]; say @F'
+=unsettab
+
+ Echoes the input, but with the first two fields swapped.
+ With the optional -X|--extra-fields-OK flag allowing for an unequal number of trailing fields.
+ は入力ファイルの最初の二列を入れ換えた上、すべての列を出力する。
+ -X|--extra-fields-OKをすれば、入力ファイルに(数が揃わない)余分な列があってもエラーにならない。
+
 =wk swap|入れ換え
 
 =head2  Value Filters|値フィルター
