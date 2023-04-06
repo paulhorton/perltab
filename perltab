@@ -19,7 +19,7 @@ use Hash::Util qw(lock_keys lock_keys_plus unlock_keys lock_hash);
 use List::Util qw(first max maxstr min minstr reduce shuffle sum0 pairkeys pairmap pairvalues pairs);
 use List::MoreUtils qw(:all);
 use POSIX qw(ceil floor);
-use Scalar::Util qw(looks_like_number dualvar);
+use Scalar::Util qw(looks_like_number dualvar readonly);
 use Scalar::Util::Numeric qw(isfloat isint isneg);
 use Statistics::RankCorrelation;
 use Unicode::Collate;
@@ -192,51 +192,6 @@ sub nomt{  all {length} @_  }
 sub an{  grep {defined && length} @_  }
 
 
-{ state $printfWantsNumRx=  qr{ % [-+.#0-9]* l? [defgoux] }x;
-
-  #Return strings in @_ sprintf formated according to FORMAT.
-  #When FORMAT expects a number, non-numbers are passed through as is.
-  sub form{
-      wantarray   or  goto &_formScalar;
-      @_ > 1   or   _diell(  'form() expected at least two arguments but got '.@_=>'form()はふたつ以上の引数が必要であるが、'.@_.'個しか受け取らなかった。'  );
-      my $format=  shift;
-      if(  $format=~  /$printfWantsNumRx/  ){
-          map  {looks_like_number $_?  sprintf $format, $_  :  $_}    @_;}
-      else{
-          map  {                       sprintf $format, $_       }    @_;}
-  }
-
-  #Version of form when called in scalar context.
-  sub _formScalar{
-      defined  wantarray   or
-          _diell(  'form() called in a void context'  =>
-                   'void文脈でform()が呼ばれた。'  );
-      @_ == 2   or
-          _diell(  'form() called in scalar context should have 2 arguments, but called with '.@_  =>
-                   'スカラ文脈ではform()はふたつの引数で呼ばなければならないが、'.@_.'を受け取った。'  );
-
-      my $format=  shift;
-      if(  $format=~  /$printfWantsNumRx/  ){
-          looks_like_number $_[0]?  sprintf $format, $_[0]  :  $_[0];
-      }
-      else{
-          ;                         sprintf $format, $_[0];
-      }
-  }
-
-  #Modify @_ sprintf formated according to FORMAT.
-  #When FORMAT expects a number, non-numbers left unchanged.
-  sub reform{
-      @_ > 1   or   _diell(  'reform() expected at least two arguments but got '.@_  =>
-                             'reform()はふたつ以上の引数が必要であるが、'.@_.'個しか受け取らなかった。'
-                          );
-      my $format=  shift;
-      if(  $format=~  /$printfWantsNumRx/  ){
-          $_=  looks_like_number $_?  sprintf $format, $_  :  $_   for @_;}
-      else{
-          $_=                         sprintf $format, $_          for @_;}
-  }
-}
 
 
 #Like say, but does nothing if @STRING is empty or contains any empty strings or undef values.
@@ -386,6 +341,76 @@ my @F;           #Fields of the current row, subject to ditto substitution under
 my @Fin;         #F of the current row as read in.
 my @FinPrev;     #Fields of previously read row as input.
 my @H;           #To hold head fields unless $opt_{noHeadP}.
+
+
+
+{# Formatting functions
+    state $printfWantsNumRx=  qr{ % [-+.#0-9]* l? [defgoux] }x;
+
+#Return strings in @_ sprintf formated according to FORMAT.
+#When FORMAT expects a number, non-numbers are passed through as is.
+    sub form{
+        wantarray   or  goto &_formScalar;
+        @_ > 1   or   _diell(  'form() expected at least two arguments but got '.@_=>'form()はふたつ以上の引数が必要であるが、'.@_.'個しか受け取らなかった。'  );
+        my $format=  shift;
+        if (  $format=~  /$printfWantsNumRx/  ) {
+            map  {looks_like_number $_?  sprintf $format, $_  :  $_}    @_;
+        } else {
+            map  {                       sprintf $format, $_       }    @_;
+        }
+    }
+
+    #Version of form when called in scalar context.
+    sub _formScalar{
+        defined  wantarray   or
+          _diell(  'form() called in a void context'  =>
+                   'void文脈でform()が呼ばれた。'  );
+        @_ == 2   or
+          _diell(  'form() called in scalar context should have 2 arguments, but called with '.@_  =>
+                   'スカラ文脈ではform()はふたつの引数で呼ばなければならないが、'.@_.'を受け取った。'  );
+
+        my $format=  shift;
+        # if(  $format=~  /$printfWantsNumRx/  ){
+        #     looks_like_number $_[0]?  sprintf $format, $_[0]  :  $_[0];
+        # }
+        # else{
+        #     ;                         sprintf $format, $_[0];
+        # }
+    }
+
+    #Modify @_ sprintf formated according to FORMAT.
+    #When FORMAT expects a number, non-numbers left unchanged.
+    #If @_ is readonly, try to interpret its elements as fields of @F and reformat the field.
+    sub reform{
+        @_ > 1   or   _diell(  'reform() expected at least two arguments but got '.@_  =>
+                               'reform()はふたつ以上の引数が必要であるが、'.@_.'個しか受け取らなかった。'
+                            );
+        my $format=  shift;
+        for (@_) {
+            if ( readonly $_ ) {
+                my $fieldRF;
+                if(  /^[0-9]+/  ){
+                    my $numRF= \$_;
+                    $$numRF <= @F   or
+                      __diell_(  'reform() tried to modifed F['.$$numRF.'], but @F only had '.@F.'elements' =>
+                                 'reform()でF['.$$numRF.']を書き換えおうとしたが、@Fには'.@F.'の要素しかなかった。'
+                              );
+                    $fieldRF= \$F[$$numRF];
+                }
+                else{
+                    my $strRF= \$_;
+                    my $num=  N_calledBy_( 'reform', $$strRF );
+                    $fieldRF=  \$F[$num];
+                }
+                $$fieldRF=  sprintf $format, $$fieldRF    if  $format!~  /$printfWantsNumRx/  or looks_like_number $$fieldRF;
+            }
+            else{
+                $_=  sprintf $format, $_    if  $format!~  /$printfWantsNumRx/  or looks_like_number $_;
+            }
+        }
+    }
+
+}
 
 
 
@@ -1403,9 +1428,14 @@ state sub candMistypedLabel{
 }#candMistypedLabel
 
 
-#━━━━━━━━━━━━━━━━━━━━  User Functions  ━━━━━━━━━━━━━━━━━━━━
 my $callerNF_;   #Temporary store for N() or F() caller name for error messages.
 
+sub N_calledBy_{
+    $callerNF_=  shift;
+    goto &_N;
+}
+
+#━━━━━━━━━━━━━━━━━━━━  User Functions  ━━━━━━━━━━━━━━━━━━━━
 #────────────────────  Accessors  ────────────────────
 my %N;
 
@@ -1435,7 +1465,7 @@ sub _N{
             }
         }
 
-        _dieAllegedColumnLabelNotFound( $query, '' );
+        _dieAllegedColumnLabelNotFound( $query, "$callerNF_():  " );
     }
 
     @_   or   _diell('${callerNF_}() called with no arguments.'=>'${callerNF_}()が引数無しで呼ばれた。');
@@ -1480,13 +1510,13 @@ sub _dieAllegedColumnLabelNotFound{
     my @cand=  candMistypedLabel $query;
     if   (  @cand==1  ){
         _diell("${msgPrefix}No column matches string '$query', perhaps you intended '$cand[0]?'"=>
-               "文字列'${query}'に一致する列ラベルが見つからない。ラベル$cand[0]のつもりだったのでしょうか？");}
+               "${msgPrefix}文字列'${query}'に一致する列ラベルが見つからない。ラベル$cand[0]のつもりだったのでしょうか？");}
     elsif(  @cand> 1  ){
         _diell("${msgPrefix}No column matches string '$query', perhaps you meant one of {@cand}?"=>
-               "文字列'${query}'に一致する列ラベルが見つからない。ラベル{@cand}のどれのつもりだったのでしょうか？");}
+               "${msgPrefix}文字列'${query}'に一致する列ラベルが見つからない。ラベル{@cand}のどれのつもりだったのでしょうか？");}
     else{
         _diell("${msgPrefix}No column matches string '$query'."=>
-               "文字列'${query}'に一致する列ラベルが見つからない。");
+               "${msgPrefix}文字列'${query}'に一致する列ラベルが見つからない。");
     }
 }#_dieAllegedColumnLabelNotFound
 
@@ -3963,9 +3993,13 @@ Or to remove only the opening comment at top:
 =wk form|format
 
 =kw reform|format
- sub reform( FORMAT, STRING1... )
- Caution, modifies STRING1... according to sprintf format FORMAT.  When FORMAT expects a number (e.g. '%3d'), non-numerical STRINGs are left unchanged.
- 注意、STRING1...の値を変えてしまう。文字列STRING1...をsprintf形式のFORMATに従って変更する。FORMATが（例えば'%3d'）のような数値を前提にしている場合、数値以外のSTRINGはそのまま残る。
+ sub reform( FORMAT, ARG1... )
+ Modifies string variable ARG... according to sprintf format FORMAT.
+ When ARG is a readonly value such as 0 or 'weight', it is interpreted as meaning $F[0] or F(weight).
+ When FORMAT expects a number (e.g. '%3d'), non-numerical STRINGs are left unchanged.
+ ARG1...の値を書換えてしまう。文字列変数ARG...をsprintf形式のFORMATに従って書換える。 
+ ARGが0や'weight'のような定値であれば、それは$F[0]やF(weight)のように列の指定と見做す。
+ FORMATが（例えば'%3d'）のような数値を前提にしている場合、数値以外のSTRINGはそのまま残る。
 =wk reform|format
 
 =kw nomt|noempty|no empty|empty
@@ -4339,7 +4373,13 @@ The statistical functions: sum, mean, geomean, stdev, qtiles, xqtiles, stats; sh
 =kw reform|format
  Reformat numbers in field 'BMI'.
  列BMI中の数字の表示形式を変える。
+=settab    ==
  % perltab -pe 'reform "%.2f", F(BMI)'  heightWeightBMI.tsv
+=unsettab
+
+ Since 2023, numbers maybe used as in field specifiers.  For example to reform $F[3], one can use:
+ 2023年から列番号も使える。例えば、$F[3]を書換える。
+ % perltab -pe 'reform "%.2f", 3'  heightWeightBMI.tsv
 
 =kw -N|--no-head|nohead|-F|--field-sep|field-separator
  Given data from a LaTeX table, separated by ' & ', and with no head line; reformat the numbers in columns 2-4.
