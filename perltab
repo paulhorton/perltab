@@ -234,7 +234,7 @@ sub an{  grep {defined && length} @_  }
       if(  $format=~  /$printfWantsNumRx/  ){
           $_=  looks_like_number $_?  sprintf $format, $_  :  $_   for @_;}
       else{
-          $_=                         sprintf( $format, $_ )         for @_;}
+          $_=                         sprintf $format, $_          for @_;}
   }
 }
 
