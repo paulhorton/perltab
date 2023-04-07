@@ -1,7 +1,7 @@
 # perltab -- Manipulate data in tabular form from the command line in a perl one-liner style.
 
 
-## 使い始める
+## 始めに
 `% perltab -h`
 
 ## 回帰テスト
