@@ -1,0 +1,9 @@
+Reformat numbers using field number 3 (instead of F(BMI) as specifier.
+perltab --test -pe 'reform "%.2f", 3'  t/regression/input/heightWeightBMI.tsv
+MD5:t/regression/input/heightWeightBMI.tsv	DyPx2/VHuXghfuzp0+N4XQ
+ID	height	weight	BMI
+3	160	50	19.53
+2	175	78	25.47
+5		55	
+6	180		
+1	170	73	25.26
