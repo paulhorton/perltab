@@ -36,7 +36,7 @@ The perltab documention `% perltab -h` has close to 50 examples of using perltab
 
 
 ### Caveats.
-Runs on a linux box under Perl v5.18.2.  Untested elsewhere.
+Runs on a linux box under Perl v5.18.2, v5.28.1.  Untested elsewhere.
 
 
 ### Examples
