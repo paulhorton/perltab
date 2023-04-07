@@ -3692,7 +3692,14 @@ perltabは列に関する以下の変数を提供する。
 |                            入力ファイルに余分な列(第１行より多い数の列)があってもエラーとして停止せずにその列を適当に@Fに入れて実行を続行する。ただし、列の数が合わないことにより他のエラーが発生する恐れはある。
 =wk -X|extra-fields|--extra-fields-OK|column|columns|unequal num|unequal number
 =unsettab
+
+=kw --test
+  --test                     Option for regression testing.  First print MD5 hash of input, then proceed as usual.
+|                            回帰テストに使うオプション。入力のMD5ハッシュ値を出力してから通常に動く。
+=wk --test
+
 =wk opts
+
 
 
 =head1  FUNCTIONS|関数
