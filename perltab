@@ -4529,6 +4529,12 @@ The statistical functions: sum, mean, geomean, stdev, qtiles, xqtiles, stats; sh
 =settab    ==
  % perltab -e '$T[$_] .= "$F[$_]\t" for 0..$#F'   -z 'chop, say  for @T'  input.tsv
 =unsettab
+
+ Or dump out in tex table format.
+ tex表形式にする為には、
+=settab    ==
+ %perltab -e '$T[$_] .= "$F[$_]\t" for 0..$#F'   -z 'chop, say join " & ",split( "\t", $_) for @T' t.csv
+=unsettab
 =wk -z|--end|transpose|転置
 
 =kw NR
