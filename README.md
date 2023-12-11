@@ -2,7 +2,8 @@
 
 
 ## Getting started
-`% perltab -h`
+0. Install dependencies
+1. `% perltab -h`
 
 ## Running regression tests
 `% perl t/perltabCommandsOutputMatchExpected.t`
@@ -152,6 +153,21 @@ Runs on a linux box under Perl v5.18.2, v5.28.1.  Untested elsewhere.
 
 * or if there are no missing values, more simply:<BR>
 `% perltab -d 'bemax $m, F(hei)' -gd2 '$m==F(hei)'  heightWeight.tsv more_heightWeight.tsv  -in2 heightWeight.tsv more_heightWeight.tsv`
+
+
+### Dependencies
+
+perltab requires on the following modules; all available from CPAN.
+
+* Data::Lock
+
+* indirect
+
+* List::MoreUtils
+
+* Scalar::Util::Numeric
+
+* Statistics::RankCorrelation
 
 
 ### See Also
