@@ -2137,7 +2137,7 @@ sub _numSigDigits(_){
     }
     else{
         $intPart=~ s/[+-]?E[0-9]+\z//i;   #Strip off exponent if present.
-        $intPart=~ s/^(0+)\d//;           #Strip off any lead padding zeros.
+        $intPart=~ s/^0+(\d)/$1/;         #Strip off any lead padding zeros.
         my $intPartRevd=   reverse $intPart;
         ( my $sigPart )=(  $intPartRevd=~ /^0*(\d+)\z/  )
             or   _dieProg  "Regex failed to find significant digits part of value $val, with intPart '$intPart, intPartRevd= '$intPartRevd'";
