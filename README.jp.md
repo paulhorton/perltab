@@ -2,7 +2,8 @@
 
 
 ## 始めに
-`% perltab -h`
+0. 必要な[依存モジュール](#依存モジュール)をインストールする
+1. `% perltab -h`
 
 ## 回帰テスト
 `% perl t/perltabCommandsOutputMatchExpected.t`
@@ -154,7 +155,22 @@ linux、Perlバージョンv5.18.2,v5.28.1以外の環境での動作確認は�
 `% perltab -d 'bemax $m, F(hei)' -gd2 '$m==F(hei)'  heightWeight.tsv more_heightWeight.tsv  -in2 heightWeight.tsv more_heightWeight.tsv`
 
 
-### 関連ツール
+## 依存モジュール
+
+perltabは以下のCPANモジュールに依存している。
+
+* Data::Lock
+
+* indirect
+
+* List::MoreUtils
+
+* Scalar::Util::Numeric
+
+* Statistics::RankCorrelation
+
+
+## 関連ツール
 fastapl
 
 
