@@ -2,7 +2,7 @@
 
 
 ## Getting started
-0. Install dependencies
+0. Install modules listed in section [Dependencies](#Dependencies)
 1. `% perltab -h`
 
 ## Running regression tests
@@ -155,9 +155,9 @@ Runs on a linux box under Perl v5.18.2, v5.28.1.  Untested elsewhere.
 `% perltab -d 'bemax $m, F(hei)' -gd2 '$m==F(hei)'  heightWeight.tsv more_heightWeight.tsv  -in2 heightWeight.tsv more_heightWeight.tsv`
 
 
-### Dependencies
+## Dependencies
 
-perltab requires on the following modules; all available from CPAN.
+perltab requires the following modules; all available from CPAN.
 
 * Data::Lock
 
@@ -170,9 +170,10 @@ perltab requires on the following modules; all available from CPAN.
 * Statistics::RankCorrelation
 
 
-### See Also
+## See Also
 fastapl
 
 
 ### Author
-Paul Horton.  Copyright 2016,2017.
+Paul Horton.  Copyright 2016–2023
+
