@@ -49,7 +49,7 @@ my %numRE_=  (
         (?:  [0-9]+ (?:[.][0-9]*)?  |  [.][0-9]+  )   (?:E[+-]?[0-9]+)?
       )$/ix,
     InfNanOK=>   qr/^[+-]?
-      (?: 
+      (?:
         (?:inf)  |
         (?:nan)  |
         (?:  [0-9]+ (?:[.][0-9]*)?  |  [.][0-9]+  )   (?:E[+-]?[0-9]+)?
@@ -223,7 +223,7 @@ sub doNum(&@){
                                      'doNumの最初の引数はコード参照(つまりsub{...})でなければならない。');
     @_   or   _diell(  "doNum expected 2 or more arguments, but got only one.  Should look like 'donum( sub{CODE} VAL(s) )'.",
                        "doNumはふたつ以上の引数が必要であるが、ひとつしか受け取らなかった。donumは'donum( sub{CODE} VAL(s) )'のように使う。");
-    
+
     return missingMark()    if  any {!numP} @_;
 
     return &$sub( @_ )   for @_;   #To alias $_ to $_[0] in SUB.
@@ -561,7 +561,7 @@ my %script_;
               $errMsg .= _ll("\nTry replacing '$num1 $num2' with '$num1, $num2'?",
                              "\n'$num1 ${num2}'を'$num1, ${num2}'に修正すると良いかも知れない。");
           }
-          
+
           $errMsg=~  s| \(eval \d+\)||;
           if(  @scriptLine < 2  ){
               $errMsg= _ll("Trouble running $scriptType_ script '$script_{$scriptType_}'.  ",
@@ -668,7 +668,7 @@ sub _diell{
       #BEG──────────  sayDocLines internal subs  ──────────
 
       my sub width($){   #Return display width of $_[0]
-          my $w=()=  $_[0]=~ /($wRE)/g;       
+          my $w=()=  $_[0]=~ /($wRE)/g;
           return    $w  +  length $_[0];
       }
 
@@ -726,7 +726,7 @@ sub _diell{
               dlock my $leftPadWidth=  length $leftPad;
               dlock my $widthSansPad=  $termWidth- $leftPadWidth;
               my $rtext=    reverse   substr $text, $leftPadWidth, $widthSansPad;
-              
+
               #Break more in the middle if the following line will be short.
               my $shortEnough=   min  $widthSansPad/2,  length($text) - $widthSansPad;
 
@@ -878,7 +878,7 @@ sub _diell{
               #Skip lines not appropriate for _lang language.
               $_ eq _lang  or  $_ eq '---'  or  next LINE    for lineLang $line;        #LOOP FLOW
           }#  if =head1  else =head2...
-          
+
           $lineNum++;
           push @doc, $line;
           $wrappedTab{$line}=  (' ' x $curTab)   if defined $curTab;
@@ -913,7 +913,7 @@ sub _diell{
           if(  @match == 1  ){
               my $kw=  $match[0];
               sayDocLines _ll("Documentation for '$kw'", "'${kw}'についての説明");
-              sayDocLines  $kw_section{$kw};                             exit 0;  
+              sayDocLines  $kw_section{$kw};                             exit 0;
           }
           say _ll("No documentation for '$qry'.  Perhaps you were looking for on of the following keywords?"=>
                   "${qry}についての説明文はない。以下のキーワードの説明文を求めているのでしょうか？");
@@ -1025,7 +1025,7 @@ END2             z2|end2=*
 
               $scripts=  $upToBlockLabel . $rest
                   if   my $block=  Text::Balanced::extract_codeblock( $rest, '{}' );
-        
+
               _dieUsage("script only allowed one $scriptType block"=>
                         "スクリプトに${$scriptType}ブロックが重複している。")
                   if   $scripts=~  / $scriptType \s* { /x;
@@ -1057,7 +1057,7 @@ END2             z2|end2=*
               _dieUsage(  "option '${arg}' needs a following argument but none found."=>
                           "オプション'${arg}'の後に来るはずの引数が見つからない。"  );
           unshift @ARGV, parseScriptFile $pathname                     ;next;}
-      
+
       #Ditto and another flag bundled together
       if(   $arg=~  /^-D[des]/                                              ){
           $opt_{dittoMark}= '';
@@ -1118,7 +1118,7 @@ END2             z2|end2=*
           $opt_{$optName}=  $val;
           $ARGVforPrintScript.=  " $arg$OPT_VALseparator$val"   if !exists $scriptOptS{$optName};
       }elsif(   exists $default{$optName}   ){
-          my $val= 
+          my $val=
               (   @ARGV   and   $ARGV[0]!~ /^-/  ||  exists $seenValS{$ARGV[0]}   )
               ?   shift @ARGV  :  $default{$optName};
           $opt_{$optName}=  $val;
@@ -1155,7 +1155,7 @@ END2             z2|end2=*
 
 
   pop @ARGV   if  @ARGV  and  $ARGV[0] eq '--';
-  
+
   @ARGV   or   !-t *STDIN   or   $opt_{printEachRowP}   or   $opt_{BEGIN}
   or   _dieUsage( 'expected more command line arguments, perhaps you forgot the input file.'=>
                   'コマンド行の引数が足りない。入力ファイルを書き忘れた？');
@@ -1202,7 +1202,7 @@ lock_keys %script_;
 
 if(  !$opt_{noHeadP}  ){
     $script_{HEAD} .=  ";\n$script_{ROWS}"    if  $script_{ROWS}  &&  $script_{HEAD};
-    $script_{HEAD2} =      $script_{ROWS2}    if  $script_{ROWS2};                   
+    $script_{HEAD2} =      $script_{ROWS2}    if  $script_{ROWS2};
     $script_{HEAD}  //= $script_{ROWS};
     $script_{HEAD2} //= $script_{ROWS2};
 
@@ -1242,7 +1242,7 @@ looks_like_number missingMark    and
 
   2 > grep /^-$/, @pathname   or   _dieUsage( 'STDIN listed as input file more than once'=>
                                               '複数箇所に標準入力を入力と指定した。' );
-  
+
   require Digest::MD5  if $opt_{testP};
   for  my $pathname  (@pathname){
       my $numDashes= 0;
@@ -1335,10 +1335,10 @@ dlock state $noncommentLineRegex=  qr/^[^;#\n]/;   #Caveat: not sure if \n in ch
 dlock state $curPass= '';
 state sub curPass(){  $curPass  }
 
-{ 
+{
   $, =  $opt_{outputFieldSep};
   _runScript 'BEGIN';
-    
+
   my @inFilename1=  my @inFilename2=  @ARGV;
   dlock my $make2passesP=   $script_{DATA2}  ||  $script_{ROWS2}  ||  $script_{SORT_KEY2};
   dlock my $in2idx=  firstidx  {$_ eq '-in2'}  @ARGV;
@@ -1359,7 +1359,7 @@ state sub curPass(){  $curPass  }
   if(  $script_{SORT_KEY}   ){   openAndProcessInputFiles_forSorting  @inFilename1   }
   else                       {   openAndProcessInputFiles             @inFilename1   }
   _runScript 'END';
-  
+
   $make2passesP   or   last;
 
   dunlock $curPass;  $curPass= '2';  dlock $curPass;
@@ -1391,7 +1391,7 @@ state sub candMistypedLabel{
         @_ == 2   or   _dieProg;
         my( $s1, $s2 )=  sort {length $b <=> length $a}  @_;
         my( $l1, $l2 )=  map {length} ($s1, $s2);
-        
+
         my @T=(   [0..$l2],
                   []
             );    #Dynamic programming table;
@@ -1415,7 +1415,7 @@ state sub candMistypedLabel{
     }#sub editDistance
 
 
-    #Main part of candMistypedLabel 
+    #Main part of candMistypedLabel
     my $query=  shift;
     my %dist =  map  {$_ => editDistance $query, $_ }  @H;
     my $minDist=  min values %dist;
@@ -1505,7 +1505,7 @@ sub _dieAllegedColumnLabelNotFound{
         _diell("${msgPrefix}String '$query' matches prefices of column labels: '$match[0]', '$match[1]'..."=>
                "${msgPrefix}文字列'${query}'は複数の列ラベル'$match[0]', '$match[1]'...の前置詞である。");
     }
-    
+
     # $query does not prefix match any column labels.
     my @cand=  candMistypedLabel $query;
     if   (  @cand==1  ){
@@ -1547,7 +1547,7 @@ state sub printStanza_ifNotYetPrinted(){
 
 
 #━━━━━━━━━━  Core perltab subs  ━━━━━━━━━━
-{ state $ih; 
+{ state $ih;
   sub ih (){  $ih  }   #True iff current line is the head line.
 
   #  Read rows and run row script on contents of $inputFile
@@ -1571,7 +1571,7 @@ state sub printStanza_ifNotYetPrinted(){
 
       goto START_PROCESSING_DATA_LINES  if $opt_{noHeadP};
 
-      
+
       # ──────────────────────────────  Read and Process Head Line  ──────────────────────────────
       my $curRow;
       my @commentAtTop;
@@ -1584,7 +1584,7 @@ state sub printStanza_ifNotYetPrinted(){
 
       if(  $prevPass eq curPass  ){
           $head eq $curRow   or
-              _diell("Input error; line at top of input file $inputName: '$curRow'\nnot equal to previously seen head line: '$head'", 
+              _diell("Input error; line at top of input file $inputName: '$curRow'\nnot equal to previously seen head line: '$head'",
                      "入力エラー、ファイル${inputName}の先頭行: '${curRow}'\nは前に見たラベル行: '${head}'と一致しない。");
       }
       else{
@@ -1618,12 +1618,12 @@ If the input has no column label head line you may use the '-N|--no-head' option
                       say  for @commentAtTop;   say  $head;
                   }
               }
-          }                  
+          }
 
           ($_=  firstidx  {!defined}  @F)  == -1   or   _diell
               "When attempting to output head line, \$F[$_] was undefined."=>
               "先頭行を出力しようとした時に、\$F[$_]はundef値だった。";
-          
+
           do{   say for @commentAtTop;  say @F   }if  $printEachRowP;
           @FinPrev= @Fin;
       }# if/else $head already defined (from a preceding input file)
@@ -1668,7 +1668,7 @@ If the input has no column label head line you may use the '-N|--no-head' option
 
           #Pad trailing columns with the missingMark if necessary.
           @Fin >= $maxNumColsToExpect   or   push  @Fin,  (missingMark) x  ($maxNumColsToExpect-@Fin);
-              
+
           @F= @Fin;
 
           if(  defined dittoMark  ){
@@ -1677,7 +1677,7 @@ If the input has no column label head line you may use the '-N|--no-head' option
               }
           }
 
-          
+
           my $printCurRowP=  $printEachRowP;
 
           #Reinstate @H if necessary (perhaps should add  if $HmodifiedP  condition).
@@ -1719,7 +1719,7 @@ If the input has no column label head line you may use the '-N|--no-head' option
 
           @FinPrev= @Fin;
       }#  while(  $curRow = <INPUT_STREAM>  )
-      
+
   }#processInputFile
 
 
@@ -1755,7 +1755,7 @@ If the input has no column label head line you may use the '-N|--no-head' option
           die _lln("$callerName must be called on head row because it needs to modify it, perhaps you used -d${\curPass}, when you meant -e${\curPass}?",
                    "${callerName}は先頭行を変更する為、先頭行に実行する必要がある。-e${\curPass}のつもりで間違って-d${\curPass}を使った？" );
       }
-  }          
+  }
 
 
   # idx_of(  arg  )
@@ -1815,7 +1815,7 @@ If the input has no column label head line you may use the '-N|--no-head' option
 
       undef %N;  @N{@H}= 0..$#H;
   }
-  
+
 
 
   #Internal function doing the work of insAft and insBef.
@@ -1838,7 +1838,7 @@ If the input has no column label head line you may use the '-N|--no-head' option
           die _ll("In $callerName; -N|--no-head option not given, so $callerName expected an even number of (<LABEL, DATA_GEN> pair forming) trailing args, but got (@_)",
                   "${callerName}で、-N|--no-headオプションをしていないので、${callerName}は(<LABEL, DATA_GEN>の２組リストとなる)偶数の後尾引数を期待していたが、(@_)を受け取った。");
       }
-      
+
       my @label=   splice  @_,  0,  @_/2;
 
       if(  ih  ){
@@ -1849,7 +1849,7 @@ If the input has no column label head line you may use the '-N|--no-head' option
           @data=  @label;}
       else{
           @data=   map  {ref $_ eq 'CODE'?  &$_ : $_}  @_;
-      }        
+      }
 
       splice  @H,  $pos, 0, @label;
       splice  @F,  $pos, 0, @data;
@@ -1890,7 +1890,7 @@ If the input has no column label head line you may use the '-N|--no-head' option
   #  Internal function doing the work of movAft and movBef.
   #  Those functions ensure validity of the first argument POS only.
   #  movTo must check validity of the rest of its arguments.
-  #  
+  #
   #  Implementation attempts to optimize move of contiguous ascending blocks of columns.
   #    e.g. when executing;  movTo( 20, 0..9 )
   #    The first 10 columns are moved as a block to the left of the 20th column.
@@ -2103,7 +2103,7 @@ sub _storeNum2{
     elsif(  !numP $_[0]   and   !numP $_[1]  ){
         return;   #nothing to do
     }
-       
+
 
     my $N=  stats_pairData_size();
     _diell
@@ -2234,7 +2234,7 @@ sub _stats2_reformatNumstring{
 }
 
 
-    
+
 #  Return sum of numbers in @stats_data
 sub _sum(){
     return                      if  !@stats_data;
@@ -2248,7 +2248,7 @@ sub _sum(){
 
 
 #  Return sum of numbers in @_
-sub sum{   
+sub sum{
     _stats_set_data 'sum', @_   if @_;
 
     @stats_data   or   _diell
@@ -2309,7 +2309,7 @@ sub geomean{
 
     return _stats_reformatNumstring _geomean
 }
-    
+
 
 sub _stdev(){
     return                      if !@stats_data;
@@ -2333,7 +2333,7 @@ sub _stdev(){
 #  Sample standard deviation of numerical values in @_
 sub stdev{
     _stats_set_data 'stdev', @_   if @_;
-        
+
     @stats_data   or   _diell
         'tried to compute stdev of list with no numbers.'=>
         '数値を含んでないリストの標準偏差を求めようとした。';
@@ -2426,7 +2426,7 @@ sub MAE{
     while(  my( $v0, $v1 )=  $each_pair->()  ){
         $sum+=  abs( $v0 - $v1 );
     }
-    
+
     return  _stats2_reformatNumstring(  $sum / stats_pairData_size()  );
 }
 
@@ -2460,7 +2460,7 @@ sub corrKendall{
 
 sub _corrKendall{
     my $RCcompute=  Statistics::RankCorrelation->new( $stats_data0, $stats_data1 );
-    
+
     return  _stats2_reformatNumstring(  $RCcompute->kendall );
 }
 
@@ -2477,7 +2477,7 @@ sub corrSpearman{
 
 sub _corrSpearman{
     my $RCcompute=  Statistics::RankCorrelation->new( $stats_data0, $stats_data1 );
-    
+
     return  _stats2_reformatNumstring(  $RCcompute->spearman );
 }
 
@@ -2510,7 +2510,7 @@ sub _corrLinear{
         $diffSqrd0+=      $d0 * $d0;
         $diffSqrd1+=      $d1 * $d1;
     }
-    
+
     return  _stats2_reformatNumstring(  $diffInnerProd / sqrt( $diffSqrd0 ) / sqrt $diffSqrd1  );
 }#_corrLinear
 
@@ -2520,7 +2520,7 @@ sub _corrLinear{
 #  Return string summarizing some measures of pairwise correlation.
 sub corrsPairwise{
     _stats_set_pairData 'corrPairwise', @_   if @_;
-    
+
     if(  any {ref ne 'ARRAY'} @_  ){
         my $badIdx=  firstidx {ref ne 'ARRAY'} @_;
         my $argType=  ref $_[$badIdx];
@@ -2536,7 +2536,7 @@ sub corrsPairwise{
             _diell(  "corrs expected references to equal size arrays, but encountered unequal sizes: size ARG[$_]=" .@{$_[$_]}. ' ≠ size ARG[' .(1+$_). ']=' .@{$_[1+$_]}  =>
                      "corrsの引数はすべて同じ大きさのarrayへの参照子でなければならないが、size ARG[$_]=" .@{$_[$_]}. ' ≠ size ARG[' .(1+$_). ']=' .@{$_[1+$_]}  );
     }
-            
+
     my $retVal;
 
     $retVal=  'dummy return value';
@@ -2580,7 +2580,7 @@ sub _binBoundaryIdxs{
         _diell(  "unknown binning spec '$arg1', supported specs are {-r,-o}."=>"データを区間に分割する仕様には{-r,-o}がある。'${arg1}'は無効な仕様'"  );
     }
 }
-    
+
 
 
 #  Return indicies into @stats_data for boundaries of $q uniform size ranges
@@ -2588,7 +2588,7 @@ sub _binBoundaryIdxs_uniformRange{
     my $q=  shift;
 
     my(  $min, $max  )=  minmax @stats_data;
-    
+
     my $range=  $max - $min;
     my $binWidth= $range / $q-1;
 
@@ -2628,7 +2628,7 @@ sub _binBoundaryIdxs_uniformOccupancy{
         my $newBound=   ($iUp-$iProp < $iProp-$iLw)
             ?  ( $stats_data[$iUp] + $valProp ) / 2
             :  ( $stats_data[$iLw] + $valProp ) / 2;
-        
+
         #Push new boundary value if unique.
         push  @retVal,  $prevBound= $newBound    if $newBound != $prevBound;
     }
@@ -2693,8 +2693,8 @@ sub binned{
 
     return @dataCopy;
 }#binned
-    
-    
+
+
 
 
 #  xqtiles($q,@num) returns the $q extended quantiles of @num (@num defaults to @stats_data),
@@ -2717,7 +2717,7 @@ sub qtiles{
 #  Side effect: numerically sorts @stats_data.
 sub _qtiles{
     my $caller=  shift;
-    
+
     @_   or   _diell
         '${caller}() called with no arguments.'=>
         '${caller}()が引数無しで呼び出された。';
@@ -2732,7 +2732,7 @@ sub _qtiles{
         "${caller}() 第一引数は２≧でないといけないが、'${q}'を受け取った。";
 
     _stats_set_data $caller, @_   if @_;
-        
+
     @stats_data   or   _diell
         '${caller}() called with no numerical arguments to work with.'=>
         '${caller}()が呼び出されたが、扱うべき数値は与えられていない。';
@@ -3014,7 +3014,7 @@ sub processInputFile_forSorting{
             chomp $curRow;   last if $curRow=~ /$noncommentLineRegex/;   #Quietly skip comment lines.
         }
         $head eq $curRow   or
-            _diell("Line at top of input file $inputName: '$curRow'\nnot equal to previously seen head line: '$head'", 
+            _diell("Line at top of input file $inputName: '$curRow'\nnot equal to previously seen head line: '$head'",
                    "入力ファイル${inputName}の先頭行: '${curRow}'\nは前に見たラベル行: '${head}'と一致しない。");
     }
     else{
@@ -3045,7 +3045,7 @@ sub processInputFile_forSorting{
     my @comment;
     while(  <$inputFile>   ){
         push( @comment, $_ ), next   if  !/$noncommentLineRegex/;
-        
+
         chomp(  $curRow= $_  );
 
         @F= @Fin=  split $opt_{inputFieldSep}, $curRow, -1;
@@ -3075,7 +3075,7 @@ sub processInputFile_forSorting{
         #Compute and store sort keys.
         my @retVal=  _runScript 'SORT_KEY'.curPass;
         $sort_keyVec[$_][NR-1]=  $retVal[$_]    for 0..$#retVal;
-        
+
         _incrNR;
         @FinPrev= @F;  #Might try (\@FinPrev, \@F)= (\@F, \@FinPrev)  If reference aliasing becomes standard.
     }#while reading data lines.
@@ -3113,7 +3113,7 @@ sub _parseSortSpecsStr{
         $spec =~ /01|10/   or   $spec !~ /N/   or
             dieSpec(  "Suspect sort spec: '$spec', 'N' stands for NaN (not a number) and should be accompanied with '01' or '10'"=>
                       "並べ替え方の指定'${spec}'を受け取ったが、'N'はNaN (not a number)を意味し、数値の並べ替えを指定する場合'01'か'10'も必要になる。"  );
-            
+
         my( $badC )=  $spec=~ /([^01ABMNU])/;
         $badC   and   dieSpec( "encountered character '$badC', but only chars [01abMNU] are allowed in a sort comparison spec"=>
                                "文字'${badC}'に当ったが、並べ替え方の指定に[01abMN]以外の文字は許されない。");
@@ -3296,7 +3296,7 @@ sub sortKeylev_recurseOnTies{
                 while   $blockPrec  !=  ($elemPrec=   $$precs[   &$typer($$keys[ $sortPerm[$j] ])   ]);
         }
     }
-    
+
     #Reuse @grenze as arrary of ends.
     @grenze[0..$FIN-1]= @beg[1..$FIN];  $grenze[$FIN]= $wholeEnd;
 
@@ -3364,7 +3364,7 @@ sub sortKeylev_recurseOnTies{
 
 
 BEGIN{
-    *CORE::GLOBAL::stat=  sub{ 
+    *CORE::GLOBAL::stat=  sub{
         _warn
             "stat command disabled.  Assuming you meant 'stats'."=>
             "statコマンドは使用不可になっている。'stats'のつもりだと仮定して進む。";
@@ -3573,10 +3573,10 @@ perltabは列に関する以下の変数を提供する。
  -b2|--begin2 SCRIPT         On second pass, SCRIPT to execute before reading input.
 |                            ２回目の入力走査で、入力を読み込む前に実行するスクリプト。
 =wk -b2|--begin2
-=kw -d|--data-script         
+=kw -d|--data-script
   -d|--data-script  SCRIPT   SCRIPT to run on all but the header row.
 |                            ラベル行(入力の先頭行)以外の行に対して実行するスクリプト。
-=wk -d|--data-script         
+=wk -d|--data-script
 =kw -d2|--data-script2
  -d2|--data-script2  SCRIPT  On second pass, SCRIPT to run on all but the header row.
 |                            ２回目の入力走査で、ラベル行(入力の先頭行)以外の行に対して実行するスクリプト。
@@ -3613,10 +3613,10 @@ perltabは列に関する以下の変数を提供する。
 
 =head2  Other Options|その他のオプション
 =settab                      ==
-=kw -c|--count               
+=kw -c|--count
   -c|--count                 Print number of rows for which the row script returned true (on final pass).
 |                            (最終の入力走査で)行スクリプトが真を返した行数を出力する。
-=wk -c|--count               
+=wk -c|--count
 =kw ditto|-D|--ditto|ditto-mark
   -D|--ditto                 When an empty string column value is encountered, substitute value from previous row.
 |                            入力ファイルに空文字列となっている列の値は上の行から取る。つまり空文字列を「同上」と見なす。
@@ -3860,7 +3860,7 @@ Or to remove only the opening comment at top:
  Delete COLUMNS from @F.  Columns may be given as labels or integers in [-$#F,$#F].
  列COLUMNSを@Fから削除する。列はラベル、又は[-$#F,$#F]内の整数で指定できる。
 
-=settab                   == 
+=settab                   ==
  del  0;                  #Delete first column.
 |                         #一番目の列を削除
  del -2;                  #Delete penultimate column.
@@ -3888,7 +3888,7 @@ Or to remove only the opening comment at top:
 
  In general (when not using the -N|--no-head option),
  一般に(-N|--no-head)オプションを指定していない場合、
- 
+
  sub insAft(  PRE,  LABEL1, ...,  DATA_GEN1, ...  )
  sub insaft(  PRE,  LABEL1, ...,  DATA_GEN1, ...  )
 
@@ -4004,7 +4004,7 @@ Or to remove only the opening comment at top:
  Modifies string variable ARG... according to sprintf format FORMAT.
  When ARG is a readonly value such as 0 or 'weight', it is interpreted as meaning $F[0] or F(weight).
  When FORMAT expects a number (e.g. '%3d'), non-numerical STRINGs are left unchanged.
- ARG1...の値を書換えてしまう。文字列変数ARG...をsprintf形式のFORMATに従って書換える。 
+ ARG1...の値を書換えてしまう。文字列変数ARG...をsprintf形式のFORMATに従って書換える。
  ARGが0や'weight'のような定値であれば、それは$F[0]やF(weight)のように列の指定と見做す。
  FORMATが（例えば'%3d'）のような数値を前提にしている場合、数値以外のSTRINGはそのまま残る。
 =wk reform|format
@@ -4336,7 +4336,7 @@ The statistical functions: sum, mean, geomean, stdev, qtiles, xqtiles, stats; sh
   ID  height  weight
    3   160     0
    2   175     78
-   6   180     
+   6   180
    1   170     73
   =========================
 =wk merge|dit|-in2
@@ -4428,7 +4428,7 @@ The statistical functions: sum, mean, geomean, stdev, qtiles, xqtiles, stats; sh
  % perltab -pe 'del "height"' heightWeight.tsv
  or,
  又は、
- % perltab -e 'say F( grep {!/^height$/} @H )' heightWeight.tsv 
+ % perltab -e 'say F( grep {!/^height$/} @H )' heightWeight.tsv
 
 =kw SNset|serial|-g|--grep|grep
  Select rows from heightWeight.tsv matching ids listed in file 'ids.txt' (holding one id per line).
@@ -4586,7 +4586,7 @@ The statistical functions: sum, mean, geomean, stdev, qtiles, xqtiles, stats; sh
  特徴量givenM…の５分位値を表示する。xqtilesを使うと、出力は最小値と最大値を含める６つの数値となる。
  % perltab  -d 'push @d, F(givenM)'  -z 'say xqtiles(5,@d)'  input.tsv
 =wk qtiles|xqtiles|quantile|median|quartile|percentile|分位値|分位数|中央値|４分位値|四分位値|４分位数|四分位数|百分位値|パーセンタイル
- 
+
 =wk statistics|統計
 
 
