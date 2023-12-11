@@ -1858,10 +1858,10 @@ If the input has no column label head line you may use the '-N|--no-head' option
   }#insBef_(pos)
 
 
-  #  insAft(  PRE,  LABEL1,...,LABELn,  DATA_GEN1,...DATA_GENn  )
-  #  Insert new column(s) into table after current column PRE.
+  #  insAft(  PREC,  LABEL1,...,LABELn,  DATA_GEN1,...DATA_GENn  )
+  #  Insert new column(s) into table after current column PREC.
   #
-  #  PRE may be given by label or as an integer in [0,$#F] or (counting from final column) [-1..-@F].
+  #  PREC may be given by label or as an integer in [0,$#F] or (counting from final column) [-1..-@F].
   #  DATA_GEN can be either data or a sub reference to generate data.  See help documentation for details.
   #
   #  Calls insBef_ to do its work.
@@ -1873,8 +1873,8 @@ If the input has no column label head line you may use the '-N|--no-head' option
   }
 
 
-  #  insBef(  SUC,  LABEL1,...,LABELn,  DATA_GEN1,...DATA_GENn  )
-  #  Insert new column(s) into table before current column SUC.
+  #  insBef(  SUCC,  LABEL1,...,LABELn,  DATA_GEN1,...DATA_GENn  )
+  #  Insert new column(s) into table before current column SUCC.
   #  See insAft for details.
   #
   #  Calls insBef_ to do its work.
@@ -1981,10 +1981,10 @@ If the input has no column label head line you may use the '-N|--no-head' option
 
 
 
-  #  movAft(  PRE,  @colsToMov   )
-  #  Move columns @colsToMov after current column PRE.
+  #  movAft(  PREC,  @colsToMov   )
+  #  Move columns @colsToMov after current column PREC.
   #
-  #  PRE may be given by label or as an integer in [0,$#F] or (counting from final column) [-1..-@F].
+  #  PREC may be given by label or as an integer in [0,$#F] or (counting from final column) [-1..-@F].
   #  See the help documentation for details.
   #
   #  Calls movTo to do its work.
@@ -1995,10 +1995,10 @@ If the input has no column label head line you may use the '-N|--no-head' option
       my $pre= idx_of shift;   unshift @_, $pre+1;   goto  &movTo;
   }
 
-  #  movAft(  SUC,  @colsToMov   )
-  #  Move columns @colsToMov before current column SUC.
+  #  movAft(  SUCC,  @colsToMov   )
+  #  Move columns @colsToMov before current column SUCC.
   #
-  #  SUC may be given by label or as an integer in [0,$#F] or (counting from final column) [-1..-@F].
+  #  SUCC may be given by label or as an integer in [0,$#F] or (counting from final column) [-1..-@F].
   #  See the help documentation for details.
   #
   #  Calls movTo to do its work.
@@ -3872,12 +3872,12 @@ Or to remove only the opening comment at top:
 
 =kw insert|挿入|append|追加
 =kw insaft
- sub insAft (  PRE, *columnInfo*  )
- sub insaft (  PRE, *columnInfo*  )
+ sub insAft (  PREC, *columnInfo*  )
+ sub insaft (  PREC, *columnInfo*  )
 
- Insert new column(s) into @F after column PRE.  PRE may be given by label or as an integer in [-$#F,$#F].
+ Insert new column(s) into @F after column PREC.  PREC may be given by label or as an integer in [-$#F,$#F].
 
- 新しい列をPREの後に加える。PREはラベル、又は[-$#F,$#F]内の整数で指定できる。
+ 新しい列をPRECの後に加える。PRECはラベル、又は[-$#F,$#F]内の整数で指定できる。
 
  For example to append a new column with label "Notes" and the empty string value for each row use:
  例えば、ラベルが"Notes"で値がすべて空文字の列を追加するには、
@@ -3889,8 +3889,8 @@ Or to remove only the opening comment at top:
  In general (when not using the -N|--no-head option),
  一般に(-N|--no-head)オプションを指定していない場合、
 
- sub insAft(  PRE,  LABEL1, ...,  DATA_GEN1, ...  )
- sub insaft(  PRE,  LABEL1, ...,  DATA_GEN1, ...  )
+ sub insAft(  PREC,  LABEL1, ...,  DATA_GEN1, ...  )
+ sub insaft(  PREC,  LABEL1, ...,  DATA_GEN1, ...  )
 
  The non-head rows of the new colum LABEL1 are given by DATA_GEN1.  If DATA_GEN1 is a code reference it is executed and the return value used.  Any number of (LABEL, DATA_GEN) pairs may be stipulated.
  新しい列LABEL1の（ラベルを格納する先頭行以外）の内容はDATA_GEN1で指定する。DATA_GEN1がsubへの参照子である場合、DATA_GEN1を実行した返り値が列の内容となる。(LABEL, DATA_GEN)２組の数に特に制限はない。
@@ -3920,33 +3920,33 @@ Or to remove only the opening comment at top:
  But when -N|--no-head option is stipulated,
  ただし、-N|--no-headオプションが指定された場合、
 
- insAft(  SUC,  DATA_GEN1, ...,  )
- insaft(  SUC,  DATA_GEN1, ...,  )
+ insAft(  PREC,  DATA_GEN1, ...,  )
+ insaft(  PREC,  DATA_GEN1, ...,  )
 
  In this case, no need to deal with labels or the head line.
  この場合、ラベルや先頭行の処理は不要。
 =wk insaft
 
 =kw insbef
- sub insBef(  SUC, *columnInfo*  )
- sub insbef(  SUC, *columnInfo*  )
+ sub insBef(  SUCC, *columnInfo*  )
+ sub insbef(  SUCC, *columnInfo*  )
 
- Insert new columns into @F before column SUC.  SUC may be given by label or as an integer in [-$#F,$#F].  See insAft for more details.
- 新しい列をSUCの前に加える。SUCはラベル、又は[-$#F,$#F]内の整数で指定できる。詳細はinsAftを参照。
+ Insert new columns into @F before column SUCC.  SUCC may be given by label or as an integer in [-$#F,$#F].  See insAft for more details.
+ 新しい列をSUCCの前に加える。SUCCはラベル、又は[-$#F,$#F]内の整数で指定できる。詳細はinsAftを参照。
 =wk insbef
 =wk insert|挿入|append|追加
 
 =kw move|移動
 =kw movaft
- sub movAft(  PRE,  @colsToMov   )
- Move columns @colsToMov after column PRE.  Columns may be given as labels of integers in [-$F#,$#F].
- 列@colsToMovを列PREの後に移す。列はラベル、又は[-$#F,$#F]内の整数で指定できる。
+ sub movAft(  PREC,  @colsToMov   )
+ Move columns @colsToMov after column PREC.  Columns may be given as labels of integers in [-$F#,$#F].
+ 列@colsToMovを列PRECの後に移す。列はラベル、又は[-$#F,$#F]内の整数で指定できる。
 =wk movaft
 
 =kw movbef
- sub movBef(  SUC,  @colsToMov   )
- Move columns @colsToMov before column SUC.  Columns may be given as labels of integers in [-$F#,$#F].
- 列@colsToMovを列SUCの前に移す。 列はラベル、又は[-$#F,$#F]内の整数で指定できる。
+ sub movBef(  SUCC,  @colsToMov   )
+ Move columns @colsToMov before column SUCC.  Columns may be given as labels of integers in [-$F#,$#F].
+ 列@colsToMovを列SUCCの前に移す。 列はラベル、又は[-$#F,$#F]内の整数で指定できる。
 =wk movbef
 =wk move|移動
 
