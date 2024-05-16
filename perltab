@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #  Author: Paul Horton
-#  Copyright (C) 2016, 2017, 2018  Paul B. Horton, All rights reserved.
+#  Copyright (C) 2016,2017,2018,2024  Paul B. Horton, All rights reserved.
 #
 #  License: Anyone may use this software under the GNU Public License GPLv3.
 #  For discussion of other licenses please contact the author, Paul Horton.
@@ -3882,8 +3882,21 @@ Or to remove only the opening comment at top:
  For example to append a new column with label "Notes" and the empty string value for each row use:
  例えば、ラベルが"Notes"で値がすべて空文字の列を追加するには、
 
+#To consider 20240516: invent a way to avoid the need to wrap the final argument in sub{}
+#Seems this used to work:
+#=settab    ==
+# insAft(  $#F, "Notes", ""  )
+#=unsettab
+
 =settab    ==
- insAft(  $#F, 'Notes', ''  )
+ insAft(  $#F, "Notes", sub{""}  )
+=unsettab
+
+ or, the equivalent perl code
+ 若しくは同等のperlコード、
+
+=settab    ==
+ insAft(  $#F, "Notes"=>sub{""}  )
 =unsettab
 
  In general (when not using the -N|--no-head option),
