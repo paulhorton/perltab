@@ -3764,11 +3764,11 @@ Downcased unique prefixes are also matched.  Consider an input file with a colum
     Accessors (cont.)
     アクセサー的な関数(の続き)
 
-=kw NR|line number|行番号
+=kw NR|line number|行番号|row
 =settab      ==
  NR          The number of times the row script has been called (on current pass).  Like Awk's NR, but counts from zero.
 |            行スクリプトを呼び出している回数 (現行の入力呼び込みで)。 awk言語のNRと似ているが、ゼロから数える。
-=wk NR|line number|行番号
+=wk NR|line number|行番号|row
 =kw NRT
  NRT         The number of rows (including initial label row if a script was run on it) for which the row script returned true (on current pass).
 |            (現在の実行passで)行スクリプトが真を返した行数。Number Rows Trueの略。
