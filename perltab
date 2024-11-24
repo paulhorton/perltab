@@ -4754,8 +4754,10 @@ The flexibility of perl syntax can be confusing at times.
 perlの柔軟な構文は便利だが解りにくかったりもする。
 以下のコマンドで構文がどのように解析されているかが調べられる。
 If you are not sure how perl is parsing your script try:
- % perl -MO::Deparse -e  'YOUR SCRIPT'
+ % perl -MO=Deparse -e  'YOUR SCRIPT'
 
+(-MO=Deparse Requires module B::Deparse. Install with cpan or debian package libperl-dev.)
+(-MO=DeparseはモジュールB::Deparseが必要。cpanまたdebianパッケージlibperl-devにてインストール可能。)
 
 =head1  CHECKING RESULTS|結果の尤もらしさを確認
 =head2  LOOK|目視確認
