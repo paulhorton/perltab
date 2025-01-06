@@ -3872,15 +3872,26 @@ Or to remove only the opening comment at top:
 
 =kw insert|挿入|append|追加
 =kw insaft
+=kw sum|total
  sub insAft (  PREC, *columnInfo*  )
  sub insaft (  PREC, *columnInfo*  )
 
  Insert new column(s) into @F after column PREC.  PREC may be given by label or as an integer in [-$#F,$#F].
-
  新しい列をPRECの後に加える。PRECはラベル、又は[-$#F,$#F]内の整数で指定できる。
 
- For example to append a new column with label "Notes" and the empty string value for each row use:
- 例えば、ラベルが"Notes"で値がすべて空文字の列を追加するには、
+ A common example is to add a sum total column holding the sum of some numerical columns.
+ よく使われる例として、幾つかの列の数値の和を表に加える事が挙げられる。
+
+=settab    ==
+ insAft(  -1, "Total"=>sub{sum(@F[2..4])}  )
+=unsettab
+
+ Places the sum of columns 2,3 and 4 into a new column at the end named "Total".
+ は２番,３番,と４番の３列に和を"Total"という新しい列に書き込む。
+
+=wk sum|total
+ Another example is to append a new column with label "Notes" and the empty string value for each row use:
+ もうひとつの例として、ラベルが"Notes"で値がすべて空文字の列を追加するには、
 
 #To consider 20240516: invent a way to avoid the need to wrap the final argument in sub{}
 #Seems this used to work:
@@ -3899,8 +3910,11 @@ Or to remove only the opening comment at top:
  insAft(  $#F, "Notes"=>sub{""}  )
 =unsettab
 
- In general (when not using the -N|--no-head option),
- 一般に(-N|--no-head)オプションを指定していない場合、
+Multiple columns can be inserted at once.
+複数の列を入れることも可能です。
+
+In general (when not using the -N|--no-head option),
+一般に(-N|--no-head)オプションを指定していない場合、
 
  sub insAft(  PREC,  LABEL1, ...,  DATA_GEN1, ...  )
  sub insaft(  PREC,  LABEL1, ...,  DATA_GEN1, ...  )
