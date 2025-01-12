@@ -3883,7 +3883,7 @@ Or to remove only the opening comment at top:
  よく使われる例として、幾つかの列の数値の和を表に加える事が挙げられる。
 
 =settab    ==
- insAft(  -1, "Total"=>sub{sum(@F[2..4])}  )
+ insAft(  -1, "Total"=>sub{sum @F[2..4]}  )
 =unsettab
 
  Places the sum of columns 2,3 and 4 into a new column at the end named "Total".
