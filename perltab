@@ -929,7 +929,6 @@ sub _diell{
 # ━━━━━━━━━━  BEG: Assign and check command line options  ━━━━━━━━━━
 @ARGV   or   _dieUsage( 'expected options and arguments on command line, but got none.',
                         'コマンド行にオプションと引数を期待したが、何もない。');
-
 $ARGV[0]= '--help'   if  @ARGV  &&  $ARGV[0] eq '-help';
 
 my %opt_;   #To map option names to values, obtained either via command line or top of script file.
@@ -1662,8 +1661,8 @@ If the input has no column label head line you may use the '-N|--no-head' option
           if(  @Fin > $maxNumColsToExpect   ){
               my $p= $maxNumColsToExpect;  my $n= @Fin;
               $opt_{extraFieldsOK}   or
-                  _diell("Error unequal number of columns.  A previous row had $p columns, but on line $.: '$curRow' has $n columns.",
-                         "列の本数が合わない。前の行では${p}本の列があったが、${.}行目の現在行には${n}列しかない。");
+                  _diell("Error unequal number of columns.  A previous row had $p columns, but on line $.: '$curRow' has $n columns.\nUse option -X|--extra-fields-OK to allow.",
+                         "列の本数が合わない。前の行では${p}本の列があったが、${.}行目の現在行には${n}列しかない。\nオプション-X|--extra-fields-OKで列数の違いは許容される。");
           }
 
           #Pad trailing columns with the missingMark if necessary.
