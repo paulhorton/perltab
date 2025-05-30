@@ -4727,8 +4727,8 @@ The correspondence between inline script command line options and named code blo
   e2|rows-script2   ROWS2
   z |end            END
 
-At the time of this writing (20170114) the use of script files with perltab has been tried out by not tested.
-現時点(20170114)でperltabのファイルからスクリプトを読み込む機能は試されてはいるが検証はされていない。
+At the time of this writing (20170114) the use of script files with perltab has been tried out but not tested.
+現時点(PH20250112)でperltabのファイルからスクリプトを読み込む機能は試されてはいるが検証はされていない。
 =wk BLOCK|BEGIN|DATA|ROW|END
 =wk -f|--script-file|script-file
 
