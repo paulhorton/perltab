@@ -3686,10 +3686,10 @@ perltabは列に関する以下の変数を提供する。
   -V|--version               Print version number of perltab.
 |                            perltabのバージョン番号を出力する。
 =wk -V|--version
-=kw -X|extra-fields|--extra-fields-OK|column|columns|unequal num|unequal number
+=kw -X|extra-fields|--extra-fields-OK|column|columns|unequal num|unequal number|ignore
   -X|--extra-fields-OK       Extra fields allowed in input lines.  Suppresses fatal error normally thrown when some input lines have more fields than expected.  The extra fields are included in @F; otherwise behavior under this option is not well defined.
 |                            入力ファイルに余分な列(第１行より多い数の列)があってもエラーとして停止せずにその列を適当に@Fに入れて実行を続行する。ただし、列の数が合わないことにより他のエラーが発生する恐れはある。
-=wk -X|extra-fields|--extra-fields-OK|column|columns|unequal num|unequal number
+=wk -X|extra-fields|--extra-fields-OK|column|columns|unequal num|unequal number|ignore
 =unsettab
 
 =kw --test
