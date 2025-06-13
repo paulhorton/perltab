@@ -3,7 +3,7 @@ package App::perltab;
 =head1  SYNOPSIS
 
     Usage: perl -h       #Start here!
-           
+
            perl -e 'SCRIPT'  InputFile.tsv
 
 
