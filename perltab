@@ -4628,7 +4628,7 @@ The statistical functions: sum, mean, geomean, stdev, qtiles, xqtiles, stats; sh
  sorts the file input.tsv according to ascending order of height, with non-numerical values following (see details below).
  はinput.tsvを身長の昇順に並べ替える。数字以外の値は最後になる(詳細は以下)
 
- % perltab -s21 'F(height)' input.tsv
+ % perltab -s10 'F(height)' input.tsv
 
  Same as above but in descending order of height.
  上の例とほとんど同じであるが、身長は降順に並べ替えられる。
