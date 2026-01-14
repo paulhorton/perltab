@@ -4731,8 +4731,16 @@ The correspondence between inline script command line options and named code blo
   e2|rows-script2   ROWS2
   z |end            END
 
-At the time of this writing (20170114) the use of script files with perltab has been tried out but not tested.
-現時点(PH20250112)でperltabのファイルからスクリプトを読み込む機能は試されてはいるが検証はされていない。
+At the time of this writing (PH20250112) the use of script files with perltab has been tried out but not tested.
+現時点(PH20250112)でperltabからファイル・スクリプトを読み込む機能は十分検証されていない。
+
+特にファイル・スクリプトに構文エラーがあるとエラーになりますが、そのエラー・メッセージは解りにくいものになりがち。
+例えば、ROWSブロックに'}'がひとつ欠けていたスクリプトの場合、以下のようなメッセージになった事がある。
+In particular, note that syntax errors in perltab script file may give misleading error messages.
+For example, one script file missing a closing '}' inside a ROWS block gave an error message:
+
+  Can't use string ("ROWS") as a SCALAR ref while "strict refs" in use at /bin/perltab line 1028.
+
 =wk BLOCK|BEGIN|DATA|ROW|END
 =wk -f|--script-file|script-file
 
