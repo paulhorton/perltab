@@ -392,9 +392,9 @@ my @H;           #To hold head fields unless $opt_{noHeadP}.
                 if(  /^[0-9]+/  ){
                     my $numRF= \$_;
                     $$numRF <= @F   or
-                      __diell_(  'reform() tried to modifed F['.$$numRF.'], but @F only had '.@F.'elements' =>
-                                 'reform()でF['.$$numRF.']を書き換えおうとしたが、@Fには'.@F.'の要素しかなかった。'
-                              );
+                      _diell(  'reform() tried to modifed F['.$$numRF.'], but @F only had '.@F.'elements' =>
+                               'reform()でF['.$$numRF.']を書き換えおうとしたが、@Fには'.@F.'の要素しかなかった。'
+                           );
                     $fieldRF= \$F[$$numRF];
                 }
                 else{
