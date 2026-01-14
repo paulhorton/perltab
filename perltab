@@ -3541,6 +3541,7 @@ stipulated as a filename argument of option 'in2'.
 perltab provides the following column related variables:
 perltabは列に関する以下の変数を提供する。
 
+=kw vars
 =kw @H
 =settab        ==
  @H  $H[i] --> Label of ith column.
@@ -3560,6 +3561,9 @@ perltabは列に関する以下の変数を提供する。
 =unsettab
 =wk prev|@FinPrev
 
+See also function F().
+関数F()も参照。
+=wk vars
 
 =head1  OPTIONS|オプション
 =kw opts
