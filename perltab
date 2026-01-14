@@ -3473,7 +3473,7 @@ perltabは(空文字列で表した)欠損値を含むデータを扱いやす�
 
 =head2  Mixed numerical and non-numerical values|数値と数値以外の値の混合
 
-perltab defines functions, such as doNum, to facilitate handling columns with numberical entries mixed with non-numerical strings.
+perltab defines functions, such as doNum, to facilitate handling columns with numerical entries mixed with non-numerical strings.
 perltabはdoNumのような関数を提供することにより、数値と数値以外の値が混在する列を扱いやすくしている。
 
 =kw ditto
@@ -3527,14 +3527,14 @@ To convert a full file to ditto format:
  % perltab -pD  NEAsiaMegacities.tsv
 =wk ditto
 
-=kw second|２回目
+=kw second|second pass|pass2|２回目
 =head2  Second Pass|２回目の入力走査(入力pass)
 Options ending in '2', e.g. -e2, -d2 etc. act on a second pass of input
 stipulated as a filename argument of option 'in2'.
 '2'で終るオプション(-e2,-d2等)は一通り入力を処理した後、
 もう１回入力してスクリプトを実行する場合に使われるオプション。
 ２回目の入力ファイルはオプション-in2の引数で指定する。
-=wk second|２回目
+=wk second|second pass|pass2|２回目
 =wk input
 
 =head1  VARIABLES|変数
@@ -4337,9 +4337,9 @@ The statistical functions: sum, mean, geomean, stdev, qtiles, xqtiles, stats; sh
 
 =wk -F|-OF|--OF|--field-sep|--output-field-separator|field-separator|delimiter|convert|csv|comma|tsv|カンマ区切り|タブ区切り
 
-=kw merge|dit|-in2
- Given two tsv files:  height.tsv, weight.tsv  with some common IDs but possibly in a different order and only partially overlapping, output a table with column 'weight' from weight.tsv appended onto the table in height.tsv.  The new column will hold the missing value mark for any IDs in height.tsv but absent in weight.tsv.
- IDが一部共通するが行の順番が異なるweight.tsvとheight.tsvという２つのタブ区切りファイルを与えられたら、weight.tsvのweight列を(height.tsv中のID順に従って)最後の列としてweight.tsvに加えた表を出力する。height.tsvのIDの内weight.tsvにないIDがある場合そのIDのweightの値は欠損値として扱う。
+=kw merge|dit|-in2|second pass|pass2
+ For example, given two tsv files:  height.tsv, weight.tsv  with some common IDs but possibly in a different order and only partially overlapping, output a table with column 'weight' from weight.tsv appended onto the table in height.tsv.  The new column will hold the missing value mark for any IDs in height.tsv but absent in weight.tsv.
+ 例えば、IDが一部共通するが行の順番が異なるweight.tsvとheight.tsvという２つのタブ区切りファイルを与えられたら、weight.tsvのweight列を(height.tsv中のID順に従って)最後の列としてweight.tsvに加えた表を出力する。height.tsvのIDの内weight.tsvにないIDがある場合そのIDのweightの値は欠損値として扱う。
 =settab     ==
  % perltab  -e '$V{ F(ID)}= F(weight)'  -e2 'dit @F, $V{ F(ID)}' weight.tsv  -in2 height.tsv
 =unsettab
@@ -4366,7 +4366,7 @@ The statistical functions: sum, mean, geomean, stdev, qtiles, xqtiles, stats; sh
    6   180
    1   170     73
   =========================
-=wk merge|dit|-in2
+=wk merge|dit|-in2|second pass|pass2
 
  Move column 'ID' to directly after column 'weight'.
  列IDを列weightの後に移動する。
