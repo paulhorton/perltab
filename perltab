@@ -448,6 +448,8 @@ sub _dieUsage{
 
       for(  $_[0]  ){
           s{ ^\s* | \s*$ }  {}gx;  #Remove leading and trailing white space.
+          #Allow for qw type shortcut for F() and N() expressions in user script.
+          #For example:   F(cat dog) --> F(qw(cat dog))
           s{\bF\(  ( [^"',(){}\$@]+ )  \)}  {F(qw($1))}gx;
           s{\bN\(  ( [^"',(){}\$@]+ )  \)}  {N(qw($1))}gx;
           $_   or   $_=  q{0;};   #Make sure all defined values of %script_ look true in boolean context.
@@ -487,9 +489,18 @@ sub _dieUsage{
 
           $errMsg=~  s| \(eval \d+\)||;
           if(  @scriptLine < 2  ){
-              _say2 _ll("Trouble compiling $scriptDesc_ '$compilingScript_'. ",
-                        "${scriptDesc_}スクリプト'${compilingScript_}'にコンパイル・エラー。")
-                  . $errMsg;
+              my $hint= '';
+              if(  $scriptLine[0]=~ /(\b[FN] \(  [^"'(){}\$@]+  (?: , [^"'(){}\$@]+ )+  \))  /x  ){
+                  my $raw_expession= $1;
+                  my $suggestion= $raw_expession =~ s/,//gr;
+                  $hint=
+                    _llnn("Perhaps you wanted '$suggestion' for the qw style shortcut?",
+                          "もしかして${suggestion}のなqw風文法を考えていた？");
+              }
+
+              _say2 _lln("Trouble compiling $scriptDesc_ '$compilingScript_'.",
+                         "${scriptDesc_}スクリプト'${compilingScript_}'にコンパイル・エラー。")
+                . $hint . $errMsg;
               exit 64;                                                          #PROGRAM EXIT POINT
           }
 
@@ -606,8 +617,9 @@ my %script_;
   sub _lang(){  qw(ENG JPN)[$langI]  }
 
   #Select string based on output language.
-  sub _ll {  my $msg= $_[$langI] // $_[0];  $msg       }
-  sub _lln{  my $msg= $_[$langI] // $_[0];  $msg."\n"  }
+  sub _ll  {  my $msg= $_[$langI] // $_[0];  $msg        }
+  sub _lln {  my $msg= $_[$langI] // $_[0];  $msg."\n"   }
+  sub _llnn{  my $msg= $_[$langI] // $_[0];  $msg."\n\n" }
 
   sub _lln_concat{
     # Receive flattened list (msgLang1, msgLang2,... extraMsgLang1, extraMsgLang2,...)
