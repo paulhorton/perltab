@@ -3473,7 +3473,7 @@ The default field separator is a single tab character (but see option -F)
 =kw comment|コメント
 =head2 Comment lines|コメント行
 
-Empty Lines or lines starting with ';' or '#' are ignored in terms of data.  However comment lines are sometimes included in the perltabl output under options such as -p and -g.
+Empty Lines or lines starting with ';' or '#' are ignored in terms of data.  However comment lines are sometimes included in the perltab output under options such as -p and -g.
 空行及び':'又は'#'から始まる入力行はコメントとして扱われる。コメント行の内容はデータとして無視されるが、オプション-pや-gなどでは出力に含まれることもある。
 
 =wk comment|コメント
